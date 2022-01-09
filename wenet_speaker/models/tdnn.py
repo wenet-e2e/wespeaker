@@ -5,6 +5,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F 
+import torchaudio.transforms as trans
 
 from .pooling_layers import *
 
@@ -38,13 +39,13 @@ class TdnnLayer(nn.Module):
         return out
 
 
-class Tdnn(nn.Module):
+class XVEC(nn.Module):
     def __init__(self, feat_dim=40, hid_dim=512, stats_dim=1500, n_stats=2, embed_dim=512):
         """
         Implementation of Kaldi style xvec, as described in
         X-VECTORS: ROBUST DNN EMBEDDINGS FOR SPEAKER RECOGNITION
         """
-        super(Tdnn, self).__init__()
+        super(XVEC, self).__init__()
         self.feat_dim = feat_dim
         self.stats_dim = stats_dim
         self.n_stats = n_stats
@@ -59,31 +60,36 @@ class Tdnn(nn.Module):
         self.seg_1 = nn.Linear(stats_dim * n_stats, embed_dim)
         self.seg_bn_1 = nn.BatchNorm1d(embed_dim, affine=False)
         self.seg_2 = nn.Linear(embed_dim, embed_dim)
-    
+
     def forward(self, x):
+        x = x.permute(0, 2, 1) # (B,T,F) -> (B,F,T)
+
         out = self.frame_1(x)
         out = self.frame_2(out)
         out = self.frame_3(out)
         out = self.frame_4(out)
         out = self.frame_5(out)
 
-        if isinstance(self.pool, SAP):
-            stats, penalty = self.pool(out)
-        else:
-            stats = self.pool(out)
+        #if isinstance(self.pool, SAP):
+        #    stats, penalty = self.pool(out)
+        #else:
+        stats = self.pool(out)
 
         embed_a = self.seg_1(stats)
         out = F.relu(embed_a)
         out = self.seg_bn_1(out)
         embed_b = self.seg_2(out)
 
-        if isinstance(self.pool, SAP):
-            return embed_a, embed_b, penalty
-        else:
-            return embed_a, embed_b
+        #if isinstance(self.pool, SAP): # What is SAP? TODO: Shuai Wang
+        #    return embed_a, embed_b, penalty
+        #else:
+        return embed_a, embed_b
 
+if __name__ == '__main__':
+    net = XVEC(40)
+    #net=net.eval()
+    y = net(torch.rand(2,200,40))
+    print(y[0].size(), y[1].size())
 
-def test():
-    net = Tdnn(40)
-    y = net(torch.rand(10,40,200), torch.rand(10, 186))
-    print(y[0].size(), y[2])
+    s=sum(p.numel() for p in net.parameters())
+    print(s)

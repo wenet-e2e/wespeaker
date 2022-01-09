@@ -12,7 +12,7 @@ Reference:
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .pooling import *
+from .pooling_layers import *
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -94,6 +94,8 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        x = x.permute(0, 2, 1) # (B,T,F) => (B,F,T)
+
         x = x.unsqueeze_(1)
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.layer1(out)
@@ -101,20 +103,20 @@ class ResNet(nn.Module):
         out = self.layer3(out)
         out = self.layer4(out)
 
-        if isinstance(self.pool, SAP):
-            stats, penalty = self.pool(out)
-        else:
-            stats = self.pool(out)
+        #if isinstance(self.pool, SAP):
+        #    stats, penalty = self.pool(out)
+        #else:
+        stats = self.pool(out)
 
         embed_a = self.seg_1(stats)
         out = F.relu(embed_a)
         out = self.seg_bn_1(out)
         embed_b = self.seg_2(out)
         
-        if isinstance(self.pool, SAP):
-            return embed_a, embed_b, penalty
-        else:
-            return embed_a, embed_b
+        #if isinstance(self.pool, SAP):
+        #    return embed_a, embed_b, penalty
+        #else:
+        return embed_a, embed_b
 
 
 def ResNet18(feat_dim, embed_dim, n_stats=2):
@@ -133,12 +135,10 @@ def ResNet152():
     return ResNet(Bottleneck, [3,8,36,3], feat_dim=feat_dim, embed_dim=embed_dim, n_stats=n_stats)
 
 
-
-def test():
+if __name__ == '__main__':
     net = ResNet34(40, 256, 1)
     net.pool = TAP()   
     y = net(torch.randn(10,40,200))
     print(y[0].size())
 
-# test()
 

@@ -1,0 +1,65 @@
+### train configuraton
+
+exp_dir: exp/XVEC
+seed: 42
+gpus: "[0,1]"
+num_avg: 10
+
+train_configs:
+    num_epochs: 66
+    save_epoch_interval: 5 # Save model every 5 epochs to see what happened
+    log_batch_interval: 100 # log every 100 batchs
+
+feature_args:
+    raw_wav: True
+    num_frms: 300
+
+dataset_args:
+    train_scp: data/vox2_dev/wav.scp
+    train_label: data/vox2_dev/utt2spk
+    aug_prob: 0.0 # !!!!!
+    musan_scp: data/musan/wav.scp
+    rirs_noises_scp: data/rirs_noises/wav.scp
+    speed_perturb: False # !!!!!
+    spec_aug: False # !!!!!
+
+dataloader_args:
+    batch_size: 128
+    num_workers: 16
+    pin_memory: False
+    prefetch_factor: 8
+    drop_last: True
+
+model: XVEC # !!!!!
+model_init: null
+model_args:
+    feat_dim: 40 # !!!!!
+    embed_dim: 512 # !!!!!
+projection_args:
+    project_type: 'arc_margin' # add_margin, arc_margin, sphere, linear # !!!!!
+    scale: 32.0
+    easy_margin: False
+
+margin_update:
+    initial_margin: 0.0
+    final_margin: 0.2
+    increase_start_epoch: 20
+    fix_start_epoch: 40
+    update_margin: True
+    increase_type: 'exp'  # from exp or linear
+
+loss: CrossEntropyLoss
+loss_args: {}
+
+optimizer: SGD
+optimizer_args:
+    momentum: 0.9
+    nesterov: True
+    weight_decay: 0.0001
+
+scheduler: ExponentialDecrease
+scheduler_args:
+    initial_lr: 0.1
+    final_lr: 0.00005
+    warm_up_epoch: 6
+    process_num: 1

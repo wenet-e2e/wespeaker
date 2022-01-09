@@ -1,36 +1,20 @@
-# Copyright 2019 Mobvoi Inc. All Rights Reserved.
-# Author: binbinzhang@mobvoi.com (Binbin Zhang)
-
-import logging
-import os
-import re
+# coding=utf-8
+#!/usr/bin/env python3
+# Author: Hongji Wang
 
 import yaml
 import torch
 
 
-def load_checkpoint(model: torch.nn.Module, path: str) -> dict:
+def load_checkpoint(model: torch.nn.Module, path: str):
     if torch.cuda.is_available():
-        logging.info('Checkpoint: loading from checkpoint %s for GPU' % path)
         checkpoint = torch.load(path)
     else:
-        logging.info('Checkpoint: loading from checkpoint %s for CPU' % path)
         checkpoint = torch.load(path, map_location='cpu')
-    model.load_state_dict(checkpoint)
-    info_path = re.sub('.pt$', '.yaml', path)
-    configs = {}
-    if os.path.exists(info_path):
-        with open(info_path, 'r') as fin:
-            configs = yaml.load(fin, Loader=yaml.FullLoader)
-    return configs
+    model.load_state_dict(checkpoint, strict=False)
 
 
-def save_checkpoint(model: torch.nn.Module, path: str, infos=None):
-    '''
-    Args:
-        infos (dict or None): any info you want to save.
-    '''
-    logging.info('Checkpoint: save to checkpoint %s' % path)
+def save_checkpoint(model: torch.nn.Module, path: str):
     if isinstance(model, torch.nn.DataParallel):
         state_dict = model.module.state_dict()
     elif isinstance(model, torch.nn.parallel.DistributedDataParallel):
@@ -38,9 +22,3 @@ def save_checkpoint(model: torch.nn.Module, path: str, infos=None):
     else:
         state_dict = model.state_dict()
     torch.save(state_dict, path)
-    info_path = re.sub('.pt$', '.yaml', path)
-    if infos is None:
-        infos = {}
-    with open(info_path, 'w') as fout:
-        data = yaml.dump(infos)
-        fout.write(data)
