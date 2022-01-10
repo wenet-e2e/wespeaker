@@ -1,6 +1,7 @@
 #!/bin/bash
 
 exp_dir=''
+model_path=''
 
 . tools/parse_options.sh
 set -e
@@ -14,9 +15,6 @@ nj_array=(4 4) # nj should not exceed gpu counts in local machine !!!
 batch_size_array=(16 1) # batch_size of test set must be 1 !!!
 num_workers_array=(4 1)
 count=${#data_name_array[@]}
-
-model_path=${exp_dir}/models/avg_model.pt
-#model_path=${exp_dir}/models/final_model.pt
 
 for i in `seq 0 $[$count-1]`; do
     bash local/extract_embedding.sh --exp_dir ${exp_dir} \

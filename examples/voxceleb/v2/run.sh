@@ -35,13 +35,14 @@ fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
     echo "Do model average ..."
+    avg_model=$exp_dir/models/avg_model.pt
     python wenet_speaker/bin/average_model.py \
-        --dst_model $exp_dir/models/avg_model.pt \
+        --dst_model $avg_model \
         --src_path $exp_dir/models  \
-        --num ${num_average}
+        --num ${num_avg}
     
     echo "Extract embeddings ..."
-    local/extract_vox.sh --exp_dir $exp_dir
+    local/extract_vox.sh --exp_dir $exp_dir --model_path $avg_model
 fi
 
 # TODO: wenet_speaker/bin/score.py
