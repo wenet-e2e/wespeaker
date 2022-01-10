@@ -1,6 +1,10 @@
+## Result
+* ECAPA_TDNN_aug0.6: vox1_testO: 1.13%EER
+
 ## TODO list:
 * speed perturb && specaug ==> testing
-* python cos/plda scoring.
+* local/prepare_data.sh
+* python cos/plda scoring
 
 
 ## Installation && Run
@@ -14,27 +18,9 @@ conda install pytorch=1.10.1 torchaudio=0.10.1 cudatoolkit=11.3 -c pytorch -c co
 pip install -r requirements.txt
 ```
 
-* Train model: see conf/config.yaml and train.sh
+* Run voxceleb recipe
 
 ``` sh
-./train.sh
-```
-
-* Average model: see average_model.sh
-
-``` sh
-./average_model.sh --exp_dir exp/ECAPA_TDNN_SMALL_GLOB_emb256-fbank80-vox2_dev-aug0.6-spFalse-saFalse-ArcMargin-SGD-epoch66
-```
-
-* Extract embedding: see extract_vox.sh and extract_embedding.sh
-
-``` sh
-./extract_vox.sh --exp_dir exp/ECAPA_TDNN_SMALL_GLOB_emb256-fbank80-vox2_dev-aug0.6-spFalse-saFalse-ArcMargin-SGD-epoch66
-```
- 
-* Score in kaldi: see score_kaldi dir (Kaldi is needed)
-
-``` sh
-./kaldiPLDA_vox1.sh --exp ../exp/ECAPA_TDNN_SMALL_GLOB_emb256-fbank80-vox2_dev-aug0.6-spFalse-saFalse-ArcMargin-SGD-epoch66 --data ../data
-./kaldiCos_vox1.sh --exp ../exp/ECAPA_TDNN_SMALL_GLOB_emb256-fbank80-vox2_dev-aug0.6-spFalse-saFalse-ArcMargin-SGD-epoch66
+cd examples/voxceleb/v2
+bash run.sh --stage 2 --stop-stage 2
 ```
