@@ -36,15 +36,15 @@ class FeatList_LableDict_Dataset(Dataset):
 
         ### dataset config (for wav augmentation only)
         if self.raw_wav:
-            self.speed_perturb_prob = kwargs.get('speed_perturb_prob', 0.0)
+            self.speed_perturb = kwargs.get('speed_perturb', False)
             self.aug_prob = kwargs.get('aug_prob', 0.0)
             self.musan_scp = kwargs.get('musan_scp', '')
             self.rirs_noises_scp = kwargs.get('rirs_noises_scp', '')
             if self.aug_prob > 0.0:
                 self.augment_wav = Augment_Wav(self.musan_scp, self.rirs_noises_scp)
-        self.spec_aug_prob = kwargs.get('spec_aug_prob', 0.0)
+        self.spec_aug = kwargs.get('spec_aug', False)
 
-        #  used for calculate the spk id after speed perturb
+        # used for calculate the spk id after speed perturb
         self.spk_num = len(set(utt2spkid_dict.values()))
 
     def __getitem__(self, idx):
@@ -56,9 +56,8 @@ class FeatList_LableDict_Dataset(Dataset):
             # load wav file
             sr, waveform = wavfile.read(wav) # kaldiio.load_mat(wav) is a little slower than wavfile.read(10%), but supports cloud io (e.g., kaldiio.load_mat('ffmpeg -i http://ip/xxx.wav -ac 1 -ar 16000 -f wav - |'))
             # speed perturb
-
-            if self.speed_perturb_prob > random.random():
-                speed_perturb_idx = random.choice([1, 2])
+            if self.speed_perturb:
+                speed_perturb_idx = random.randint(0, 2)
                 waveform = speed_perturb(waveform, speed_perturb_idx=speed_perturb_idx)
             # chunk/pad
             if not self.whole_utt:
@@ -80,7 +79,7 @@ class FeatList_LableDict_Dataset(Dataset):
         feat = feat - np.mean(feat, axis=0) # (T,F)
         
         # spec augmentation
-        if self.spec_aug_prob > random.random():
+        if self.spec_aug:
             feat = spec_augmentation(feat)
 
         return utt, feat, spkid + self.spk_num * speed_perturb_idx

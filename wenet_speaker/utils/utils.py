@@ -5,7 +5,7 @@ import numpy as np
 import random
 import yaml
 from scipy import signal
-#import librosa
+
 
 def genlogger(outdir, fname):
     formatter = logging.Formatter(
@@ -131,7 +131,8 @@ def spec_augmentation(x,
             num_f_mask=2,
             max_t=40,
             max_f=10,
-            max_w=80):
+            max_w=80,
+            prob=0.6):
     """ do spec augmentation on x
 
     Args:
@@ -145,6 +146,9 @@ def spec_augmentation(x,
     Returns:
         augmented feature (x)
     """
+    if random.random() > prob:
+        return x
+
     y = x #np.copy(x)
     max_frames = y.shape[0]
     max_freq = y.shape[1]
@@ -184,7 +188,7 @@ def spec_augmentation(x,
     return y
 
 
-def speed_perturb(x, speed_perturb_idx=1):
+def speed_perturb(x, speed_perturb_idx=0):
     speed_list = [1.0, 0.9, 1.1]
     speed = speed_list[speed_perturb_idx]
 
