@@ -129,8 +129,8 @@ def spec_augmentation(x,
             warp_for_time=False,
             num_t_mask=2,
             num_f_mask=2,
-            max_t=25,
-            max_f=5,
+            max_t=40,
+            max_f=10,
             max_w=80):
     """ do spec augmentation on x
 
@@ -186,7 +186,7 @@ def spec_augmentation(x,
 
 def speed_perturb(x, lower=0.9, upper=1.1):
     x = x.astype(np.float32) 
-    speed = random.uniform(lower, upper)
+    speed = random.choice([lower, upper]) #random.uniform(lower, upper)
     #y = librosa.resample(x, speed, 1, res_type='scipy')
     y = signal.resample(x, int(len(x)/speed))
     

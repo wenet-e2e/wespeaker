@@ -1,6 +1,6 @@
 ### train configuraton
 
-exp_dir: exp/ECAPA_TDNN_SMALL_GLOB_emb256-fbank80-vox2_dev-aug0.6-spFalse-saFalse-ArcMargin-SGD-epoch66  # !!!!!
+exp_dir: exp/ECAPA_TDNN_SMALL_GLOB_emb256-fbank80-vox2_dev-aug0.6-sp0.6-sa0.0-ArcMargin-SGD-epoch66  # !!!!!
 seed: 42
 gpus: "[0,1]"
 num_avg: 10
@@ -20,8 +20,8 @@ dataset_args:
     aug_prob: 0.6 # !!!!!
     musan_scp: data/musan/wav.scp
     rirs_noises_scp: data/rirs_noises/wav.scp
-    speed_perturb: False # !!!!!
-    spec_aug: False # !!!!!
+    speed_perturb_prob: 0.6 # !!!!!
+    spec_aug_prob: 0.0 # !!!!!
 
 dataloader_args:
     batch_size: 128
