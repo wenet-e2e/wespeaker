@@ -44,16 +44,22 @@ class FeatList_LableDict_Dataset(Dataset):
                 self.augment_wav = Augment_Wav(self.musan_scp, self.rirs_noises_scp)
         self.spec_aug_prob = kwargs.get('spec_aug_prob', 0.0)
 
+        #  used for calculate the spk id after speed perturb
+        self.spk_num = len(set(utt2spkid_dict.values()))
+
     def __getitem__(self, idx):
         utt, wav = self.utt_wav_list[idx]
         spkid = self.utt2spkid_dict[utt] if utt in self.utt2spkid_dict else -1
         
+        speed_perturb_idx = 0
         if self.raw_wav:
             # load wav file
             sr, waveform = wavfile.read(wav) # kaldiio.load_mat(wav) is a little slower than wavfile.read(10%), but supports cloud io (e.g., kaldiio.load_mat('ffmpeg -i http://ip/xxx.wav -ac 1 -ar 16000 -f wav - |'))
             # speed perturb
+
             if self.speed_perturb_prob > random.random():
-                waveform = speed_perturb(waveform)
+                speed_perturb_idx = random.choice([1, 2])
+                waveform = speed_perturb(waveform, speed_perturb_idx=speed_perturb_idx)
             # chunk/pad
             if not self.whole_utt:
                 waveform = get_random_chunk(waveform, self.chunk_len)
@@ -77,7 +83,7 @@ class FeatList_LableDict_Dataset(Dataset):
         if self.spec_aug_prob > random.random():
             feat = spec_augmentation(feat)
 
-        return utt, feat, spkid
+        return utt, feat, spkid + self.spk_num * speed_perturb_idx
 
     def __len__(self):
         return self.length

@@ -184,10 +184,11 @@ def spec_augmentation(x,
     return y
 
 
-def speed_perturb(x, lower=0.9, upper=1.1):
-    x = x.astype(np.float32) 
-    speed = random.choice([lower, upper]) #random.uniform(lower, upper)
-    #y = librosa.resample(x, speed, 1, res_type='scipy')
+def speed_perturb(x, speed_perturb_idx=1):
+    speed_list = [1.0, 0.9, 1.1]
+    speed = speed_list[speed_perturb_idx]
+
+    x = x.astype(np.float32)
     y = signal.resample(x, int(len(x)/speed))
-    
+
     return y

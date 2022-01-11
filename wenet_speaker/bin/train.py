@@ -94,6 +94,8 @@ def train(config='conf/config.yaml', **kwargs):
         # projection
         configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
         configs['projection_args']['num_class'] = len(spk2id_dict)
+        if configs['dataset_args']['speed_perturb_prob'] > 0.0:
+            configs['projection_args']['num_class'] = configs['projection_args']['num_class'] * 3
         projection = get_projection(configs['projection_args'])
         model.add_module("projection", projection)
     if rank == 0:
