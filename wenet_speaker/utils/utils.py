@@ -127,10 +127,10 @@ def get_random_chunk(data, chunk_len):
 ## Adapted from wenet implementation
 def spec_augmentation(x,
             warp_for_time=False,
-            num_t_mask=2,
-            num_f_mask=2,
-            max_t=40,
-            max_f=10,
+            num_t_mask=1,
+            num_f_mask=1,
+            max_t=80,
+            max_f=20,
             max_w=80,
             prob=0.6):
     """ do spec augmentation on x

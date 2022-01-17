@@ -1,11 +1,13 @@
 #!/bin/bash
 # Copyright 2021 Hongji Wang
 
+. ./path.sh
+
 stage=-1
 stop_stage=-1
 
 config=conf/config.yaml
-exp_dir=exp/ECAPA_TDNN_SMALL_GLOB_emb256-fbank80-vox2_dev-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch66
+exp_dir=exp/ECAPA_TDNN_SMALL_GLOB_emb256-fbank80-vox2_dev-aug0.6-spTrue-saTrue-ArcMargin-SGD-epoch66
 num_avg=10
 gpus="[0,1]"
 
@@ -40,13 +42,15 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
         --dst_model $avg_model \
         --src_path $exp_dir/models  \
         --num ${num_avg}
-    
+fi
+
+if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
     echo "Extract embeddings ..."
     local/extract_vox.sh --exp_dir $exp_dir --model_path $avg_model
 fi
 
 # TODO: wenet_speaker/bin/score.py
-if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
+if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
     echo "Python scoring ..."
     #python wenet_speaker/bin/score.py \
     #    --config $dir/config.yaml \
