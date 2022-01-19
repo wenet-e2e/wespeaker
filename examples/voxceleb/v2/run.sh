@@ -42,15 +42,13 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
         --dst_model $avg_model \
         --src_path $exp_dir/models  \
         --num ${num_avg}
-fi
 
-if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
     echo "Extract embeddings ..."
     local/extract_vox.sh --exp_dir $exp_dir --model_path $avg_model
 fi
 
 # TODO: wenet_speaker/bin/score.py
-if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
+if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
     echo "Python scoring ..."
     #python wenet_speaker/bin/score.py \
     #    --config $dir/config.yaml \

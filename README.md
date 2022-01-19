@@ -1,5 +1,12 @@
 ## Result
-* ECAPA_TDNN_aug0.6: vox1_testO: 1.13%EER
+* Model: ECAPA_TDNN_SMALL_GLOB_emb256-fbank80-vox2_dev-aug0.6-ArcMargin-SGD-epoch66
+
+| speed perturb | spec aug  | TEST O    | TEST E   | TEST H     |
+|---------------|-----------|-----------|----------|------------|
+| No    | No    | 1.138%    | 1.247%    | 2.264%    |
+| Yes   | No    | 1.096%    | 1.117%    | 2.105%    |
+| No    | Yes   | 1.122%    | 1.191%    | 2.166%    |
+| Yes   | Yes   | 1.186%    | 1.144%    | 2.131%    |
 
 ## TODO list:
 * speed perturb && specaug ==> testing
