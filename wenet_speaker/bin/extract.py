@@ -10,8 +10,9 @@ from torch.utils.data import Dataset, DataLoader
 
 from wenet_speaker.models import *
 from wenet_speaker.utils.utils import *
-from wenet_speaker.dataset.dataset import FeatList_LableDict_Dataset
 from wenet_speaker.utils.checkpoint import load_checkpoint
+from wenet_speaker.utils.file_utils import read_scp
+from wenet_speaker.dataset.dataset import FeatList_LableDict_Dataset
 
 
 def extract(config='conf/config.yaml', **kwargs):

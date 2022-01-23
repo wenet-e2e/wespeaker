@@ -8,10 +8,14 @@
 | No    | Yes   | 1.122%    | 1.191%    | 2.166%    |
 | Yes   | Yes   | 1.186%    | 1.144%    | 2.131%    |
 
+
 ## TODO list:
 * speed perturb && specaug ==> testing
 * local/prepare_data.sh
 * python cos/plda scoring
+* test model init
+* test add_margin, sphere project_type
+* SAP pooling method (Shuai Wang)
 
 
 ## Installation && Run

@@ -7,7 +7,7 @@ stage=-1
 stop_stage=-1
 
 config=conf/config.yaml
-exp_dir=exp/ECAPA_TDNN_SMALL_GLOB_emb256-fbank80-vox2_dev-aug0.6-spTrue-saTrue-ArcMargin-SGD-epoch66
+exp_dir=exp/ResNet34_emb512-fbank80-vox2_dev-aug0.6-spFalse-saFalse-ArcMargin-SGD-epoch66
 num_avg=10
 gpus="[0,1]"
 

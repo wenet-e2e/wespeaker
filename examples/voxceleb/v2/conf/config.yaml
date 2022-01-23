@@ -1,6 +1,6 @@
 ### train configuraton
 
-exp_dir: exp/ECAPA_TDNN_SMALL_GLOB_emb256-fbank80-vox2_dev-aug0.6-spTrue-saTrue-ArcMargin-SGD-epoch66  # !!!!!
+exp_dir: exp/ResNet34_emb512-fbank80-vox2_dev-aug0.6-spFalse-saFalse-ArcMargin-SGD-epoch66  # !!!!!
 seed: 42
 gpus: "[0,1]"
 num_avg: 10
@@ -20,8 +20,8 @@ dataset_args:
     aug_prob: 0.6 # !!!!!
     musan_scp: data/musan/wav.scp
     rirs_noises_scp: data/rirs_noises/wav.scp
-    speed_perturb: True # !!!!!
-    spec_aug: True # !!!!!
+    speed_perturb: False # !!!!!
+    spec_aug: False # !!!!!
 
 dataloader_args:
     batch_size: 128
@@ -30,11 +30,11 @@ dataloader_args:
     prefetch_factor: 8
     drop_last: True
 
-model: ECAPA_TDNN_SMALL_GLOB #ResNet34 #XVEC # !!!!!
+model: ResNet34 #ECAPA_TDNN_SMALL_GLOB #ResNet34 #XVEC # !!!!!
 model_init: null
 model_args:
-    feat_dim: 80 #40 #40 # !!!!!
-    embed_dim: 256 #512 #512 # !!!!!
+    feat_dim: 80 #80 #80 #40 # !!!!!
+    embed_dim: 512 #256 #512 #512 # !!!!!
 projection_args:
     project_type: 'arc_margin' # add_margin, arc_margin, sphere, linear # !!!!!
     scale: 32.0

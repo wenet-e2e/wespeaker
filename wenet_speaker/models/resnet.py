@@ -136,9 +136,10 @@ def ResNet152():
 
 
 if __name__ == '__main__':
-    net = ResNet34(40, 256, 1)
-    net.pool = TAP()   
-    y = net(torch.randn(10,40,200))
+    net = ResNet34(80, 256, 2)
+    #net.pool = TAP()   
+    y = net(torch.randn(10,300,80))
     print(y[0].size())
 
-
+    num_params = sum(p.numel() for p in net.parameters())
+    print("{} M".format(num_params/1e6))
