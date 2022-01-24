@@ -13,6 +13,10 @@ gpus="[0,1]"
 
 . tools/parse_options.sh || exit 1;
 
+trial_O=
+trial_E=
+trial_H=
+
 # TODO: local/prepare_data.sh
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     echo "Preparing datasets..."
@@ -49,13 +53,19 @@ fi
 
 # TODO: wenet_speaker/bin/score.py
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
+
+    cat ${exp_dir}/embeddings/vox1/xvector_*.scp > ${exp_dir}/embeddings/vox1/xvector.scp
+    cat ${exp_dir}/embeddings/vox2_dev/xvector_*.scp > ${exp_dir}/embeddings/vox2_dev/xvector.scp
+
     echo "Python scoring ..."
-    #python wenet_speaker/bin/score.py \
-    #    --config $dir/config.yaml \
-    #    --test_data data/test/data.list \
-    #    --batch_size 256 \
-    #    --checkpoint $score_checkpoint \
-    #    --score_file $result_dir/score.txt \
-    #    --num_workers 8
+    python wenet_speaker/bin/score.py \
+        --exp_dir ${exp_dir} \
+        --eval_scp_path ${exp_dir}/embeddings/vox1/xvector.scp \
+        --cal_mean_dir ${exp_dir}/embeddings/vox2_dev \
+        --cal_mean True \
+        --p_target 0.01 \
+        --c_miss 1 \
+        --c_fa 1 \
+        ${trial_O} ${trial_E} ${trial_H}
 fi
 
