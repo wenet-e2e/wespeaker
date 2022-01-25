@@ -13,9 +13,9 @@
 set -e
 
 # The trials file is downloaded by local/make_voxceleb1.pl.
-voxceleb1_trials_O=/dockerdata/hongjiwang/sid/my_sv/data/vox1/trails.kaldi/vox1_O_clean.kaldi
-voxceleb1_trials_E=/dockerdata/hongjiwang/sid/my_sv/data/vox1/trails.kaldi/vox1_E_clean.kaldi
-voxceleb1_trials_H=/dockerdata/hongjiwang/sid/my_sv/data/vox1/trails.kaldi/vox1_H_clean.kaldi
+voxceleb1_trials_O=/dockerdata/hongjiwang/sid/my_sv/data/vox1/trials.kaldi/vox1_O_clean.kaldi
+voxceleb1_trials_E=/dockerdata/hongjiwang/sid/my_sv/data/vox1/trials.kaldi/vox1_E_clean.kaldi
+voxceleb1_trials_H=/dockerdata/hongjiwang/sid/my_sv/data/vox1/trials.kaldi/vox1_H_clean.kaldi
 
 exp=nothing
 stage=0

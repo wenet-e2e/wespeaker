@@ -12,7 +12,7 @@
 ## TODO list:
 * speed perturb && specaug ==> testing
 * local/prepare_data.sh
-* python cos/plda scoring
+* python plda scoring
 * test model init
 * test add_margin, sphere project_type
 * SAP pooling method (Shuai Wang)

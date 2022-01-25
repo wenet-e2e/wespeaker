@@ -2,7 +2,7 @@
 #!/usr/bin/env python3
 
 import os
-import kaldi_io
+import kaldiio
 from tqdm import tqdm
 import numpy as np
 from pathlib import Path
@@ -15,7 +15,7 @@ def calculate_mean_from_kaldi_vec(scp_path):
     vec_num = 0
     mean_vec = None
 
-    for _, vec in kaldi_io.read_vec_flt_scp(scp_path):
+    for _, vec in kaldiio.load_scp_sequential(scp_path):
         if mean_vec is None:
             mean_vec = np.zeros_like(vec)
         mean_vec += vec
@@ -62,12 +62,12 @@ def trials_cosine_score(eval_scp_path='', store_dir='', mean_vec=None, trials=()
 
     # each embedding may be accessed multiple times, here we pre-load them into the memory
     emb_dict = {}
-    for utt, emb in kaldi_io.read_vec_flt_scp(eval_scp_path):
+    for utt, emb in kaldiio.load_scp_sequential(eval_scp_path):
         emb = emb - mean_vec
         emb_dict[utt] = emb
 
     for trial in trials:
-        store_path = os.path.join(store_dir, os.path.basename(trial) + '_score')
+        store_path = os.path.join(store_dir, os.path.basename(trial) + '.score')
         with open(trial, 'r') as trial_r, open(store_path, 'w') as w_f:
             lines = trial_r.readlines()
             for line in tqdm(lines, desc='scoring trial {}'.format(os.path.basename(trial))):
@@ -100,7 +100,7 @@ def main(exp_dir, eval_scp_path, cal_mean_dir, cal_mean=True, p_target=0.01, c_m
 
     # compute evaluation metric
     for trial in trials:
-        score_path = os.path.join(store_score_dir, os.path.basename(trial) + '_score')
+        score_path = os.path.join(store_score_dir, os.path.basename(trial) + '.score')
         compute_metrics(score_path, p_target, c_miss, c_fa)
 
 

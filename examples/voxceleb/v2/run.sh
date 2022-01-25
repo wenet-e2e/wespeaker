@@ -13,10 +13,6 @@ gpus="[0,1]"
 
 . tools/parse_options.sh || exit 1;
 
-trial_O=
-trial_E=
-trial_H=
-
 # TODO: local/prepare_data.sh
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     echo "Preparing datasets..."
@@ -51,14 +47,11 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
     local/extract_vox.sh --exp_dir $exp_dir --model_path $avg_model
 fi
 
-# TODO: wenet_speaker/bin/score.py
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
-
-    cat ${exp_dir}/embeddings/vox1/xvector_*.scp > ${exp_dir}/embeddings/vox1/xvector.scp
-    cat ${exp_dir}/embeddings/vox2_dev/xvector_*.scp > ${exp_dir}/embeddings/vox2_dev/xvector.scp
-
-    echo "Python scoring ..."
-    python wenet_speaker/bin/score.py \
+    echo "Apply cosine scoring ..."
+    mkdir -p ${exp_dir}/scores
+    trials_dir=data/vox1/trials.kaldi
+    python -u wenet_speaker/bin/score.py \
         --exp_dir ${exp_dir} \
         --eval_scp_path ${exp_dir}/embeddings/vox1/xvector.scp \
         --cal_mean_dir ${exp_dir}/embeddings/vox2_dev \
@@ -66,6 +59,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
         --p_target 0.01 \
         --c_miss 1 \
         --c_fa 1 \
-        ${trial_O} ${trial_E} ${trial_H}
+        ${trials_dir}/vox1_O_clean.kaldi ${trials_dir}/vox1_E_clean.kaldi ${trials_dir}/vox1_H_clean.kaldi \
+        2>&1 | tee ${exp_dir}/scores/vox1_cos_result
 fi
 
