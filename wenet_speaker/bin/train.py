@@ -119,9 +119,8 @@ def train(config='conf/config.yaml', **kwargs):
         logger.info("<== Optimizer ==>")
         logger.info("optimizer is: "+configs['optimizer'])
 
-    train_configs = configs['train_configs']
-    train_configs['num_epochs'] = int(train_configs['num_epochs'] / (1.0 - configs['dataset_args']['aug_prob'])) # add num_epochs
-    configs['scheduler_args']['num_epochs'] =  train_configs['num_epochs']
+    configs['num_epochs'] = int(configs['num_epochs'] / (1.0 - configs['dataset_args']['aug_prob'])) # add num_epochs
+    configs['scheduler_args']['num_epochs'] =  configs['num_epochs']
     configs['scheduler_args']['epoch_iter'] = len(train_dataloader)
     configs['scheduler_args']['process_num'] = world_size
     scheduler = eval(configs['scheduler'])(optimizer, **configs['scheduler_args'])
@@ -150,17 +149,17 @@ def train(config='conf/config.yaml', **kwargs):
             logger.info(line)
     dist.barrier() # synchronize here
 
-    for epoch in range(1, train_configs['num_epochs']+1):
+    for epoch in range(1, configs['num_epochs']+1):
         train_sampler.set_epoch(epoch)
 
-        runepoch(train_dataloader, ddp_model, criterion, optimizer, scheduler, margin_scheduler, epoch, logger, log_batch_interval=train_configs['log_batch_interval'], device=device)
+        runepoch(train_dataloader, ddp_model, criterion, optimizer, scheduler, margin_scheduler, epoch, logger, log_batch_interval=configs['log_batch_interval'], device=device)
 
         if rank == 0:
-            if epoch % train_configs['save_epoch_interval'] == 0 or epoch >= train_configs['num_epochs'] - configs['num_avg']:
+            if epoch % configs['save_epoch_interval'] == 0 or epoch >= configs['num_epochs'] - configs['num_avg']:
                 save_checkpoint(model, os.path.join(model_dir, 'model_{}.pt'.format(epoch)))
                 
     if rank == 0:
-        os.symlink('model_{}.pt'.format(train_configs['num_epochs']), os.path.join(model_dir,'final_model.pt'))
+        os.symlink('model_{}.pt'.format(configs['num_epochs']), os.path.join(model_dir,'final_model.pt'))
         logger.info(tp.bottom(len(header), width=10, style='grid'))
 
 

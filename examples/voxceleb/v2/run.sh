@@ -7,22 +7,16 @@ stage=-1
 stop_stage=-1
 
 config=conf/config.yaml
-exp_dir=exp/ResNet34_emb512-fbank80-vox2_dev-aug0.6-spFalse-saFalse-ArcMargin-SGD-epoch66
-num_avg=10
+exp_dir=exp/ResNet34_emb256-fbank80-num_frms200-vox2_dev-aug0.6-spFalse-saFalse-ArcMargin-SGD-epoch66
 gpus="[0,1]"
+num_avg=10
 
 . tools/parse_options.sh || exit 1;
 
-# TODO: local/prepare_data.sh
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     echo "Preparing datasets..."
-    
-    for folder in vox2_dev vox1 musan rirs_noises; do
-        mkdir -p data/$folder
-        echo "Making wav.scp utt2spk .."
-    done
+    ./local/prepare_data.sh --stage 2 --stop_stage 4
 fi
-
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     echo "Start training ..."
@@ -30,7 +24,6 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     torchrun --standalone --nnodes=1 --nproc_per_node=$num_gpus \
         wenet_speaker/bin/train.py --config $config \
                                     --exp_dir ${exp_dir} \
-                                    --seed 42 \
                                     --gpus $gpus \
                                     --num_avg ${num_avg}
 fi
@@ -50,7 +43,7 @@ fi
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
     echo "Apply cosine scoring ..."
     mkdir -p ${exp_dir}/scores
-    trials_dir=data/vox1/trials.kaldi
+    trials_dir=data/vox1/trials
     python -u wenet_speaker/bin/score.py \
         --exp_dir ${exp_dir} \
         --eval_scp_path ${exp_dir}/embeddings/vox1/xvector.scp \
@@ -59,7 +52,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
         --p_target 0.01 \
         --c_miss 1 \
         --c_fa 1 \
-        ${trials_dir}/vox1_O_clean.kaldi ${trials_dir}/vox1_E_clean.kaldi ${trials_dir}/vox1_H_clean.kaldi \
+        ${trials_dir}/vox1_O_cleaned.kaldi ${trials_dir}/vox1_E_cleaned.kaldi ${trials_dir}/vox1_H_cleaned.kaldi \
         2>&1 | tee ${exp_dir}/scores/vox1_cos_result
 fi
 

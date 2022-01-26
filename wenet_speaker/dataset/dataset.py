@@ -30,8 +30,8 @@ class FeatList_LableDict_Dataset(Dataset):
 
         ### feat config
         self.raw_wav = kwargs.get('raw_wav', True)
-        self.feat_dim = kwargs.get('feat_dim', 40)
-        self.num_frms = kwargs.get('num_frms', 300)
+        self.feat_dim = kwargs.get('feat_dim', 80)
+        self.num_frms = kwargs.get('num_frms', 200)
         # chunk config, sample rate is 16kHZ
         self.chunk_len = (self.num_frms-1)*160+400 if self.raw_wav else self.num_frms
 

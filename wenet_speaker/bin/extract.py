@@ -26,7 +26,8 @@ def extract(config='conf/config.yaml', **kwargs):
     batch_size = configs.get('batch_size', 1)
     num_workers = configs.get('num_workers', 2)
     raw_wav = configs.get('raw_wav', True)
-    feat_dim = configs['feature_args'].get('feat_dim', 40)
+    feat_dim = configs['feature_args'].get('feat_dim', 80)
+    num_frms = configs['feature_args'].get('num_frms', 200)
 
     # Since the input length is not fixed, we set the built-in cudnn auto-tuner to False
     torch.backends.cudnn.benchmark = False 
@@ -38,7 +39,7 @@ def extract(config='conf/config.yaml', **kwargs):
     
     # prepare dataset and dataloader
     utt_wav_list = read_scp(data_scp)
-    dataset = FeatList_LableDict_Dataset(utt_wav_list, whole_utt=(batch_size==1), raw_wav=raw_wav, feat_dim=feat_dim)
+    dataset = FeatList_LableDict_Dataset(utt_wav_list, whole_utt=(batch_size==1), raw_wav=raw_wav, feat_dim=feat_dim, num_frms=num_frms)
     dataloader = DataLoader(dataset, shuffle=False, batch_size=batch_size, num_workers=num_workers, prefetch_factor=4)
 
     validate_path(embed_ark)
@@ -54,7 +55,7 @@ def extract(config='conf/config.yaml', **kwargs):
                 feats = feats.float().to(device) # (B,T,F)
                 # Forward through model
                 outputs = model(feats) # (embed_a, embed_b) in most cases
-                embeds = outputs[0] if isinstance(outputs, tuple) else outputs
+                embeds = outputs[-1] if isinstance(outputs, tuple) else outputs
                 embeds = embeds.cpu().detach().numpy() #(B,F)
                 
                 for i, utt in enumerate(utts):

@@ -13,9 +13,9 @@
 set -e
 
 # The trials file in kaldi format.
-vox1_test_trials_O=/dockerdata/hongjiwang/sid/my_sv/data/vox1/trials.kaldi/vox1_O_clean.kaldi
-vox1_test_trials_E=/dockerdata/hongjiwang/sid/my_sv/data/vox1/trials.kaldi/vox1_E_clean.kaldi
-vox1_test_trials_H=/dockerdata/hongjiwang/sid/my_sv/data/vox1/trials.kaldi/vox1_H_clean.kaldi
+vox1_test_trials_O=/dockerdata/hongjiwang/sid/my_sv/data/vox1/trials/vox1_O_cleaned.kaldi
+vox1_test_trials_E=/dockerdata/hongjiwang/sid/my_sv/data/vox1/trials/vox1_E_cleaned.kaldi
+vox1_test_trials_H=/dockerdata/hongjiwang/sid/my_sv/data/vox1/trials/vox1_H_cleaned.kaldi
 
 exp=nothing
 data=data
