@@ -1,11 +1,15 @@
 #!/user/bin/env python3 
 
 # Author: wsstriving@gmail.com (Shuai Wang)
-"""Pooling functions to aggregate frame-level deep features
-into segment-level speaker embeddings"""
+"""
+Pooling functions to aggregate frame-level deep features
+into segment-level speaker embeddings
+
+High-order statistics are surprisingly effective, TSDP acts similarly as TSTP,
+even though we remove the mean statistic, on Voxceleb.
+"""
 import torch
 import torch.nn as nn
-import torch.nn.functional as F 
 
 
 class TAP(nn.Module):

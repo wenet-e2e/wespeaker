@@ -3,16 +3,15 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torchaudio.transforms as trans
 
+""" Res2Conv1d + BatchNorm1d + ReLU
+"""
 
-''' Res2Conv1d + BatchNorm1d + ReLU
-'''
 
 class Res2Conv1dReluBn(nn.Module):
-    '''
+    """
     in_channels == out_channels == channels
-    '''
+    """
 
     def __init__(self, channels, kernel_size=1, stride=1, padding=0, dilation=1, bias=True, scale=4):
         super().__init__()
@@ -48,9 +47,9 @@ class Res2Conv1dReluBn(nn.Module):
         return out
 
 
-
 ''' Conv1d + BatchNorm1d + ReLU
 '''
+
 
 class Conv1dReluBn(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=1, stride=1, padding=0, dilation=1, bias=True):
@@ -62,9 +61,9 @@ class Conv1dReluBn(nn.Module):
         return self.bn(F.relu(self.conv(x)))
 
 
-
 ''' The SE connection of 1D case.
 '''
+
 
 class SE_Connect(nn.Module):
     def __init__(self, channels, se_bottleneck_dim=128):
@@ -83,6 +82,7 @@ class SE_Connect(nn.Module):
 
 ''' SE-Res2Block of the ECAPA-TDNN architecture.
 '''
+
 
 # def SE_Res2Block(channels, kernel_size, stride, padding, dilation, scale):
 #     return nn.Sequential(
@@ -122,9 +122,9 @@ class SE_Res2Block(nn.Module):
         return x + residual
 
 
-
 ''' Attentive weighted mean and standard deviation pooling.
 '''
+
 
 class AttentiveStatsPool(nn.Module):
     def __init__(self, in_dim, attention_channels=128, global_context_att=False):
@@ -157,29 +157,31 @@ class AttentiveStatsPool(nn.Module):
         return torch.cat([mean, std], dim=1)
 
 
-
 class ECAPA_TDNN(nn.Module):
     def __init__(self, feat_dim=80, channels=512, embed_dim=192, global_context_att=False):
         super().__init__()
 
         self.channels = [channels] * 4 + [channels * 3]
-        #self.channels = [channels] * 4 + [1536]
+        # self.channels = [channels] * 4 + [1536]
 
         self.layer1 = Conv1dReluBn(feat_dim, self.channels[0], kernel_size=5, padding=2)
-        self.layer2 = SE_Res2Block(self.channels[0], self.channels[1], kernel_size=3, stride=1, padding=2, dilation=2, scale=8, se_bottleneck_dim=128)
-        self.layer3 = SE_Res2Block(self.channels[1], self.channels[2], kernel_size=3, stride=1, padding=3, dilation=3, scale=8, se_bottleneck_dim=128)
-        self.layer4 = SE_Res2Block(self.channels[2], self.channels[3], kernel_size=3, stride=1, padding=4, dilation=4, scale=8, se_bottleneck_dim=128)
+        self.layer2 = SE_Res2Block(self.channels[0], self.channels[1], kernel_size=3, stride=1, padding=2, dilation=2,
+                                   scale=8, se_bottleneck_dim=128)
+        self.layer3 = SE_Res2Block(self.channels[1], self.channels[2], kernel_size=3, stride=1, padding=3, dilation=3,
+                                   scale=8, se_bottleneck_dim=128)
+        self.layer4 = SE_Res2Block(self.channels[2], self.channels[3], kernel_size=3, stride=1, padding=4, dilation=4,
+                                   scale=8, se_bottleneck_dim=128)
 
         # self.conv = nn.Conv1d(self.channels[-1], self.channels[-1], kernel_size=1)
         cat_channels = channels * 3
         self.conv = nn.Conv1d(cat_channels, self.channels[-1], kernel_size=1)
-        self.pooling = AttentiveStatsPool(self.channels[-1], attention_channels=128, global_context_att=global_context_att)
+        self.pooling = AttentiveStatsPool(self.channels[-1], attention_channels=128,
+                                          global_context_att=global_context_att)
         self.bn = nn.BatchNorm1d(self.channels[-1] * 2)
         self.linear = nn.Linear(self.channels[-1] * 2, embed_dim)
 
-
     def forward(self, x):
-        x = x.permute(0, 2, 1) # (B,T,F) -> (B,F,T)
+        x = x.permute(0, 2, 1)  # (B,T,F) -> (B,F,T)
 
         out1 = self.layer1(x)
         out2 = self.layer2(out1)
@@ -215,7 +217,6 @@ def ECAPA_TDNN_SMALLER_GLOB(feat_dim, embed_dim):
 
 
 if __name__ == '__main__':
-
     x = torch.zeros(2, 300, 80)
     model = ECAPA_TDNN_SMALL_GLOB(feat_dim=80, embed_dim=256)
     out = model(x)

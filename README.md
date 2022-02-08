@@ -1,4 +1,4 @@
-## Result
+## Result (Add resnet results)
 * Model: ECAPA_TDNN_SMALL_GLOB_emb256-fbank80-vox2_dev-aug0.6-ArcMargin-SGD-epoch66
 
 | speed perturb | spec aug  | TEST O    | TEST E   | TEST H     |
@@ -10,12 +10,20 @@
 
 
 ## TODO list:
-* speed perturb && specaug ==> testing
-* local/prepare_data.sh
-* python plda scoring
-* test model init
-* test add_margin, sphere project_type
-* SAP pooling method (Shuai Wang)
+* Augmentation：
+    - [ ] speed perturb && specaug ==> testing
+* Model:
+  - Latest SOTA models
+  - Pooling functions 
+    - [ ] SAP 
+    - [ ] LDE
+  - Criteria 
+    - [ ] test add_margin, sphere project_type
+* Scoring:
+    - [ ] python plda scoring
+    - [ ] score normalization
+* Literature 
+    - [ ] Awesome speaker papers
 
 
 ## Installation && Run

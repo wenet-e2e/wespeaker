@@ -5,12 +5,14 @@
 import argparse
 import json
 
+
 def spk2id(spk_list):
     spk2id_dict = {}
     spk_list.sort()
     for i, spk in enumerate(spk_list):
         spk2id_dict[spk] = i
     return spk2id_dict
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='')
@@ -26,7 +28,7 @@ if __name__ == '__main__':
             assert len(arr) == 2
             wav_table[arr[0]] = arr[1]
 
-    spk_set=set()
+    spk_set = set()
     with open(args.utt2spk_file, 'r', encoding='utf8') as fin:
         for line in fin:
             arr = line.strip().split()
@@ -36,7 +38,7 @@ if __name__ == '__main__':
     spk2id_dict = spk2id(spk_list)
 
     with open(args.utt2spk_file, 'r', encoding='utf8') as fin, \
-         open(args.output_file, 'w', encoding='utf8') as fout:
+            open(args.output_file, 'w', encoding='utf8') as fout:
         for line in fin:
             arr = line.strip().split(maxsplit=1)
             utt = arr[0]
