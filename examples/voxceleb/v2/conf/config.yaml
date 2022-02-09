@@ -1,6 +1,6 @@
 ### train configuraton
 
-exp_dir: exp/ResNet34_emb256-fbank80-num_frms200-vox2_dev-aug0.6-spFalse-saFalse-TSTP-ArcMargin-SGD-epoch66
+exp_dir: exp/ResNet34_emb256-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-TSTP-ArcMargin-SGD-epoch66
 gpus: "[0,1]"
 num_avg: 10
 
@@ -19,7 +19,7 @@ dataset_args:
   aug_prob: 0.6
   musan_scp: data/musan/wav.scp
   rirs_noises_scp: data/rirs_noises/wav.scp
-  speed_perturb: False
+  speed_perturb: True
   spec_aug: False
 
 dataloader_args:

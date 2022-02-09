@@ -196,23 +196,23 @@ class ECAPA_TDNN(nn.Module):
         return out
 
 
-def ECAPA_TDNN_BIG(feat_dim, embed_dim):
+def ECAPA_TDNN_BIG(feat_dim, embed_dim, **kwargs):
     return ECAPA_TDNN(feat_dim=feat_dim, channels=1024, embed_dim=embed_dim)
 
 
-def ECAPA_TDNN_BIG_GLOB(feat_dim, embed_dim):
+def ECAPA_TDNN_BIG_GLOB(feat_dim, embed_dim, **kwargs):
     return ECAPA_TDNN(feat_dim=feat_dim, channels=1024, embed_dim=embed_dim, global_context_att=True)
 
 
-def ECAPA_TDNN_SMALL(feat_dim, embed_dim):
+def ECAPA_TDNN_SMALL(feat_dim, embed_dim, **kwargs):
     return ECAPA_TDNN(feat_dim=feat_dim, channels=512, embed_dim=embed_dim)
 
 
-def ECAPA_TDNN_SMALL_GLOB(feat_dim, embed_dim):
+def ECAPA_TDNN_SMALL_GLOB(feat_dim, embed_dim, **kwargs):
     return ECAPA_TDNN(feat_dim=feat_dim, channels=512, embed_dim=embed_dim, global_context_att=True)
 
 
-def ECAPA_TDNN_SMALLER_GLOB(feat_dim, embed_dim):
+def ECAPA_TDNN_SMALLER_GLOB(feat_dim, embed_dim, **kwargs):
     return ECAPA_TDNN(feat_dim=feat_dim, channels=256, embed_dim=embed_dim, global_context_att=True)
 
 
