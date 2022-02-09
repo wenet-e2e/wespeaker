@@ -87,18 +87,18 @@ def train(config='conf/config.yaml', **kwargs):
     # model
     logger.info("<== Model ==>")
     model = eval(configs['model'])(**configs['model_args'])
+    # projection layer
+    configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
+    configs['projection_args']['num_class'] = len(spk2id_dict)
+    if configs['dataset_args']['speed_perturb']:
+        configs['projection_args']['num_class'] *= 3 # diff speed is regarded as diff spk
+    projection = get_projection(configs['projection_args'])
+    model.add_module("projection", projection)
     if configs['model_init'] is not None:
         logger.info('Load intial model from {}'.format(configs['model_init']))
         load_checkpoint(model, configs['model_init'])
     else:
         logger.info('Train model from scratch...')
-        # projection
-        configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
-        configs['projection_args']['num_class'] = len(spk2id_dict)
-        if configs['dataset_args']['speed_perturb']:
-            configs['projection_args']['num_class'] *= 3 # diff speed is regarded as diff spk
-        projection = get_projection(configs['projection_args'])
-        model.add_module("projection", projection)
     if rank == 0:
         for line in pformat(model).split('\n'):
             logger.info(line)
@@ -133,7 +133,7 @@ def train(config='conf/config.yaml', **kwargs):
     if rank == 0:
         logger.info("<== MarginScheduler ==>")
 
-    # save config.yam
+    # save config.yaml
     if rank == 0:
         saved_config_path = os.path.join(configs['exp_dir'], 'config.yaml')
         with open(saved_config_path, 'w') as fout:
