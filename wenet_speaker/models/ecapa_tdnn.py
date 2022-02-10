@@ -4,10 +4,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-""" Res2Conv1d + BatchNorm1d + ReLU
-"""
+from .pooling_layers import *
 
 
+''' Res2Conv1d + BatchNorm1d + ReLU
+'''
 class Res2Conv1dReluBn(nn.Module):
     """
     in_channels == out_channels == channels
@@ -49,8 +50,6 @@ class Res2Conv1dReluBn(nn.Module):
 
 ''' Conv1d + BatchNorm1d + ReLU
 '''
-
-
 class Conv1dReluBn(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=1, stride=1, padding=0, dilation=1, bias=True):
         super().__init__()
@@ -63,8 +62,6 @@ class Conv1dReluBn(nn.Module):
 
 ''' The SE connection of 1D case.
 '''
-
-
 class SE_Connect(nn.Module):
     def __init__(self, channels, se_bottleneck_dim=128):
         super().__init__()
@@ -82,103 +79,35 @@ class SE_Connect(nn.Module):
 
 ''' SE-Res2Block of the ECAPA-TDNN architecture.
 '''
-
-
-# def SE_Res2Block(channels, kernel_size, stride, padding, dilation, scale):
-#     return nn.Sequential(
-#         Conv1dReluBn(channels, 512, kernel_size=1, stride=1, padding=0),
-#         Res2Conv1dReluBn(512, kernel_size, stride, padding, dilation, scale=scale),
-#         Conv1dReluBn(512, channels, kernel_size=1, stride=1, padding=0),
-#         SE_Connect(channels)
-#     )
-
-
 class SE_Res2Block(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride, padding, dilation, scale, se_bottleneck_dim):
+    def __init__(self, channels, kernel_size, stride, padding, dilation, scale):
         super().__init__()
-        self.Conv1dReluBn1 = Conv1dReluBn(in_channels, out_channels, kernel_size=1, stride=1, padding=0)
-        self.Res2Conv1dReluBn = Res2Conv1dReluBn(out_channels, kernel_size, stride, padding, dilation, scale=scale)
-        self.Conv1dReluBn2 = Conv1dReluBn(out_channels, out_channels, kernel_size=1, stride=1, padding=0)
-        self.SE_Connect = SE_Connect(out_channels, se_bottleneck_dim)
-
-        self.shortcut = None
-        if in_channels != out_channels:
-            self.shortcut = nn.Conv1d(
-                in_channels=in_channels,
-                out_channels=out_channels,
-                kernel_size=1,
-            )
+        self.se_res2block = nn.Sequential(
+            Conv1dReluBn(channels, channels, kernel_size=1, stride=1, padding=0),
+            Res2Conv1dReluBn(channels, kernel_size, stride, padding, dilation, scale=scale),
+            Conv1dReluBn(channels, channels, kernel_size=1, stride=1, padding=0),
+            SE_Connect(channels)
+        )
 
     def forward(self, x):
-        residual = x
-        if self.shortcut:
-            residual = self.shortcut(x)
-
-        x = self.Conv1dReluBn1(x)
-        x = self.Res2Conv1dReluBn(x)
-        x = self.Conv1dReluBn2(x)
-        x = self.SE_Connect(x)
-
-        return x + residual
-
-
-''' Attentive weighted mean and standard deviation pooling.
-'''
-
-
-class AttentiveStatsPool(nn.Module):
-    def __init__(self, in_dim, attention_channels=128, global_context_att=False):
-        super().__init__()
-        self.global_context_att = global_context_att
-
-        # Use Conv1d with stride == 1 rather than Linear, then we don't need to transpose inputs.
-        if global_context_att:
-            self.linear1 = nn.Conv1d(in_dim * 3, attention_channels, kernel_size=1)  # equals W and b in the paper
-        else:
-            self.linear1 = nn.Conv1d(in_dim, attention_channels, kernel_size=1)  # equals W and b in the paper
-        self.linear2 = nn.Conv1d(attention_channels, in_dim, kernel_size=1)  # equals V and k in the paper
-
-    def forward(self, x):
-
-        if self.global_context_att:
-            context_mean = torch.mean(x, dim=-1, keepdim=True).expand_as(x)
-            context_std = torch.sqrt(torch.var(x, dim=-1, keepdim=True) + 1e-10).expand_as(x)
-            x_in = torch.cat((x, context_mean, context_std), dim=1)
-        else:
-            x_in = x
-
-        # DON'T use ReLU here! In experiments, I find ReLU hard to converge.
-        alpha = torch.tanh(self.linear1(x_in))
-        # alpha = F.relu(self.linear1(x_in))
-        alpha = torch.softmax(self.linear2(alpha), dim=2)
-        mean = torch.sum(alpha * x, dim=2)
-        residuals = torch.sum(alpha * (x ** 2), dim=2) - mean ** 2
-        std = torch.sqrt(residuals.clamp(min=1e-9))
-        return torch.cat([mean, std], dim=1)
+        return x + self.se_res2block(x)
 
 
 class ECAPA_TDNN(nn.Module):
-    def __init__(self, feat_dim=80, channels=512, embed_dim=192, global_context_att=False):
+    def __init__(self, channels=512, feat_dim=80, embed_dim=192, pooling_func='ASP', global_context_att=False):
         super().__init__()
 
-        self.channels = [channels] * 4 + [channels * 3]
-        # self.channels = [channels] * 4 + [1536]
+        self.layer1 = Conv1dReluBn(feat_dim, channels, kernel_size=5, padding=2)
+        self.layer2 = SE_Res2Block(channels, kernel_size=3, stride=1, padding=2, dilation=2, scale=8)
+        self.layer3 = SE_Res2Block(channels, kernel_size=3, stride=1, padding=3, dilation=3, scale=8)
+        self.layer4 = SE_Res2Block(channels, kernel_size=3, stride=1, padding=4, dilation=4, scale=8)
 
-        self.layer1 = Conv1dReluBn(feat_dim, self.channels[0], kernel_size=5, padding=2)
-        self.layer2 = SE_Res2Block(self.channels[0], self.channels[1], kernel_size=3, stride=1, padding=2, dilation=2,
-                                   scale=8, se_bottleneck_dim=128)
-        self.layer3 = SE_Res2Block(self.channels[1], self.channels[2], kernel_size=3, stride=1, padding=3, dilation=3,
-                                   scale=8, se_bottleneck_dim=128)
-        self.layer4 = SE_Res2Block(self.channels[2], self.channels[3], kernel_size=3, stride=1, padding=4, dilation=4,
-                                   scale=8, se_bottleneck_dim=128)
-
-        # self.conv = nn.Conv1d(self.channels[-1], self.channels[-1], kernel_size=1)
         cat_channels = channels * 3
-        self.conv = nn.Conv1d(cat_channels, self.channels[-1], kernel_size=1)
-        self.pooling = AttentiveStatsPool(self.channels[-1], attention_channels=128,
-                                          global_context_att=global_context_att)
-        self.bn = nn.BatchNorm1d(self.channels[-1] * 2)
-        self.linear = nn.Linear(self.channels[-1] * 2, embed_dim)
+        self.conv = nn.Conv1d(cat_channels, cat_channels, kernel_size=1)
+        self.n_stats = 1 if pooling_func=='TAP' or pooling_func=="TSDP" else 2
+        self.pool = eval(pooling_func)(in_dim=cat_channels, global_context_att=global_context_att)
+        self.bn = nn.BatchNorm1d(cat_channels * self.n_stats)
+        self.linear = nn.Linear(cat_channels * self.n_stats, embed_dim)
 
     def forward(self, x):
         x = x.permute(0, 2, 1)  # (B,T,F) -> (B,F,T)
@@ -190,35 +119,30 @@ class ECAPA_TDNN(nn.Module):
 
         out = torch.cat([out2, out3, out4], dim=1)
         out = F.relu(self.conv(out))
-        out = self.bn(self.pooling(out))
+        out = self.bn(self.pool(out))
         out = self.linear(out)
 
         return out
 
 
-def ECAPA_TDNN_BIG(feat_dim, embed_dim, **kwargs):
-    return ECAPA_TDNN(feat_dim=feat_dim, channels=1024, embed_dim=embed_dim)
+def ECAPA_TDNN_c1024(feat_dim, embed_dim, pooling_func='ASTP'):
+    return ECAPA_TDNN(channels=1024, feat_dim=feat_dim, embed_dim=embed_dim, pooling_func=pooling_func)
 
+def ECAPA_TDNN_GLOB_c1024(feat_dim, embed_dim, pooling_func='ASTP'):
+    return ECAPA_TDNN(channels=1024, feat_dim=feat_dim, embed_dim=embed_dim, pooling_func=pooling_func,
+                    global_context_att=True)
 
-def ECAPA_TDNN_BIG_GLOB(feat_dim, embed_dim, **kwargs):
-    return ECAPA_TDNN(feat_dim=feat_dim, channels=1024, embed_dim=embed_dim, global_context_att=True)
+def ECAPA_TDNN_c512(feat_dim, embed_dim, pooling_func='ASTP'):
+    return ECAPA_TDNN(channels=512, feat_dim=feat_dim, embed_dim=embed_dim, pooling_func=pooling_func)
 
-
-def ECAPA_TDNN_SMALL(feat_dim, embed_dim, **kwargs):
-    return ECAPA_TDNN(feat_dim=feat_dim, channels=512, embed_dim=embed_dim)
-
-
-def ECAPA_TDNN_SMALL_GLOB(feat_dim, embed_dim, **kwargs):
-    return ECAPA_TDNN(feat_dim=feat_dim, channels=512, embed_dim=embed_dim, global_context_att=True)
-
-
-def ECAPA_TDNN_SMALLER_GLOB(feat_dim, embed_dim, **kwargs):
-    return ECAPA_TDNN(feat_dim=feat_dim, channels=256, embed_dim=embed_dim, global_context_att=True)
+def ECAPA_TDNN_GLOB_c512(feat_dim, embed_dim, pooling_func='ASTP'):
+    return ECAPA_TDNN(channels=512, feat_dim=feat_dim, embed_dim=embed_dim, pooling_func=pooling_func,
+                    global_context_att=True)
 
 
 if __name__ == '__main__':
-    x = torch.zeros(2, 300, 80)
-    model = ECAPA_TDNN_SMALL_GLOB(feat_dim=80, embed_dim=256)
+    x = torch.zeros(2, 200, 80)
+    model = ECAPA_TDNN_GLOB_c512(feat_dim=80, embed_dim=192, pooling_func='ASTP')
     out = model(x)
     print(out.shape)
 

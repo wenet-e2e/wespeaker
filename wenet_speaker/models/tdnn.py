@@ -38,7 +38,7 @@ class TdnnLayer(nn.Module):
 
 
 class XVEC(nn.Module):
-    def __init__(self, feat_dim=40, hid_dim=512, stats_dim=1500, n_stats=2, embed_dim=512, pooling_func='TSTP'):
+    def __init__(self, feat_dim=40, hid_dim=512, stats_dim=1500, embed_dim=512, pooling_func='TSTP'):
         """
         Implementation of Kaldi style xvec, as described in
         X-VECTORS: ROBUST DNN EMBEDDINGS FOR SPEAKER RECOGNITION
@@ -46,7 +46,6 @@ class XVEC(nn.Module):
         super(XVEC, self).__init__()
         self.feat_dim = feat_dim
         self.stats_dim = stats_dim
-        self.n_stats = n_stats
         self.embed_dim = embed_dim
 
         self.frame_1 = TdnnLayer(feat_dim, hid_dim, context_size=5, dilation=1)
@@ -54,8 +53,10 @@ class XVEC(nn.Module):
         self.frame_3 = TdnnLayer(hid_dim, hid_dim, context_size=3, dilation=3)
         self.frame_4 = TdnnLayer(hid_dim, hid_dim, context_size=1, dilation=1)
         self.frame_5 = TdnnLayer(hid_dim, stats_dim, context_size=1, dilation=1)
-        self.pool = eval(pooling_func)()
-        self.seg_1 = nn.Linear(stats_dim * n_stats, embed_dim)
+
+        self.n_stats = 1 if pooling_func=='TAP' or pooling_func=="TSDP" else 2
+        self.pool = eval(pooling_func)(in_dim=stats_dim)
+        self.seg_1 = nn.Linear(stats_dim * self.n_stats, embed_dim)
         self.seg_bn_1 = nn.BatchNorm1d(embed_dim, affine=False)
         self.seg_2 = nn.Linear(embed_dim, embed_dim)
 
@@ -85,7 +86,7 @@ class XVEC(nn.Module):
 
 
 if __name__ == '__main__':
-    net = XVEC(40)
+    net = XVEC(40, pooling_func='TSTP')
     # net=net.eval()
     y = net(torch.rand(2, 200, 40))
     print(y[0].size(), y[1].size())

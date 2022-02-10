@@ -1,6 +1,6 @@
 ### train configuraton
 
-exp_dir: exp/ResNet34_emb256-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-TSTP-ArcMargin-SGD-epoch66
+exp_dir: exp/ECAPA_TDNN_GLOB_c512-emb192-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-TSTP-ArcMargin-SGD-epoch66
 gpus: "[0,1]"
 num_avg: 10
 
@@ -29,13 +29,12 @@ dataloader_args:
   prefetch_factor: 8
   drop_last: True
 
-model: ResNet34 #ECAPA_TDNN_SMALL_GLOB, ResNet34, XVEC
+model: ECAPA_TDNN_GLOB_c512 #ECAPA_TDNN_GLOB_c512, ResNet34, XVEC
 model_init: null
 model_args:
   feat_dim: 80
-  embed_dim: 256
-  pooling_func: 'TSTP'
-  n_stats: 2  # 1 for TSDP
+  embed_dim: 192 # 192, 256
+  pooling_func: 'TSTP' # TAP, TSDP, TSTP, ASTP
 projection_args:
   project_type: 'arc_margin' # add_margin, arc_margin, sphere, linear
   scale: 32.0

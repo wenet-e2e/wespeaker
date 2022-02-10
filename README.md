@@ -24,7 +24,7 @@ bash run.sh --stage 2 --stop-stage 4
     - [x] [ECAPA_TDNN](https://arxiv.org/abs/2005.07143) [[Source codes](https://github.com/lawlict/ECAPA-TDNN)]
 * Pooling functions 
     - [x] TAP(mean) / TSDP(std) / TSTP(mean+std)
-    - [ ] Self-attentive pooling (SAP)
+    - [x] Attentive statistics pooling (ASTP)
     - [ ] [Learnable Dictionary Encoding (LDE)](https://arxiv.org/pdf/1804.00385.pdf)
 * Criteria 
     - [x] softmax

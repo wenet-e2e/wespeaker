@@ -71,7 +71,7 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, m_channels=32, feat_dim=40, n_stats=2, embed_dim=128, pooling_func='TSTP'):
+    def __init__(self, block, num_blocks, m_channels=32, feat_dim=40, embed_dim=128, pooling_func='TSTP'):
         super(ResNet, self).__init__()
         self.in_planes = m_channels
         self.feat_dim = feat_dim
@@ -84,8 +84,10 @@ class ResNet(nn.Module):
         self.layer2 = self._make_layer(block, m_channels * 2, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, m_channels * 4, num_blocks[2], stride=2)
         self.layer4 = self._make_layer(block, m_channels * 8, num_blocks[3], stride=2)
-        self.pool = eval(pooling_func)()
-        self.seg_1 = nn.Linear(self.stats_dim * n_stats * block.expansion, embed_dim)
+        
+        self.n_stats = 1 if pooling_func=='TAP' or pooling_func=="TSDP" else 2
+        self.pool = eval(pooling_func)(in_dim=self.stats_dim * block.expansion)
+        self.seg_1 = nn.Linear(self.stats_dim * block.expansion * self.n_stats, embed_dim)
         self.seg_bn_1 = nn.BatchNorm1d(embed_dim, affine=False)
         self.seg_2 = nn.Linear(embed_dim, embed_dim)
 
@@ -107,9 +109,6 @@ class ResNet(nn.Module):
         out = self.layer3(out)
         out = self.layer4(out)
 
-        # if isinstance(self.pool, SAP):
-        #    stats, penalty = self.pool(out)
-        # else:
         stats = self.pool(out)
 
         embed_a = self.seg_1(stats)
@@ -117,41 +116,33 @@ class ResNet(nn.Module):
         out = self.seg_bn_1(out)
         embed_b = self.seg_2(out)
 
-        # if isinstance(self.pool, SAP):
-        #    return embed_a, embed_b, penalty
-        # else:
         return embed_a, embed_b
 
 
-def ResNet18(feat_dim, embed_dim, n_stats=2, pooling_func='TSTP'):
-    return ResNet(BasicBlock, [2, 2, 2, 2], feat_dim=feat_dim, embed_dim=embed_dim, n_stats=n_stats,
-                  pooling_func=pooling_func)
+def ResNet18(feat_dim, embed_dim, pooling_func='TSTP'):
+    return ResNet(BasicBlock, [2, 2, 2, 2], feat_dim=feat_dim, embed_dim=embed_dim, pooling_func=pooling_func)
 
 
-def ResNet34(feat_dim, embed_dim, n_stats=2, pooling_func='TSTP'):
-    return ResNet(BasicBlock, [3, 4, 6, 3], feat_dim=feat_dim, embed_dim=embed_dim, n_stats=n_stats,
-                  pooling_func=pooling_func)
+def ResNet34(feat_dim, embed_dim, pooling_func='TSTP'):
+    return ResNet(BasicBlock, [3, 4, 6, 3], feat_dim=feat_dim, embed_dim=embed_dim, pooling_func=pooling_func)
 
 
-def ResNet50(feat_dim, embed_dim, n_stats=2, pooling_func='TSTP'):
-    return ResNet(Bottleneck, [3, 4, 6, 3], feat_dim=feat_dim, embed_dim=embed_dim, n_stats=n_stats,
-                  pooling_func=pooling_func)
+def ResNet50(feat_dim, embed_dim, pooling_func='TSTP'):
+    return ResNet(Bottleneck, [3, 4, 6, 3], feat_dim=feat_dim, embed_dim=embed_dim, pooling_func=pooling_func)
 
 
-def ResNet101(feat_dim, embed_dim, n_stats=2, pooling_func='TSTP'):
-    return ResNet(Bottleneck, [3, 4, 23, 3], feat_dim=feat_dim, embed_dim=embed_dim, n_stats=n_stats,
-                  pooling_func=pooling_func)
+def ResNet101(feat_dim, embed_dim, pooling_func='TSTP'):
+    return ResNet(Bottleneck, [3, 4, 23, 3], feat_dim=feat_dim, embed_dim=embed_dim, pooling_func=pooling_func)
 
 
-def ResNet152(feat_dim, embed_dim, n_stats=2, pooling_func='TSTP'):
-    return ResNet(Bottleneck, [3, 8, 36, 3], feat_dim=feat_dim, embed_dim=embed_dim, n_stats=n_stats,
-                  pooling_func=pooling_func)
+def ResNet152(feat_dim, embed_dim, pooling_func='TSTP'):
+    return ResNet(Bottleneck, [3, 8, 36, 3], feat_dim=feat_dim, embed_dim=embed_dim, pooling_func=pooling_func)
 
 
 if __name__ == '__main__':
-    net = ResNet34(80, 256, 2)
+    net = ResNet34(80, 256, 'ASTP')
     # net.pool = TAP()
-    y = net(torch.randn(10, 300, 80))
+    y = net(torch.randn(10, 200, 80))
     print(y[0].size())
 
     num_params = sum(p.numel() for p in net.parameters())
