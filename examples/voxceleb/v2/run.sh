@@ -7,7 +7,7 @@ stage=-1
 stop_stage=-1
 
 config=conf/config.yaml
-exp_dir=exp/ECAPA_TDNN_GLOB_c512-emb192-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-TSTP-ArcMargin-SGD-epoch66
+exp_dir=exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch66
 gpus="[0,1]"
 num_avg=10
 

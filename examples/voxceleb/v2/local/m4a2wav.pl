@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 #
-# Copyright 2021  hongjiwang@tencent.com
+# Copyright 2018  Ewald Enzinger
+#           2022  Hongji Wang
 #
 # Usage: m4a2wav.pl /export/voxceleb2_m4a dev /export/voxceleb2_wav
 #
