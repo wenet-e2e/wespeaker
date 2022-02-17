@@ -1,9 +1,9 @@
 ## Results
-* Setup: fbank80, aug_prob0.6, ArcMargin, SGD
+* Setup: fbank80, num_frms200, aug_prob0.6, speed perturb, ArcMargin, SGD (no spec_aug)
 
-| Model | rir+noise | speed perturb | spec aug  | TEST O    | TEST E   | TEST H     |
-|-------|-----------|---------------|-----------|-----------|----------|------------|
-| ECAPA_TDNN_emb192_channels512 | Yes   | No    | No    | 1.170%    | 1.221%    | 2.234%    |
-| ECAPA_TDNN_emb192_channels512 | Yes   | Yes   | No    | 1.085%    | 1.205%    | 2.288%    |
-| ResNet34_emb256 | Yes   | No    | No    | 1.000%    | 1.149%    | 2.094%    |
-| ResNet34_emb256 | Yes   | Yes   | No    | **1.000%**    | **1.067%**    | **1.990%**    |
+| Model | Params | TEST O    | TEST E   | TEST H     |
+|:------|--------|-----------|----------|------------|
+| XVEC-TSTP-emb512 | 4.610M | 1.941%   | 1.896%    | 3.314%    |
+| ResNet34-TSTP-emb256 | 6.700M | **1.000%**    | **1.067%**    | **1.990%**    |
+| ECAPA_TDNN_GLOB_c512-ASTP-emb192 | 6.190M | 1.090%    | 1.207%    | 2.280%    |
+| ECAPA_TDNN_GLOB_c1024-ASTP-emb192 | 20.761M |     |     |     |
