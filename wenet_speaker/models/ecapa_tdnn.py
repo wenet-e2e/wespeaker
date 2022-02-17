@@ -147,4 +147,4 @@ if __name__ == '__main__':
     print(out.shape)
 
     num_params = sum(param.numel() for param in model.parameters())
-    print(num_params)
+    print("{} M".format(num_params / 1e6))

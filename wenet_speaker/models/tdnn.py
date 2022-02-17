@@ -86,10 +86,10 @@ class XVEC(nn.Module):
 
 
 if __name__ == '__main__':
-    net = XVEC(40, pooling_func='TSTP')
-    # net=net.eval()
-    y = net(torch.rand(2, 200, 40))
+    model = XVEC(feat_dim=80, embed_dim=512, pooling_func='TSTP')
+    # model=model.eval()
+    y = model(torch.rand(2, 200, 80))
     print(y[0].size(), y[1].size())
 
-    s = sum(p.numel() for p in net.parameters())
-    print(s)
+    num_params = sum(p.numel() for p in model.parameters())
+    print("{} M".format(num_params / 1e6))

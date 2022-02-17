@@ -140,10 +140,10 @@ def ResNet152(feat_dim, embed_dim, pooling_func='TSTP'):
 
 
 if __name__ == '__main__':
-    net = ResNet34(80, 256, 'ASTP')
-    # net.pool = TAP()
-    y = net(torch.randn(10, 200, 80))
+    model = ResNet34(feat_dim=80, embed_dim=256, pooling_func='TSTP')
+    # model.pool = TAP()
+    y = model(torch.randn(10, 200, 80))
     print(y[0].size())
 
-    num_params = sum(p.numel() for p in net.parameters())
+    num_params = sum(p.numel() for p in model.parameters())
     print("{} M".format(num_params / 1e6))
