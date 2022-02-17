@@ -8,7 +8,7 @@ import numpy as np
 from pathlib import Path
 import fire
 from sklearn.metrics.pairwise import cosine_similarity
-from wenet_speaker.utils.voxceleb_score import compute_pmiss_pfa_rbst, compute_eer, compute_c_norm
+from wenet_speaker.utils.score_metrics import compute_pmiss_pfa_rbst, compute_eer, compute_c_norm
 
 
 def calculate_mean_from_kaldi_vec(scp_path):
