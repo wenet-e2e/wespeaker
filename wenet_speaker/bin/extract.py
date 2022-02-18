@@ -1,5 +1,7 @@
 # coding=utf-8
 #!/usr/bin/env python3
+# Author: Hongji Wang
+
 import os
 import kaldiio
 import fire, yaml

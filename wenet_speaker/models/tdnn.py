@@ -1,9 +1,10 @@
-#!/user/bin/env python3 
-
+# coding=utf-8
+#!/usr/bin/env python3 
 # Author: wsstriving@gmail.com (Shuai Wang)
-"""TDNN model for x-vector learning"""
-import torch.nn.functional as F
 
+"""TDNN model for x-vector learning"""
+
+import torch.nn.functional as F
 from .pooling_layers import *
 
 
@@ -69,19 +70,12 @@ class XVEC(nn.Module):
         out = self.frame_4(out)
         out = self.frame_5(out)
 
-        # if isinstance(self.pool, SAP):
-        #    stats, penalty = self.pool(out)
-        # else:
         stats = self.pool(out)
-
         embed_a = self.seg_1(stats)
         out = F.relu(embed_a)
         out = self.seg_bn_1(out)
         embed_b = self.seg_2(out)
 
-        # if isinstance(self.pool, SAP): # What is SAP? TODO: Shuai Wang
-        #    return embed_a, embed_b, penalty
-        # else:
         return embed_a, embed_b
 
 

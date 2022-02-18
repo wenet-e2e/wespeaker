@@ -1,7 +1,6 @@
 #!/bin/bash
 # coding:utf-8
 # Author: Hongji Wang
-# Created on: 20220126
 
 download_dir=data/download_data
 

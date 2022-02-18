@@ -1,5 +1,6 @@
 # coding=utf-8
 #!/usr/bin/env python3
+# Author: Zhengyang Chen
 
 import os
 import kaldiio

@@ -1,7 +1,6 @@
 # coding=utf-8
-# !/usr/bin/env python3
+#!/usr/bin/env python3
 # Author: Hongji Wang
-# Date: 20220101
 
 import random
 import numpy as np
@@ -58,8 +57,7 @@ class FeatList_LableDict_Dataset(Dataset):
             # load wav file
             sr, waveform = wavfile.read(wav)
             # kaldiio.load_mat(wav) is a little slower than wavfile.read(10%),
-            # but supports cloud io (e.g.,
-            # kaldiio.load_mat('ffmpeg -i http://ip/xxx.wav -ac 1 -ar 16000 -f wav - |'))
+            # but supports cloud io (e.g., kaldiio.load_mat('ffmpeg -i http://ip/xxx.wav -ac 1 -ar 16000 -f wav - |'))
 
             # speed perturb
             if self.speed_perturb:

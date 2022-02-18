@@ -1,9 +1,14 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
+#!/usr/bin/env python3
+# Author: Zhengyang Chen, Hongji Wang
+
+'''
+    This implementation is adapted from github repo: https://github.com/lawlict/ECAPA-TDNN.
+'''
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from .pooling_layers import *
 
 

@@ -1,5 +1,6 @@
 #!/bin/bash
-# Copyright 2021 Hongji Wang
+# coding:utf-8
+# Author: Hongji Wang
 
 . ./path.sh
 

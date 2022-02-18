@@ -1,3 +1,7 @@
+# coding=utf-8 
+#!/usr/bin/env python3
+# Author: Shuai Wang, Zhengyang Chen, Hongji Wang
+
 import math
 
 

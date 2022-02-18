@@ -1,4 +1,6 @@
 #!/bin/bash
+# coding:utf-8
+# Author: Hongji Wang
 
 exp_dir=''
 model_path=''

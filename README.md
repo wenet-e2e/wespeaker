@@ -21,7 +21,7 @@ bash run.sh --stage 2 --stop-stage 4
 * Model (SOTA models):
     - [x] [Standard X-vector](http://www.danielpovey.com/files/2017_interspeech_embeddings.pdf)
     - [x] [ResNet](https://arxiv.org/pdf/1512.03385.pdf)
-    - [x] [ECAPA_TDNN](https://arxiv.org/abs/2005.07143) [[Source codes](https://github.com/lawlict/ECAPA-TDNN)]
+    - [x] [ECAPA_TDNN](https://arxiv.org/abs/2005.07143)
 * Pooling functions 
     - [x] TAP(mean) / TSDP(std) / TSTP(mean+std)
     - [x] Attentive statistics pooling (ASTP)

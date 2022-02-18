@@ -1,4 +1,6 @@
 #!/bin/bash
+# coding:utf-8
+# Author: Hongji Wang
 
 exp_dir='exp/XVEC'
 model_path='final_model.pt'

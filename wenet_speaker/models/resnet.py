@@ -1,6 +1,8 @@
-'''ResNet in PyTorch.
+# coding=utf-8
+#!/usr/bin/env python3
+# Author: wsstriving@gmail.com (Shuai Wang)
 
-Author: wsstriving@gmail.com (Shuai Wang)
+'''ResNet in PyTorch.
 
 Some modifications from the original architecture:
 1. Smaller kernel size for the input layer
@@ -11,6 +13,7 @@ Reference:
 [1] Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun
     Deep Residual Learning for Image Recognition. arXiv:1512.03385
 '''
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

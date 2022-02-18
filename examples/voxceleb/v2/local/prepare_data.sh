@@ -1,7 +1,6 @@
 #!/bin/bash
 # coding:utf-8
 # Author: Hongji Wang
-# Created on: 20220123
 
 stage=-1
 stop_stage=-1

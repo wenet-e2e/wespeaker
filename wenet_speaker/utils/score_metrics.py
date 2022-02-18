@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 This script computes the official performance metrics for the NIST 2016 SRE.
