@@ -4,16 +4,18 @@
 
 exp_dir=''
 model_path=''
+nj=1
 
 . tools/parse_options.sh
 set -e
 
-data_name_array=("vox2_dev" "vox1")
 data_path_array=("data/vox2_dev/wav.scp" "data/vox1/wav.scp")
 raw_wav_array=(True True)
 #data_path_array=("data/vox2_dev/feats.scp" "data/vox1/feats.scp")
 #raw_wav_array=(False False)
-nj_array=(4 4)          # nj should not exceed gpu counts in local machine !!!
+
+data_name_array=("vox2_dev" "vox1")
+nj_array=($nj $nj) # nj should not exceed num of gpus in local machine !!!
 batch_size_array=(16 1) # batch_size of test set must be 1 !!!
 num_workers_array=(4 1)
 count=${#data_name_array[@]}

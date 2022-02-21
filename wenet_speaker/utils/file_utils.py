@@ -9,7 +9,7 @@ def read_scp(scp_file):
         while line:
             tokens = line.strip().split()
             key = tokens[0]
-            value = tokens[1]
+            value = " ".join(tokens[1:])
             key_value_list.append((key, value))
             line = fp.readline()
     return key_value_list

@@ -21,10 +21,10 @@ class FeatList_LableDict_Dataset(Dataset):
     shuffle wav.scp/feats.scp, load all labels into cpu memory
     """
 
-    def __init__(self, utt_wav_list, utt2spkid_dict={}, whole_utt=False, **kwargs):
+    def __init__(self, data_list, utt2spkid_dict={}, whole_utt=False, **kwargs):
         super(FeatList_LableDict_Dataset, self).__init__()
-        self.utt_wav_list = utt_wav_list
-        self.length = len(utt_wav_list)
+        self.data_list = data_list
+        self.length = len(data_list)
         self.utt2spkid_dict = utt2spkid_dict
         self.whole_utt = whole_utt  # True means batch_size=1 !!
 
@@ -49,14 +49,14 @@ class FeatList_LableDict_Dataset(Dataset):
         self.spk_num = len(set(utt2spkid_dict.values()))
 
     def __getitem__(self, idx):
-        utt, wav = self.utt_wav_list[idx]
+        utt, data_path = self.data_list[idx]
         spkid = self.utt2spkid_dict[utt] if utt in self.utt2spkid_dict else -1
 
         speed_perturb_idx = 0
         if self.raw_wav:
             # load wav file
-            sr, waveform = wavfile.read(wav)
-            # kaldiio.load_mat(wav) is a little slower than wavfile.read(10%),
+            sr, waveform = wavfile.read(data_path)
+            # kaldiio.load_mat() is a little slower than wavfile.read(),
             # but supports cloud io (e.g., kaldiio.load_mat('ffmpeg -i http://ip/xxx.wav -ac 1 -ar 16000 -f wav - |'))
 
             # speed perturb
@@ -75,8 +75,8 @@ class FeatList_LableDict_Dataset(Dataset):
                                       htk_compat=True, use_energy=False, dither=1)
             feat = feat_tensor.detach().numpy()
         else:
-            # load feat file
-            feat = kaldiio.load_mat(wav)
+            # load feat
+            feat = kaldiio.load_mat(data_path)
             # chunk/pad
             if not self.whole_utt:
                 feat = get_random_chunk(feat, self.chunk_len)

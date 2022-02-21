@@ -3,11 +3,11 @@
 # Author: Hongji Wang
 
 exp_dir='exp/XVEC'
-model_path='final_model.pt'
+model_path='avg_model.pt'
 data_scp='wav.scp/feats.scp'
-store_dir='vox2_dev/vox1_test'
+store_dir='vox2_dev/vox1'
 batch_size=1
-num_workers=2
+num_workers=1
 raw_wav=True
 nj=1
 

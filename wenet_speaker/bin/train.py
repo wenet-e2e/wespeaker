@@ -64,10 +64,10 @@ def train(config='conf/config.yaml', **kwargs):
     # wav/feat
     train_scp = configs['dataset_args']['train_scp']
     train_label = configs['dataset_args']['train_label']
-    train_utt_wav_list = read_scp(train_scp)
+    train_data_list = read_scp(train_scp)
     if rank == 0:
         logger.info("<== Feature ==>")
-        logger.info("train wav/feat num: {}".format(len(train_utt_wav_list)))
+        logger.info("train wav/feat num: {}".format(len(train_data_list)))
 
     # spk label
     train_utt_spk_list = read_scp(train_label)
@@ -79,7 +79,7 @@ def train(config='conf/config.yaml', **kwargs):
 
     # dataset and dataloader
     configs['feature_args']['feat_dim'] = configs['model_args']['feat_dim']
-    train_dataset = FeatList_LableDict_Dataset(train_utt_wav_list, train_utt2spkid_dict, **configs['feature_args'], **configs['dataset_args'])
+    train_dataset = FeatList_LableDict_Dataset(train_data_list, train_utt2spkid_dict, **configs['feature_args'], **configs['dataset_args'])
     train_sampler = DistributedSampler(train_dataset, shuffle=True)
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, **configs['dataloader_args'])
     if rank == 0:
