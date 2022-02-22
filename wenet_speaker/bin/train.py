@@ -102,8 +102,14 @@ def train(config='conf/config.yaml', **kwargs):
     else:
         logger.info('Train model from scratch...')
     if rank == 0:
+        # print model
         for line in pformat(model).split('\n'):
             logger.info(line)
+        # !!!IMPORTANT!!!
+        # Try to export the model by script, if fails, we should refine
+        # the code to satisfy the script export requirements
+        script_model = torch.jit.script(model)
+        script_model.save(os.path.join(model_dir, 'init.zip'))
     
     # ddp_model 
     model.cuda()

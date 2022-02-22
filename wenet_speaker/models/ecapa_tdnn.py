@@ -37,14 +37,13 @@ class Res2Conv1dReluBn(nn.Module):
     def forward(self, x):
         out = []
         spx = torch.split(x, self.width, 1)
-        for i in range(self.nums):
-            if i == 0:
-                sp = spx[i]
-            else:
-                sp = sp + spx[i]
+        sp = spx[0]
+        for i, (conv, bn) in enumerate(zip(self.convs, self.bns)):
             # Order: conv -> relu -> bn
-            sp = self.convs[i](sp)
-            sp = self.bns[i](F.relu(sp))
+            if i >= 1:
+                sp = sp + spx[i]
+            sp = conv(sp)
+            sp = bn(F.relu(sp))
             out.append(sp)
         if self.scale != 1:
             out.append(spx[self.nums])

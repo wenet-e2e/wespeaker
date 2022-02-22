@@ -15,7 +15,7 @@ num_avg=10
 . tools/parse_options.sh || exit 1;
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
-    echo "Preparing datasets..."
+    echo "Preparing datasets ..."
     ./local/prepare_data.sh --stage 2 --stop_stage 4
 fi
 
@@ -57,5 +57,13 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
         --c_fa 1 \
         ${trials_dir}/vox1_O_cleaned.kaldi ${trials_dir}/vox1_E_cleaned.kaldi ${trials_dir}/vox1_H_cleaned.kaldi \
         2>&1 | tee ${exp_dir}/scores/vox1_cos_result
+fi
+
+if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
+    echo "Export the best model ..."
+    python wenet_speaker/bin/export_jit.py \
+        --config $exp_dir/config.yaml \
+        --checkpoint $exp_dir/models/avg_model.pt \
+        --output_file $exp_dir/models/final.zip
 fi
 

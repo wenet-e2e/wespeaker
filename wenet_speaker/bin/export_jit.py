@@ -21,6 +21,7 @@ import torch
 import yaml
 
 from wenet_speaker.utils.checkpoint import load_checkpoint
+from wenet_speaker.models import *
 
 
 def get_args():

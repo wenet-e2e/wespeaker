@@ -33,7 +33,7 @@ model: ECAPA_TDNN_GLOB_c512 #ECAPA_TDNN_GLOB_c512, ECAPA_TDNN_GLOB_c1024, ResNet
 model_init: null
 model_args:
   feat_dim: 80
-  embed_dim: 192 # 192, 256
+  embed_dim: 192 # 192, 256, 512
   pooling_func: 'ASTP' # TAP, TSDP, TSTP, ASTP
 projection_args:
   project_type: 'arc_margin' # add_margin, arc_margin, sphere, softmax
