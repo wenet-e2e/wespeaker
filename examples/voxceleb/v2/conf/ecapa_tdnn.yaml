@@ -29,12 +29,12 @@ dataloader_args:
   prefetch_factor: 8
   drop_last: True
 
-model: ECAPA_TDNN_GLOB_c512 #ECAPA_TDNN_GLOB_c512, ECAPA_TDNN_GLOB_c1024, ResNet34, XVEC
+model: ECAPA_TDNN_GLOB_c512 #ECAPA_TDNN_GLOB_c512, ECAPA_TDNN_GLOB_c1024
 model_init: null
 model_args:
   feat_dim: 80
-  embed_dim: 192 # 192, 256, 512
-  pooling_func: 'ASTP' # TAP, TSDP, TSTP, ASTP
+  embed_dim: 192
+  pooling_func: 'ASTP'
 projection_args:
   project_type: 'arc_margin' # add_margin, arc_margin, sphere, softmax
   scale: 32.0

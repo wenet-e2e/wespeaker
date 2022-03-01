@@ -127,7 +127,8 @@ def train(config='conf/config.yaml', **kwargs):
         logger.info("<== Optimizer ==>")
         logger.info("optimizer is: "+configs['optimizer'])
 
-    configs['num_epochs'] = int(configs['num_epochs'] / (1.0 - configs['dataset_args']['aug_prob'])) # add num_epochs
+    if configs['feature_args']['raw_wav']:
+        configs['num_epochs'] = int(configs['num_epochs'] / (1.0 - configs['dataset_args']['aug_prob'])) # add num_epochs
     configs['scheduler_args']['num_epochs'] =  configs['num_epochs']
     configs['scheduler_args']['epoch_iter'] = len(train_dataloader)
     configs['scheduler_args']['process_num'] = world_size
