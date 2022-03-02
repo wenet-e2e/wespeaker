@@ -1,0 +1,35 @@
+### Speaker Recognition Papers
+
+- Dataset
+  - VoxCeleb
+    - [VoxCeleb: a large-scale speaker identification dataset](https://www.robots.ox.ac.uk/~vgg/publications/2017/Nagrani17/nagrani17.pdf)
+    - [VoxCeleb2: Deep Speaker Recognition](https://www.robots.ox.ac.uk/~vgg/publications/2018/Chung18a/chung18a.pdf)
+    - [Voxceleb: Large-scale speaker verification in the wild](https://www.robots.ox.ac.uk/~vgg/publications/2019/Nagrani19/nagrani19.pdf)
+  - CnCeleb
+    - [CN-CELEB: A CHALLENGING CHINESE SPEAKER RECOGNITION DATASET](https://arxiv.org/pdf/1911.01799.pdf)
+    - [CN-Celeb: multi-genre speaker recognition](https://arxiv.org/pdf/2012.12468.pdf)
+- Architecture Design
+  - [X-VECTORS: ROBUST DNN EMBEDDINGS FOR SPEAKER RECOGNITION](https://www.danielpovey.com/files/2018_icassp_xvectors.pdf) (**x-vector**)
+  - [BUT System Description to VoxCeleb Speaker Recognition Challenge 2019](https://arxiv.org/pdf/1910.12592.pdf) (**r-vector**)
+  - [RawNet: Advanced end-to-end deep neural network using raw waveforms for text-independent speaker verification](https://arxiv.org/pdf/1904.08104.pdf) (**RawNet**)
+  - [SPEAKER RECOGNITION FROM RAW WAVEFORM WITH SINCNET](https://arxiv.org/pdf/1808.00158.pdf) (**SincNet**)
+  - [ECAPA-TDNN: Emphasized Channel Attention, Propagation and Aggregation in TDNN Based Speaker Verification](https://arxiv.org/pdf/2005.07143.pdf) (**ECAPA-TDNN**)
+- Optimization Objective
+  - Classification Based Loss
+    - [Angular Softmax for Short-Duration Text-independent Speaker Verification](https://www.researchgate.net/publication/327389164)
+    - [ENSEMBLE ADDITIVE MARGIN SOFTMAX FOR SPEAKER VERIFICATION](https://cs.nju.edu.cn/lwj/paper/ICASSP19_EAMS.pdf)
+    - [Margin Matters: Towards More Discriminative Deep Neural Network Embeddings for Speaker Recognition](https://arxiv.org/pdf/1906.07317.pdf)
+    - [Large Margin Softmax Loss for Speaker Verification](https://arxiv.org/abs/1904.03479)
+  - End-to-End Loss
+    - [End-to-End Text-Dependent Speaker Verification](https://arxiv.org/pdf/1509.08062.pdf)
+    - [End-to-End Text-Independent Speaker Verification with Triplet Loss on Short Utterances](https://www.researchgate.net/publication/317416159)
+    - [GENERALIZED END-TO-END LOSS FOR SPEAKER VERIFICATION](https://arxiv.org/pdf/1710.10467.pdf)
+- Pooling Method
+  - [Attentive Statistics Pooling for Deep Speaker Embedding](https://arxiv.org/pdf/1803.10963.pdf)
+  - [Multi-Resolution Multi-Head Attention in Deep Speaker Embedding](https://ieeexplore.ieee.org/abstract/document/9053217)
+  - [Utterance-level Aggregation for Speaker Recognition in the Wild](https://ieeexplore.ieee.org/abstract/document/8683120)
+- Self-supervised Learning
+  - [Augmentation adversarial training for self-supervised speaker recognition](https://arxiv.org/pdf/2007.12085.pdf)
+  - [SELF-SUPERVISED TEXT-INDEPENDENT SPEAKER VERIFICATION USING PROTOTYPICAL MOMENTUM CONTRASTIVE LEARNING](https://arxiv.org/pdf/2012.07178.pdf)
+  - [SELF-SUPERVISED SPEAKER RECOGNITION WITH LOSS-GATED LEARNING](https://arxiv.org/pdf/2110.03869.pdf)
+
