@@ -50,8 +50,8 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
     python -u wenet_speaker/bin/score.py \
         --exp_dir ${exp_dir} \
         --eval_scp_path ${exp_dir}/embeddings/vox1/xvector.scp \
-        --cal_mean_dir ${exp_dir}/embeddings/vox2_dev \
         --cal_mean True \
+        --cal_mean_dir ${exp_dir}/embeddings/vox2_dev \
         --p_target 0.01 \
         --c_miss 1 \
         --c_fa 1 \
