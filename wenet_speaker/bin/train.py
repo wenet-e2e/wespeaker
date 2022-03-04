@@ -92,7 +92,7 @@ def train(config='conf/config.yaml', **kwargs):
     # projection layer
     configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
     configs['projection_args']['num_class'] = len(spk2id_dict)
-    if configs['dataset_args']['speed_perturb']:
+    if configs['feature_args']['raw_wav'] and configs['dataset_args']['speed_perturb']:
         configs['projection_args']['num_class'] *= 3 # diff speed is regarded as diff spk
     projection = get_projection(configs['projection_args'])
     model.add_module("projection", projection)

@@ -6,7 +6,7 @@ num_avg: 10
 
 seed: 42
 num_epochs: 66
-save_epoch_interval: 5 # Save model every 5 epochs to see what happened
+save_epoch_interval: 5 # save model every 5 epochs
 log_batch_interval: 100 # log every 100 batchs
 
 feature_args:
@@ -46,7 +46,7 @@ margin_update:
   increase_start_epoch: 20
   fix_start_epoch: 40
   update_margin: True
-  increase_type: 'exp'  # from exp or linear
+  increase_type: 'exp'  # exp, linear
 
 loss: CrossEntropyLoss
 loss_args: { }
