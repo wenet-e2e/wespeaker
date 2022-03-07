@@ -1,4 +1,4 @@
-### Speaker Recognition Papers
+### Speaker Recognition Papers (Deep Learning Era)
 
 - Dataset
   - VoxCeleb
@@ -16,6 +16,7 @@
   - [ECAPA-TDNN: Emphasized Channel Attention, Propagation and Aggregation in TDNN Based Speaker Verification](https://arxiv.org/pdf/2005.07143.pdf) (**ECAPA-TDNN**)
 - Optimization Objective
   - Classification Based Loss
+    - [Exploring the encoding layer and loss function in end-to-end speaker and language recognition system](https://arxiv.org/pdf/1804.05160.pdf)
     - [Angular Softmax for Short-Duration Text-independent Speaker Verification](https://www.researchgate.net/publication/327389164)
     - [ENSEMBLE ADDITIVE MARGIN SOFTMAX FOR SPEAKER VERIFICATION](https://cs.nju.edu.cn/lwj/paper/ICASSP19_EAMS.pdf)
     - [Margin Matters: Towards More Discriminative Deep Neural Network Embeddings for Speaker Recognition](https://arxiv.org/pdf/1906.07317.pdf)
@@ -28,6 +29,7 @@
   - [Attentive Statistics Pooling for Deep Speaker Embedding](https://arxiv.org/pdf/1803.10963.pdf)
   - [Multi-Resolution Multi-Head Attention in Deep Speaker Embedding](https://ieeexplore.ieee.org/abstract/document/9053217)
   - [Utterance-level Aggregation for Speaker Recognition in the Wild](https://ieeexplore.ieee.org/abstract/document/8683120)
+  - [A novel learnable dictionary encoding layer for end-to-end language identification](https://arxiv.org/abs/1804.00385)
 - Self-supervised Learning
   - [Augmentation adversarial training for self-supervised speaker recognition](https://arxiv.org/pdf/2007.12085.pdf)
   - [SELF-SUPERVISED TEXT-INDEPENDENT SPEAKER VERIFICATION USING PROTOTYPICAL MOMENTUM CONTRASTIVE LEARNING](https://arxiv.org/pdf/2012.07178.pdf)
