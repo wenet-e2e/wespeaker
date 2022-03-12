@@ -1,3 +1,7 @@
+# WeSpeaker
+
+WeSpeaker mainly focuses on speaker embedding learning, with application to the speaker verification task. We support online feature extraction or loading pre-extracted features in kaldi-format.
+
 ## Installation && Run
 
 * Create Conda env: pytorch version >= 1.10.0 is required !!!
@@ -15,9 +19,11 @@ pip install -r requirements.txt
 cd examples/voxceleb/v2
 bash run.sh --stage 2 --stop-stage 4
 ```
+## Dataset Support
 
+- [Voxceleb dataset](https://github.com/wsstriving/wenet-speaker/tree/master/examples/voxceleb/v2)
 
-## Support list:
+### Support list:
 * Model (SOTA models):
     - [x] [Standard X-vector](http://www.danielpovey.com/files/2017_interspeech_embeddings.pdf)
     - [x] [ResNet](https://arxiv.org/pdf/1512.03385.pdf)
@@ -35,10 +41,12 @@ bash run.sh --stage 2 --stop-stage 4
     - [x] cosine scoring
     - [ ] python plda scoring
     - [ ] score normalization (AS-Norm)
-* Augmentation：
+* Online Augmentation：
     - [x] rir+noise
     - [x] speed perturb
     - [x] specaug
 * Literature 
-    - [ ] Awesome speaker papers
+    - [x] Awesome speaker papers
 
+### Looking for contributors
+If you are interested to contribute, feel free to contact @wsstriving or @robin1001
