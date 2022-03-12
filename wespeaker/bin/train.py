@@ -13,13 +13,13 @@ import torch.distributed as dist
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.distributed import DistributedSampler
 
-from wenet_speaker.models import *
-from wenet_speaker.utils.utils import *
-from wenet_speaker.utils.file_utils import read_scp
-from wenet_speaker.utils.schedulers import ExponentialDecrease, MarginScheduler
-from wenet_speaker.utils.executor import runepoch
-from wenet_speaker.utils.checkpoint import load_checkpoint, save_checkpoint
-from wenet_speaker.dataset.dataset import FeatList_LableDict_Dataset
+from wespeaker.models import *
+from wespeaker.utils.utils import *
+from wespeaker.utils.file_utils import read_scp
+from wespeaker.utils.schedulers import ExponentialDecrease, MarginScheduler
+from wespeaker.utils.executor import runepoch
+from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
+from wespeaker.dataset.dataset import FeatList_LableDict_Dataset
 
 
 def train(config='conf/config.yaml', **kwargs):

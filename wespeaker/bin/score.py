@@ -1,5 +1,5 @@
 # coding=utf-8
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 # Author: Zhengyang Chen
 
 import os
@@ -9,7 +9,7 @@ import numpy as np
 from pathlib import Path
 import fire
 from sklearn.metrics.pairwise import cosine_similarity
-from wenet_speaker.utils.score_metrics import compute_pmiss_pfa_rbst, compute_eer, compute_c_norm
+from wespeaker.utils.score_metrics import compute_pmiss_pfa_rbst, compute_eer, compute_c_norm
 
 
 def calculate_mean_from_kaldi_vec(scp_path):
@@ -55,7 +55,6 @@ def compute_metrics(scoresfile, p_target=0.01, c_miss=1, c_fa=1):
 
 
 def trials_cosine_score(eval_scp_path='', store_dir='', mean_vec=None, trials=()):
-
     if mean_vec is None or not os.path.exists(mean_vec):
         mean_vec = 0.0
     else:
@@ -83,7 +82,6 @@ def trials_cosine_score(eval_scp_path='', store_dir='', mean_vec=None, trials=()
 
 
 def main(exp_dir, eval_scp_path, cal_mean, cal_mean_dir, p_target=0.01, c_miss=1, c_fa=1, *trials):
-
     if not cal_mean:
         print("Do not do mean normalization for evaluation embeddings.")
         mean_vec_path = None

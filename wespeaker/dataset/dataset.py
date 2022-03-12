@@ -12,8 +12,8 @@ from scipy import signal
 from scipy.io import wavfile
 import torchaudio.compliance.kaldi as kaldi
 
-from wenet_speaker.utils.file_utils import read_scp
-from wenet_speaker.utils.dataset_utils import get_random_chunk, speed_perturb, spec_augmentation
+from wespeaker.utils.file_utils import read_scp
+from wespeaker.utils.dataset_utils import get_random_chunk, speed_perturb, spec_augmentation
 
 
 class FeatList_LableDict_Dataset(Dataset):

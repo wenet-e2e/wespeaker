@@ -1,6 +1,7 @@
 # WeSpeaker
 
-WeSpeaker mainly focuses on speaker embedding learning, with application to the speaker verification task. We support online feature extraction or loading pre-extracted features in kaldi-format.
+WeSpeaker mainly focuses on speaker embedding learning, with application to the speaker verification task. We support
+online feature extraction or loading pre-extracted features in kaldi-format.
 
 ## Installation && Run
 
@@ -19,20 +20,22 @@ pip install -r requirements.txt
 cd examples/voxceleb/v2
 bash run.sh --stage 2 --stop-stage 4
 ```
+
 ## Dataset Support
 
 - [Voxceleb dataset](https://github.com/wsstriving/wenet-speaker/tree/master/examples/voxceleb/v2)
 
 ### Support list:
+
 * Model (SOTA models):
     - [x] [Standard X-vector](http://www.danielpovey.com/files/2017_interspeech_embeddings.pdf)
     - [x] [ResNet](https://arxiv.org/pdf/1512.03385.pdf)
     - [x] [ECAPA_TDNN](https://arxiv.org/abs/2005.07143)
-* Pooling functions 
+* Pooling functions
     - [x] TAP(mean) / TSDP(std) / TSTP(mean+std)
     - [x] Attentive statistics pooling (ASTP)
     - [ ] [Learnable Dictionary Encoding (LDE)](https://arxiv.org/pdf/1804.00385.pdf)
-* Criteria 
+* Criteria
     - [x] softmax
     - [x] sphere
     - [x] [add_margin (AM-softmax)](https://arxiv.org/pdf/1801.05599.pdf)
@@ -45,8 +48,9 @@ bash run.sh --stage 2 --stop-stage 4
     - [x] rir+noise
     - [x] speed perturb
     - [x] specaug
-* Literature 
+* Literature
     - [x] Awesome speaker papers
 
 ### Looking for contributors
+
 If you are interested to contribute, feel free to contact @wsstriving or @robin1001

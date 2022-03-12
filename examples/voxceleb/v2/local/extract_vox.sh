@@ -15,7 +15,7 @@ raw_wav_array=(True True)
 #raw_wav_array=(False False)
 
 data_name_array=("vox2_dev" "vox1")
-nj_array=($nj $nj) # nj should not exceed num of gpus in local machine !!!
+nj_array=($nj $nj)      # nj should not exceed num of gpus in local machine !!!
 batch_size_array=(16 1) # batch_size of test set must be 1 !!!
 num_workers_array=(4 1)
 count=${#data_name_array[@]}

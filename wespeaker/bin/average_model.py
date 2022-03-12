@@ -1,11 +1,9 @@
 # Copyright 2019 Mobvoi Inc. All Rights Reserved.
 # Author: di.wu@mobvoi.com (DI WU)
-import os
 import argparse
 import glob
+import os
 
-import yaml
-import numpy as np
 import torch
 
 
