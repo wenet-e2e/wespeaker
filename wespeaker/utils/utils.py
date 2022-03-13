@@ -12,10 +12,9 @@ import yaml
 
 def genlogger(outdir, fname):
     formatter = logging.Formatter(
-            "[ %(levelname)s : %(asctime)s ] - %(message)s")
-    logging.basicConfig(
-            level=logging.DEBUG,
-            format="[ %(levelname)s : %(asctime)s ] - %(message)s")
+        "[ %(levelname)s : %(asctime)s ] - %(message)s")
+    logging.basicConfig(level=logging.DEBUG,
+                        format="[ %(levelname)s : %(asctime)s ] - %(message)s")
     logger = logging.getLogger("Pyobj, f")
     # Dump log to file
     fh = logging.FileHandler(os.path.join(outdir, fname))
@@ -24,7 +23,7 @@ def genlogger(outdir, fname):
     return logger
 
 
-def parse_config_or_kwargs(config_file, **kwargs): 
+def parse_config_or_kwargs(config_file, **kwargs):
     """parse_config_or_kwargs
 
     :param config_file: Config file that has parameters, yaml format
@@ -36,8 +35,7 @@ def parse_config_or_kwargs(config_file, **kwargs):
     help_str = "Valid Parameters are:\n"
     help_str += "\n".join(list(yaml_config.keys()))
     # passed kwargs will override yaml config
-    #for key in kwargs.keys():
-        #assert key in yaml_config, "Parameter {} invalid!\n".format(key) + help_str
+    # for key in kwargs.keys(): assert key in yaml_config, "Parameter {} invalid!\n".format(key) + help_str
     return dict(yaml_config, **kwargs)
 
 
@@ -59,19 +57,18 @@ def set_seed(seed=42):
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
-    #torch.backends.cudnn.deterministic = True
+    # torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = True
 
 
 def spk2id(utt_spk_list):
-    spk_set=set()
+    spk_set = set()
     for utt_spk in utt_spk_list:
         spk_set.add(utt_spk[1])
-    spk_list=list(spk_set)
+    spk_list = list(spk_set)
 
     spk2id_dict = {}
     spk_list.sort()
     for i, spk in enumerate(spk_list):
         spk2id_dict[spk] = i
     return spk2id_dict
-

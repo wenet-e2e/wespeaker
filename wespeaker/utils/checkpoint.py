@@ -2,7 +2,6 @@
 # coding=utf-8
 # Author: Hongji Wang
 
-import yaml
 import torch
 
 

@@ -58,9 +58,9 @@ class ArcMarginProduct(nn.Module):
         self.mm = math.sin(math.pi - margin) * margin
         self.m = self.margin
         self.mmm = 1.0 + math.cos(math.pi - margin)
-#        self.weight = self.weight
-#        self.scale = self.scale
- 
+        # self.weight = self.weight
+        # self.scale = self.scale
+
     def forward(self, input, label):
         cosine = F.linear(F.normalize(input), F.normalize(self.weight))
         sine = torch.sqrt(1.0 - torch.pow(cosine, 2))
@@ -118,10 +118,10 @@ class AddMarginProduct(nn.Module):
 
     def __repr__(self):
         return self.__class__.__name__ + '(' \
-               + 'in_features=' + str(self.in_features) \
-               + ', out_features=' + str(self.out_features) \
-               + ', scale=' + str(self.scale) \
-               + ', margin=' + str(self.margin) + ')'
+            + 'in_features=' + str(self.in_features) \
+            + ', out_features=' + str(self.out_features) \
+            + ', scale=' + str(self.scale) \
+            + ', margin=' + str(self.margin) + ')'
 
 
 class SphereProduct(nn.Module):
@@ -155,7 +155,7 @@ class SphereProduct(nn.Module):
             lambda x: 16 * x ** 5 - 20 * x ** 3 + 5 * x
         ]
         assert self.margin < 6
-        
+
     def forward(self, input, label):
         # lambda = max(lambda_min,base*(1+gamma*iteration)^(-power))
         self.iter += 1
@@ -177,9 +177,9 @@ class SphereProduct(nn.Module):
 
     def __repr__(self):
         return self.__class__.__name__ + '(' \
-               + 'in_features=' + str(self.in_features) \
-               + ', out_features=' + str(self.out_features) \
-               + ', margin=' + str(self.margin) + ')'
+            + 'in_features=' + str(self.in_features) \
+            + ', out_features=' + str(self.out_features) \
+            + ', margin=' + str(self.margin) + ')'
 
 
 class Linear(nn.Module):
@@ -190,9 +190,7 @@ class Linear(nn.Module):
     def __init__(self, emb_dim=512, class_num=1000):
         super(Linear, self).__init__()
 
-        self.trans = nn.Sequential(nn.BatchNorm1d(emb_dim),
-                                       nn.ReLU(inplace=True),
-                                       nn.Linear(emb_dim, class_num))
+        self.trans = nn.Sequential(nn.BatchNorm1d(emb_dim), nn.ReLU(inplace=True), nn.Linear(emb_dim, class_num))
 
     def forward(self, input, label=None):
         out = self.trans(input)

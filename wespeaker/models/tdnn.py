@@ -55,7 +55,7 @@ class XVEC(nn.Module):
         self.frame_4 = TdnnLayer(hid_dim, hid_dim, context_size=1, dilation=1)
         self.frame_5 = TdnnLayer(hid_dim, stats_dim, context_size=1, dilation=1)
 
-        self.n_stats = 1 if pooling_func=='TAP' or pooling_func=="TSDP" else 2
+        self.n_stats = 1 if pooling_func == 'TAP' or pooling_func == "TSDP" else 2
         self.pool = eval(pooling_func)(in_dim=stats_dim)
         self.seg_1 = nn.Linear(stats_dim * self.n_stats, embed_dim)
         self.seg_bn_1 = nn.BatchNorm1d(embed_dim, affine=False)

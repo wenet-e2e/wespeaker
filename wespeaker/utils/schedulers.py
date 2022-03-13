@@ -64,7 +64,7 @@ class MarginScheduler:
     def get_margin(self):
         try:
             margin = self.model.projection.margin
-        except:
+        except Exception:
             margin = 0.0
 
         return margin

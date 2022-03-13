@@ -20,7 +20,7 @@ class TAP(nn.Module):
     """    
     def __init__(self, **kwargs):
         super(TAP, self).__init__()
-    
+
     def forward(self, x):
         pooling_mean = x.mean(dim=-1)
         # To be compatable with 2D input
@@ -34,7 +34,7 @@ class TSDP(nn.Module):
     """
     def __init__(self, **kwargs):
         super(TSDP, self).__init__()
-    
+
     def forward(self, x):
         # The last dimension is the temporal axis
         pooling_std = torch.sqrt(torch.var(x, dim=-1) + 1e-8)
@@ -49,7 +49,7 @@ class TSTP(nn.Module):
     """
     def __init__(self, **kwargs):
         super(TSTP, self).__init__()
-    
+
     def forward(self, x):
         # The last dimension is the temporal axis
         pooling_mean = x.mean(dim=-1)
@@ -83,7 +83,7 @@ class ASTP(nn.Module):
             0-dim: batch-dimension, last-dim: time-dimension (frame-dimension)
         """
         if len(x.shape) == 4:
-            x = x.reshape(x.shape[0], x.shape[1]*x.shape[2], x.shape[3])
+            x = x.reshape(x.shape[0], x.shape[1] * x.shape[2], x.shape[3])
         assert len(x.shape) == 3
 
         if self.global_context_att:
@@ -94,10 +94,9 @@ class ASTP(nn.Module):
             x_in = x
 
         # DON'T use ReLU here! ReLU may be hard to converge.
-        alpha = torch.tanh(self.linear1(x_in)) # alpha = F.relu(self.linear1(x_in))
+        alpha = torch.tanh(self.linear1(x_in))  # alpha = F.relu(self.linear1(x_in))
         alpha = torch.softmax(self.linear2(alpha), dim=2)
         mean = torch.sum(alpha * x, dim=2)
         var = torch.sum(alpha * (x ** 2), dim=2) - mean ** 2
         std = torch.sqrt(var.clamp(min=1e-10))
         return torch.cat([mean, std], dim=1)
-

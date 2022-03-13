@@ -2,7 +2,8 @@
 # coding=utf-8
 # Author: Hongji Wang
 
-import fire, os
+import os
+import fire
 import kaldiio
 import torch
 from torch.utils.data import DataLoader

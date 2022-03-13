@@ -4,13 +4,13 @@
 
 import os
 from pprint import pformat
-import kaldiio
-import fire, yaml
+import fire
+import yaml
 import tableprint as tp
 
 import torch
 import torch.distributed as dist
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 
 from wespeaker.models import *
@@ -43,7 +43,7 @@ def train(config='conf/config.yaml', **kwargs):
         try:
             os.makedirs(model_dir)
         except IOError:
-            print(model_dir+" already exists !!!")
+            print(model_dir + " already exists !!!")
             exit(1)
     dist.barrier()  # let the rank 0 mkdir first
 
@@ -72,10 +72,10 @@ def train(config='conf/config.yaml', **kwargs):
     # spk label
     train_utt_spk_list = read_scp(train_label)
     spk2id_dict = spk2id(train_utt_spk_list)
-    train_utt2spkid_dict = {utt_spk[0]:spk2id_dict[utt_spk[1]] for utt_spk in train_utt_spk_list}
+    train_utt2spkid_dict = {utt_spk[0] : spk2id_dict[utt_spk[1]] for utt_spk in train_utt_spk_list}
     if rank == 0:
         logger.info("<== Labels ==>")
-        logger.info("train label num: {}, spk num: {}".format(len(train_utt2spkid_dict),len(spk2id_dict)))
+        logger.info("train label num: {}, spk num: {}".format(len(train_utt2spkid_dict), len(spk2id_dict)))
 
     # dataset and dataloader
     configs['feature_args']['feat_dim'] = configs['model_args']['feat_dim']
@@ -93,7 +93,7 @@ def train(config='conf/config.yaml', **kwargs):
     configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
     configs['projection_args']['num_class'] = len(spk2id_dict)
     if configs['feature_args']['raw_wav'] and configs['dataset_args']['speed_perturb']:
-        configs['projection_args']['num_class'] *= 3 # diff speed is regarded as diff spk
+        configs['projection_args']['num_class'] *= 3  # diff speed is regarded as diff spk
     projection = get_projection(configs['projection_args'])
     model.add_module("projection", projection)
     if configs['model_init'] is not None:
@@ -110,32 +110,32 @@ def train(config='conf/config.yaml', **kwargs):
         # the code to satisfy the script export requirements
         script_model = torch.jit.script(model)
         script_model.save(os.path.join(model_dir, 'init.zip'))
-    
+
     # ddp_model 
     model.cuda()
-    ddp_model = torch.nn.parallel.DistributedDataParallel(model) #, find_unused_parameters=True)
+    ddp_model = torch.nn.parallel.DistributedDataParallel(model)  # , find_unused_parameters=True)
     device = torch.device("cuda")
 
     criterion = getattr(torch.nn, configs['loss'])(**configs['loss_args'])
     if rank == 0:
         logger.info("<== Loss ==>")
-        logger.info("loss criterion is: "+configs['loss'])
+        logger.info("loss criterion is: " + configs['loss'])
 
     configs['optimizer_args']['lr'] = configs['scheduler_args']['initial_lr']
     optimizer = getattr(torch.optim, configs['optimizer'])(ddp_model.parameters(), **configs['optimizer_args'])
     if rank == 0:
         logger.info("<== Optimizer ==>")
-        logger.info("optimizer is: "+configs['optimizer'])
+        logger.info("optimizer is: " + configs['optimizer'])
 
     if configs['feature_args']['raw_wav']:
-        configs['num_epochs'] = int(configs['num_epochs'] / (1.0 - configs['dataset_args']['aug_prob'])) # add num_epochs
-    configs['scheduler_args']['num_epochs'] =  configs['num_epochs']
+        configs['num_epochs'] = int(configs['num_epochs'] / (1.0 - configs['dataset_args']['aug_prob']))  # add num_epochs
+    configs['scheduler_args']['num_epochs'] = configs['num_epochs']
     configs['scheduler_args']['epoch_iter'] = len(train_dataloader)
     configs['scheduler_args']['process_num'] = world_size
     scheduler = eval(configs['scheduler'])(optimizer, **configs['scheduler_args'])
     if rank == 0:
         logger.info("<== Scheduler ==>")
-        logger.info("scheduler is: "+configs['scheduler'])
+        logger.info("scheduler is: " + configs['scheduler'])
 
     configs['margin_update']['epoch_iter'] = len(train_dataloader)
     margin_scheduler = MarginScheduler(model=model, **configs['margin_update'])
@@ -150,15 +150,15 @@ def train(config='conf/config.yaml', **kwargs):
             fout.write(data) 
 
     # training 
-    dist.barrier() # synchronize here
+    dist.barrier()  # synchronize here
     if rank == 0:
         logger.info("<========== Training process ==========>")    
         header = ['Epoch', 'Batch', 'Lr', 'Margin', 'Loss', "Acc"]
         for line in tp.header(header, width=10, style='grid').split('\n'):
             logger.info(line)
-    dist.barrier() # synchronize here
+    dist.barrier()  # synchronize here
 
-    for epoch in range(1, configs['num_epochs']+1):
+    for epoch in range(1, configs['num_epochs'] + 1):
         train_sampler.set_epoch(epoch)
 
         run_epoch(train_dataloader, ddp_model, criterion, optimizer, scheduler, margin_scheduler, epoch, logger, log_batch_interval=configs['log_batch_interval'], device=device)
@@ -166,9 +166,9 @@ def train(config='conf/config.yaml', **kwargs):
         if rank == 0:
             if epoch % configs['save_epoch_interval'] == 0 or epoch >= configs['num_epochs'] - configs['num_avg']:
                 save_checkpoint(model, os.path.join(model_dir, 'model_{}.pt'.format(epoch)))
-                
+
     if rank == 0:
-        os.symlink('model_{}.pt'.format(configs['num_epochs']), os.path.join(model_dir,'final_model.pt'))
+        os.symlink('model_{}.pt'.format(configs['num_epochs']), os.path.join(model_dir, 'final_model.pt'))
         logger.info(tp.bottom(len(header), width=10, style='grid'))
 
 

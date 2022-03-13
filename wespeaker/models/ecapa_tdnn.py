@@ -108,7 +108,7 @@ class ECAPA_TDNN(nn.Module):
 
         cat_channels = channels * 3
         self.conv = nn.Conv1d(cat_channels, cat_channels, kernel_size=1)
-        self.n_stats = 1 if pooling_func=='TAP' or pooling_func=="TSDP" else 2
+        self.n_stats = 1 if pooling_func == 'TAP' or pooling_func == "TSDP" else 2
         self.pool = eval(pooling_func)(in_dim=cat_channels, global_context_att=global_context_att)
         self.bn = nn.BatchNorm1d(cat_channels * self.n_stats)
         self.linear = nn.Linear(cat_channels * self.n_stats, embed_dim)
@@ -133,15 +133,13 @@ def ECAPA_TDNN_c1024(feat_dim, embed_dim, pooling_func='ASTP'):
     return ECAPA_TDNN(channels=1024, feat_dim=feat_dim, embed_dim=embed_dim, pooling_func=pooling_func)
 
 def ECAPA_TDNN_GLOB_c1024(feat_dim, embed_dim, pooling_func='ASTP'):
-    return ECAPA_TDNN(channels=1024, feat_dim=feat_dim, embed_dim=embed_dim, pooling_func=pooling_func,
-                    global_context_att=True)
+    return ECAPA_TDNN(channels=1024, feat_dim=feat_dim, embed_dim=embed_dim, pooling_func=pooling_func, global_context_att=True)
 
 def ECAPA_TDNN_c512(feat_dim, embed_dim, pooling_func='ASTP'):
     return ECAPA_TDNN(channels=512, feat_dim=feat_dim, embed_dim=embed_dim, pooling_func=pooling_func)
 
 def ECAPA_TDNN_GLOB_c512(feat_dim, embed_dim, pooling_func='ASTP'):
-    return ECAPA_TDNN(channels=512, feat_dim=feat_dim, embed_dim=embed_dim, pooling_func=pooling_func,
-                    global_context_att=True)
+    return ECAPA_TDNN(channels=512, feat_dim=feat_dim, embed_dim=embed_dim, pooling_func=pooling_func, global_context_att=True)
 
 
 if __name__ == '__main__':

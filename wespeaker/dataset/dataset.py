@@ -28,14 +28,14 @@ class FeatList_LableDict_Dataset(Dataset):
         self.utt2spkid_dict = utt2spkid_dict
         self.whole_utt = whole_utt  # True means batch_size=1 !!
 
-        ### feat config
+        # feat config
         self.raw_wav = kwargs.get('raw_wav', True)
         self.feat_dim = kwargs.get('feat_dim', 80)
         self.num_frms = kwargs.get('num_frms', 200)
-        # chunk config, sample rate is 16kHZ
+        # chunk config (sample rate is 16kHZ)
         self.chunk_len = (self.num_frms - 1) * 160 + 400 if self.raw_wav else self.num_frms
 
-        ### dataset config (for wav augmentation only)
+        # dataset config (for wav augmentation only)
         if self.raw_wav:
             self.speed_perturb = kwargs.get('speed_perturb', False)
             self.aug_prob = kwargs.get('aug_prob', 0.0)
@@ -66,7 +66,7 @@ class FeatList_LableDict_Dataset(Dataset):
             # chunk/pad
             if not self.whole_utt:
                 waveform = get_random_chunk(waveform, self.chunk_len)
-            # add rir_noise
+            # augment wav
             if self.aug_prob > random.random():
                 waveform = self.augment_wav.add_rir_noise(waveform)
             # make fbank feature

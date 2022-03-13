@@ -4,7 +4,7 @@
 
 def read_scp(scp_file):
     key_value_list = []
-    with open(scp_file,"r") as fp:
+    with open(scp_file, "r") as fp:
         line = fp.readline()
         while line:
             tokens = line.strip().split()

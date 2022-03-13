@@ -2,7 +2,6 @@
 # coding=utf-8
 # Author: Hongji Wang
 
-import torch
 import numpy as np
 import random
 from scipy import signal
@@ -15,23 +14,23 @@ def get_random_chunk(data, chunk_len):
     adjust_chunk_len = min(data_len, chunk_len)
     chunk_start = random.randint(0, data_len - adjust_chunk_len)
 
-    data = data[chunk_start:chunk_start+adjust_chunk_len]
+    data = data[chunk_start:chunk_start + adjust_chunk_len]
     # padding if needed
     if adjust_chunk_len < chunk_len:
-        chunk_shape = chunk_len if len(data_shape)==1 else (chunk_len, data.shape[1])
-        data = np.resize(data, chunk_shape) # repeating
+        chunk_shape = chunk_len if len(data_shape) == 1 else (chunk_len, data.shape[1])
+        data = np.resize(data, chunk_shape)  # repeating
 
     return data
 
 
 def spec_augmentation(x,
-            warp_for_time=False,
-            num_t_mask=1,
-            num_f_mask=1,
-            max_t=10,
-            max_f=8,
-            max_w=80,
-            prob=0.5):
+                      warp_for_time=False,
+                      num_t_mask=1,
+                      num_f_mask=1,
+                      max_t=10,
+                      max_f=8,
+                      max_w=80,
+                      prob=0.5):
     """ do spec augmentation on x
 
     Args:
@@ -48,7 +47,7 @@ def spec_augmentation(x,
     if random.random() > prob:
         return x
 
-    y = x #np.copy(x)
+    y = x  # np.copy(x)
     max_frames = y.shape[0]
     max_freq = y.shape[1]
 
@@ -81,6 +80,6 @@ def speed_perturb(x, speed_perturb_idx=0):
     speed = speed_list[speed_perturb_idx]
 
     x = x.astype(np.float32)
-    y = signal.resample(x, int(len(x)/speed))
+    y = signal.resample(x, int(len(x) / speed))
 
     return y

@@ -87,8 +87,8 @@ class ResNet(nn.Module):
         self.layer2 = self._make_layer(block, m_channels * 2, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, m_channels * 4, num_blocks[2], stride=2)
         self.layer4 = self._make_layer(block, m_channels * 8, num_blocks[3], stride=2)
-        
-        self.n_stats = 1 if pooling_func=='TAP' or pooling_func=="TSDP" else 2
+
+        self.n_stats = 1 if pooling_func == 'TAP' or pooling_func == "TSDP" else 2
         self.pool = eval(pooling_func)(in_dim=self.stats_dim * block.expansion)
         self.seg_1 = nn.Linear(self.stats_dim * block.expansion * self.n_stats, embed_dim)
         self.seg_bn_1 = nn.BatchNorm1d(embed_dim, affine=False)
