@@ -21,7 +21,7 @@ import torch
 import yaml
 
 from wespeaker.utils.checkpoint import load_checkpoint
-from wespeaker.models import *
+from wespeaker.models.speaker_model import get_speaker_model
 
 
 def get_args():
@@ -43,7 +43,7 @@ def main():
 
     with open(args.config, 'r') as fin:
         configs = yaml.load(fin, Loader=yaml.FullLoader)
-    model = eval(configs['model'])(**configs['model_args'])
+    model = get_speaker_model(configs['model'])(**configs['model_args'])
     print(model)
 
     load_checkpoint(model, args.checkpoint)

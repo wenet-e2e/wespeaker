@@ -10,10 +10,10 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from wespeaker.dataset.dataset import FeatList_LableDict_Dataset
-from wespeaker.models import *
+from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.utils.checkpoint import load_checkpoint
 from wespeaker.utils.file_utils import read_scp
-from wespeaker.utils.utils import *
+from wespeaker.utils.utils import parse_config_or_kwargs, validate_path
 
 
 def extract(config='conf/config.yaml', **kwargs):
@@ -32,7 +32,7 @@ def extract(config='conf/config.yaml', **kwargs):
     # Since the input length is not fixed, we set the built-in cudnn auto-tuner to False
     torch.backends.cudnn.benchmark = False
 
-    model = eval(configs['model'])(**configs['model_args'])
+    model = get_speaker_model(configs['model'])(**configs['model_args'])
     load_checkpoint(model, model_path)
     device = torch.device("cuda")
     model.to(device).eval()

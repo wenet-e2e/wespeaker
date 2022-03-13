@@ -10,7 +10,7 @@ import random
 import yaml
 
 
-def genlogger(outdir, fname):
+def get_logger(outdir, fname):
     formatter = logging.Formatter(
         "[ %(levelname)s : %(asctime)s ] - %(message)s")
     logging.basicConfig(level=logging.DEBUG,
