@@ -1,11 +1,13 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 # coding=utf-8
 # Author: wsstriving@gmail.com (Shuai Wang)
 
 """TDNN model for x-vector learning"""
 
+import torch
+import torch.nn as nn
 import torch.nn.functional as F
-from .pooling_layers import *
+import wespeaker.models.pooling_layers as pooling_layers
 
 
 class TdnnLayer(nn.Module):
@@ -56,7 +58,7 @@ class XVEC(nn.Module):
         self.frame_5 = TdnnLayer(hid_dim, stats_dim, context_size=1, dilation=1)
 
         self.n_stats = 1 if pooling_func == 'TAP' or pooling_func == "TSDP" else 2
-        self.pool = eval(pooling_func)(in_dim=stats_dim)
+        self.pool = getattr(pooling_layers, pooling_func)(in_dim=stats_dim)
         self.seg_1 = nn.Linear(stats_dim * self.n_stats, embed_dim)
         self.seg_bn_1 = nn.BatchNorm1d(embed_dim, affine=False)
         self.seg_2 = nn.Linear(embed_dim, embed_dim)

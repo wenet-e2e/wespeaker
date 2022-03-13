@@ -9,7 +9,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .pooling_layers import *
+import wespeaker.models.pooling_layers as pooling_layers
 
 
 ''' Res2Conv1d + BatchNorm1d + ReLU
@@ -109,7 +109,7 @@ class ECAPA_TDNN(nn.Module):
         cat_channels = channels * 3
         self.conv = nn.Conv1d(cat_channels, cat_channels, kernel_size=1)
         self.n_stats = 1 if pooling_func == 'TAP' or pooling_func == "TSDP" else 2
-        self.pool = eval(pooling_func)(in_dim=cat_channels, global_context_att=global_context_att)
+        self.pool = getattr(pooling_layers, pooling_func)(in_dim=cat_channels, global_context_att=global_context_att)
         self.bn = nn.BatchNorm1d(cat_channels * self.n_stats)
         self.linear = nn.Linear(cat_channels * self.n_stats, embed_dim)
 

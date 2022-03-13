@@ -17,7 +17,7 @@ Reference:
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .pooling_layers import *
+import wespeaker.models.pooling_layers as pooling_layers
 
 
 class BasicBlock(nn.Module):
@@ -89,7 +89,7 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, m_channels * 8, num_blocks[3], stride=2)
 
         self.n_stats = 1 if pooling_func == 'TAP' or pooling_func == "TSDP" else 2
-        self.pool = eval(pooling_func)(in_dim=self.stats_dim * block.expansion)
+        self.pool = getattr(pooling_layers, pooling_func)(in_dim=self.stats_dim * block.expansion)
         self.seg_1 = nn.Linear(self.stats_dim * block.expansion * self.n_stats, embed_dim)
         self.seg_bn_1 = nn.BatchNorm1d(embed_dim, affine=False)
         self.seg_2 = nn.Linear(embed_dim, embed_dim)

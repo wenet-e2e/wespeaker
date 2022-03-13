@@ -13,10 +13,11 @@ import torch.distributed as dist
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 
-from wespeaker.models import *
-from wespeaker.utils.utils import *
+import wespeaker.utils.schedulers as schedulers
+from wespeaker.models.speaker_model import get_speaker_model
+from wespeaker.models.projections import get_projection
+from wespeaker.utils.utils import get_logger, parse_config_or_kwargs, set_seed, spk2id
 from wespeaker.utils.file_utils import read_scp
-from wespeaker.utils.schedulers import ExponentialDecrease, MarginScheduler
 from wespeaker.utils.executor import run_epoch
 from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
 from wespeaker.dataset.dataset import FeatList_LableDict_Dataset
@@ -47,7 +48,7 @@ def train(config='conf/config.yaml', **kwargs):
             exit(1)
     dist.barrier()  # let the rank 0 mkdir first
 
-    logger = genlogger(configs['exp_dir'], 'train.log')
+    logger = get_logger(configs['exp_dir'], 'train.log')
     if world_size > 1:
         logger.info('training on multiple gpus, this gpu {}'.format(gpu))
 
@@ -88,7 +89,7 @@ def train(config='conf/config.yaml', **kwargs):
 
     # model
     logger.info("<== Model ==>")
-    model = eval(configs['model'])(**configs['model_args'])
+    model = get_speaker_model(configs['model'])(**configs['model_args'])
     # projection layer
     configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
     configs['projection_args']['num_class'] = len(spk2id_dict)
@@ -111,7 +112,7 @@ def train(config='conf/config.yaml', **kwargs):
         script_model = torch.jit.script(model)
         script_model.save(os.path.join(model_dir, 'init.zip'))
 
-    # ddp_model 
+    # ddp_model
     model.cuda()
     ddp_model = torch.nn.parallel.DistributedDataParallel(model)  # , find_unused_parameters=True)
     device = torch.device("cuda")
@@ -132,13 +133,13 @@ def train(config='conf/config.yaml', **kwargs):
     configs['scheduler_args']['num_epochs'] = configs['num_epochs']
     configs['scheduler_args']['epoch_iter'] = len(train_dataloader)
     configs['scheduler_args']['process_num'] = world_size
-    scheduler = eval(configs['scheduler'])(optimizer, **configs['scheduler_args'])
+    scheduler = getattr(schedulers, configs['scheduler'])(optimizer, **configs['scheduler_args'])
     if rank == 0:
         logger.info("<== Scheduler ==>")
         logger.info("scheduler is: " + configs['scheduler'])
 
     configs['margin_update']['epoch_iter'] = len(train_dataloader)
-    margin_scheduler = MarginScheduler(model=model, **configs['margin_update'])
+    margin_scheduler = getattr(schedulers, "MarginScheduler")(model=model, **configs['margin_update'])
     if rank == 0:
         logger.info("<== MarginScheduler ==>")
 
@@ -147,12 +148,12 @@ def train(config='conf/config.yaml', **kwargs):
         saved_config_path = os.path.join(configs['exp_dir'], 'config.yaml')
         with open(saved_config_path, 'w') as fout:
             data = yaml.dump(configs)
-            fout.write(data) 
+            fout.write(data)
 
-    # training 
+    # training
     dist.barrier()  # synchronize here
     if rank == 0:
-        logger.info("<========== Training process ==========>")    
+        logger.info("<========== Training process ==========>")
         header = ['Epoch', 'Batch', 'Lr', 'Margin', 'Loss', "Acc"]
         for line in tp.header(header, width=10, style='grid').split('\n'):
             logger.info(line)

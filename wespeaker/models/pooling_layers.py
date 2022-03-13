@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 # coding=utf-8
 # Author: wsstriving@gmail.com (Shuai Wang)
 
@@ -17,7 +17,7 @@ import torch.nn as nn
 class TAP(nn.Module):
     """
     Temporal average pooling, only first-order mean is considered
-    """    
+    """
     def __init__(self, **kwargs):
         super(TAP, self).__init__()
 
