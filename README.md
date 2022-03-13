@@ -8,8 +8,8 @@ online feature extraction or loading pre-extracted features in kaldi-format.
 * Create Conda env: pytorch version >= 1.10.0 is required !!!
 
 ``` sh
-conda create -n wenet_speaker python=3.9
-conda activate wenet_speaker
+conda create -n wespeaker python=3.9
+conda activate wespeaker
 conda install pytorch=1.10.1 torchaudio=0.10.1 cudatoolkit=11.3 -c pytorch -c conda-forge
 pip install -r requirements.txt
 ```
