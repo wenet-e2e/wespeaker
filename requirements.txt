@@ -6,4 +6,4 @@ scipy==1.7.3
 tableprint==0.9.1
 torchnet==0.0.4
 tqdm==4.62.3
-sklearn==1.0.1
+scikit-learn==1.0.1
