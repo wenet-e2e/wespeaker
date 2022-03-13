@@ -1,5 +1,5 @@
-# coding=utf-8
 #!/usr/bin/env python3
+# coding=utf-8
 # Author: Hongji Wang
 
 import os
@@ -17,7 +17,7 @@ from wespeaker.models import *
 from wespeaker.utils.utils import *
 from wespeaker.utils.file_utils import read_scp
 from wespeaker.utils.schedulers import ExponentialDecrease, MarginScheduler
-from wespeaker.utils.executor import runepoch
+from wespeaker.utils.executor import run_epoch
 from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
 from wespeaker.dataset.dataset import FeatList_LableDict_Dataset
 
@@ -161,7 +161,7 @@ def train(config='conf/config.yaml', **kwargs):
     for epoch in range(1, configs['num_epochs']+1):
         train_sampler.set_epoch(epoch)
 
-        runepoch(train_dataloader, ddp_model, criterion, optimizer, scheduler, margin_scheduler, epoch, logger, log_batch_interval=configs['log_batch_interval'], device=device)
+        run_epoch(train_dataloader, ddp_model, criterion, optimizer, scheduler, margin_scheduler, epoch, logger, log_batch_interval=configs['log_batch_interval'], device=device)
 
         if rank == 0:
             if epoch % configs['save_epoch_interval'] == 0 or epoch >= configs['num_epochs'] - configs['num_avg']:

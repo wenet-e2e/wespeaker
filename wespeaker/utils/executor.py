@@ -1,5 +1,5 @@
-# coding=utf-8
 #!/usr/bin/env python3
+# coding=utf-8
 # Author: Hongji Wang
 
 import tableprint as tp
@@ -8,7 +8,7 @@ import torch
 import torchnet as tnt
 
 
-def runepoch(dataloader, model, criterion, optimizer, scheduler, margin_scheduler, epoch, logger, log_batch_interval=100, device=torch.device('cuda')):
+def run_epoch(dataloader, model, criterion, optimizer, scheduler, margin_scheduler, epoch, logger, log_batch_interval=100, device=torch.device('cuda')):
     model.train()
     # By default use average pooling
     loss_meter = tnt.meter.AverageValueMeter()

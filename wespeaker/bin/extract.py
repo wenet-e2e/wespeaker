@@ -1,13 +1,15 @@
+#!/usr/bin/env python3
 # coding=utf-8
-# !/usr/bin/env python3
 # Author: Hongji Wang
 
-import fire
+import fire, os
 import kaldiio
+import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from wespeaker.dataset.dataset import FeatList_LableDict_Dataset
+from wespeaker.models import *
 from wespeaker.utils.checkpoint import load_checkpoint
 from wespeaker.utils.file_utils import read_scp
 from wespeaker.utils.utils import *

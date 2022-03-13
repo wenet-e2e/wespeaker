@@ -27,7 +27,7 @@ for suffix in $(seq 0 $(($nj - 1))); do
   suffix=$(printf '%03d' $suffix)
   data_scp_subfile=${log_dir}/split_${suffix}
   embed_ark=${embed_dir}/xvector_${suffix}.ark
-  CUDA_VISIBLE_DEVICES=${suffix} python3 wenet_speaker/bin/extract.py \
+  CUDA_VISIBLE_DEVICES=${suffix} python3 wespeaker/bin/extract.py \
     --config ${exp_dir}/config.yaml \
     --model_path ${model_path} \
     --data_scp ${data_scp_subfile} \

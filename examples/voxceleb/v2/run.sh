@@ -23,16 +23,16 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
   echo "Start training ..."
   num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
   torchrun --standalone --nnodes=1 --nproc_per_node=$num_gpus \
-    wenet_speaker/bin/train.py --config $config \
-    --exp_dir ${exp_dir} \
-    --gpus $gpus \
-    --num_avg ${num_avg}
+    wespeaker/bin/train.py --config $config \
+      --exp_dir ${exp_dir} \
+      --gpus $gpus \
+      --num_avg ${num_avg}
 fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   echo "Do model average ..."
   avg_model=$exp_dir/models/avg_model.pt
-  python wenet_speaker/bin/average_model.py \
+  python wespeaker/bin/average_model.py \
     --dst_model $avg_model \
     --src_path $exp_dir/models \
     --num ${num_avg}
@@ -47,7 +47,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   echo "Apply cosine scoring ..."
   mkdir -p ${exp_dir}/scores
   trials_dir=data/vox1/trials
-  python -u wenet_speaker/bin/score.py \
+  python -u wespeaker/bin/score.py \
     --exp_dir ${exp_dir} \
     --eval_scp_path ${exp_dir}/embeddings/vox1/xvector.scp \
     --cal_mean True \
@@ -61,7 +61,7 @@ fi
 
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
   echo "Export the best model ..."
-  python wenet_speaker/bin/export_jit.py \
+  python wespeaker/bin/export_jit.py \
     --config $exp_dir/config.yaml \
     --checkpoint $exp_dir/models/avg_model.pt \
     --output_file $exp_dir/models/final.zip
