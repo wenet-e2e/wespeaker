@@ -112,7 +112,7 @@ def train(config='conf/config.yaml', **kwargs):
         script_model = torch.jit.script(model)
         script_model.save(os.path.join(model_dir, 'init.zip'))
 
-    # ddp_model 
+    # ddp_model
     model.cuda()
     ddp_model = torch.nn.parallel.DistributedDataParallel(model)  # , find_unused_parameters=True)
     device = torch.device("cuda")
@@ -148,12 +148,12 @@ def train(config='conf/config.yaml', **kwargs):
         saved_config_path = os.path.join(configs['exp_dir'], 'config.yaml')
         with open(saved_config_path, 'w') as fout:
             data = yaml.dump(configs)
-            fout.write(data) 
+            fout.write(data)
 
-    # training 
+    # training
     dist.barrier()  # synchronize here
     if rank == 0:
-        logger.info("<========== Training process ==========>")    
+        logger.info("<========== Training process ==========>")
         header = ['Epoch', 'Batch', 'Lr', 'Margin', 'Loss', "Acc"]
         for line in tp.header(header, width=10, style='grid').split('\n'):
             logger.info(line)
