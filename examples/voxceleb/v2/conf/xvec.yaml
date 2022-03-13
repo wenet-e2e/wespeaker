@@ -18,7 +18,7 @@ dataset_args:
   train_label: data/vox2_dev/utt2spk
   aug_prob: 0.6
   musan_scp: data/musan/wav.scp
-  rirs_noises_scp: data/rirs_noises/wav.scp
+  rirs_scp: data/rirs/wav.scp
   speed_perturb: True
   spec_aug: False
 

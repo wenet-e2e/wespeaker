@@ -18,7 +18,7 @@ dataset_args:
   train_label: data/vox2_dev/utt2spk
   aug_prob: 0.6
   musan_scp: data/musan/wav.scp
-  rirs_noises_scp: data/rirs_noises/wav.scp
+  rirs_scp: data/rirs/wav.scp
   speed_perturb: True
   spec_aug: False
 
@@ -29,7 +29,7 @@ dataloader_args:
   prefetch_factor: 8
   drop_last: True
 
-model: ResNet34 # ResNet101
+model: ResNet34 # ResNet18, ResNet34, ResNet50, ResNet101, ResNet152
 model_init: null
 model_args:
   feat_dim: 80

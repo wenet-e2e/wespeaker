@@ -73,11 +73,11 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   echo "Prepare wav.scp for each dataset ..."
   export LC_ALL=C # kaldi config
 
-  mkdir -p data/musan data/rirs_noises data/vox1 data/vox2_dev
+  mkdir -p data/musan data/rirs data/vox1 data/vox2_dev
   # musan
   find $(pwd)/${rawdata_dir}/musan -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' >data/musan/wav.scp
-  # rirs_noises
-  find $(pwd)/${rawdata_dir}/RIRS_NOISES/simulated_rirs -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' >data/rirs_noises/wav.scp
+  # rirs
+  find $(pwd)/${rawdata_dir}/RIRS_NOISES/simulated_rirs -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' >data/rirs/wav.scp
   # vox1
   find $(pwd)/${rawdata_dir}/voxceleb1 -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' | sort >data/vox1/wav.scp
   awk '{print $1}' data/vox1/wav.scp | awk -F "/" '{print $0,$1}' >data/vox1/utt2spk

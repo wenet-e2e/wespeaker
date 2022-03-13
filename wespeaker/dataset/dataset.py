@@ -40,9 +40,9 @@ class FeatList_LableDict_Dataset(Dataset):
             self.speed_perturb = kwargs.get('speed_perturb', False)
             self.aug_prob = kwargs.get('aug_prob', 0.0)
             self.musan_scp = kwargs.get('musan_scp', '')
-            self.rirs_noises_scp = kwargs.get('rirs_noises_scp', '')
+            self.rirs_scp = kwargs.get('rirs_scp', '')
             if self.aug_prob > 0.0:
-                self.augment_wav = Augment_Wav(self.musan_scp, self.rirs_noises_scp)
+                self.augment_wav = Augment_Wav(self.musan_scp, self.rirs_scp)
         self.spec_aug = kwargs.get('spec_aug', False)
 
         # used for calculate the spk id after speed perturb
@@ -68,7 +68,7 @@ class FeatList_LableDict_Dataset(Dataset):
                 waveform = get_random_chunk(waveform, self.chunk_len)
             # augment wav
             if self.aug_prob > random.random():
-                waveform = self.augment_wav.add_rir_noise(waveform)
+                waveform = self.augment_wav.process(waveform)
             # make fbank feature
             feat_tensor = kaldi.fbank(torch.FloatTensor(waveform).unsqueeze(0), num_mel_bins=self.feat_dim,
                                       frame_shift=10, frame_length=25, energy_floor=0.0, window_type='hamming',
@@ -95,12 +95,12 @@ class FeatList_LableDict_Dataset(Dataset):
 
 
 class Augment_Wav:
-    def __init__(self, musan_scp, rirs_noises_scp):
+    def __init__(self, musan_scp, rirs_scp):
 
         self.noise_snr = {'noise': [0, 15], 'speech': [13, 20], 'music': [5, 15]}
         self.num_noise = {'noise': [1, 1], 'speech': [3, 7], 'music': [1, 1]}
 
-        self.rir_list = read_scp(rirs_noises_scp)
+        self.rir_list = read_scp(rirs_scp)
 
         self.noise_dict = {}  # {'noise':noise_list,'speech':speech_list,'music':music_list}
         with open(musan_scp, 'r') as fp:
@@ -149,7 +149,7 @@ class Augment_Wav:
 
         return signal.convolve(audio, rir_audio, mode='full')[:audio_len]
 
-    def add_rir_noise(self, audio):
+    def process(self, audio):
         augtype = random.randint(1, 4)
         # print("augtype", augtype)
         if augtype == 1:
