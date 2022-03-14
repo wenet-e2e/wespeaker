@@ -30,8 +30,8 @@ def compute_norm_counts(scores, edges, wghts=None):
 
 def compute_pmiss_pfa(scores, labels, weights=None):
     """ computes false positive rate (FPR) and false negative rate (FNR)
-    given trial socres and their labels. A weights option is also provided
-    to equalize the counts over score partitions (if there is such partitioning).
+    given trial socres and their labels. A weights option is also provided to
+    equalize the counts over score partitions (if there is such partitioning).
     """
 
     tgt_scores = scores[labels == 1]  # target trial scores
@@ -57,8 +57,8 @@ def compute_pmiss_pfa(scores, labels, weights=None):
 
 def compute_pmiss_pfa_rbst(scores, labels, weights=None):
     """ computes false positive rate (FPR) and false negative rate (FNR)
-    given trial socres and their labels. A weights option is also provided
-    to equalize the counts over score partitions (if there is such partitioning).
+    given trial socres and their labels. A weights option is also provided to
+    equalize the counts over score partitions (if there is such partitioning).
     """
 
     sorted_ndx = np.argsort(scores)
@@ -173,9 +173,9 @@ def compute_equalized_scores(max_tar_imp_counts, sc, labs, masks):
         imp_weight = max_tar_imp_counts[
             1] / num_non_targets if num_non_targets > 0 else 0
 
-        # print "condition: ", ix+1, "#targets: ", num_targets, " weight: ", tar_weight, " #non-targets: ", num_non_targets, " weight: ", imp_weight
-
-        # print("condition: {}, #targets: {}, weight: {},  #non-targets: {},  weight: {}".format(ix+1,num_targets,tar_weight,num_non_targets,imp_weight))
+        # print('''condition: {}, #targets: {}, weight: {}, #non-targets: {},
+        #       weight: {}'''.format(ix + 1, num_targets, tar_weight,
+        #                            num_non_targets, imp_weight))
 
         acount_weights = np.empty(alabs.shape, dtype='f')
         acount_weights[alabs == 1] = np.array([tar_weight] * num_targets)
@@ -218,6 +218,7 @@ if __name__ == '__main__':
     print("EER = {0:.2f}".format(100 * eer))
     print("minDCF08 = {0:.4f}, minDCF10 = {1:.4f}, minCprimary = {2:.4f}\n\n".
           format(min_dcf_08, min_dcf_10, min_c_primary))
-    # print("minDCF1 = {0:.4f}, minDCF2 = {1:.4f}, minCprimary = {2:.4f}\n\n".format(min_dcf_1, min_dcf_2, min_c_primary))
+    # print("minDCF1 = {0:.4f}, minDCF2 = {1:.4f}, minCprimary = {2:.4f}\n\n".
+    #       format(min_dcf_1, min_dcf_2, min_c_primary))
 
     plot_det_curve(fnr, fpr)

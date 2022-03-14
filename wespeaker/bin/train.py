@@ -26,7 +26,8 @@ from wespeaker.dataset.dataset import FeatList_LableDict_Dataset
 def train(config='conf/config.yaml', **kwargs):
     """Trains a model on the given features and spk labels.
 
-    :config: A training configuration. Note that all parameters in the config can also be manually adjusted with --ARG VALUE
+    :config: A training configuration. Note that all parameters in the
+             config can also be manually adjusted with --ARG VALUE
     :returns: None
     """
 

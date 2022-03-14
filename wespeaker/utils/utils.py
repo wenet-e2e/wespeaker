@@ -35,7 +35,8 @@ def parse_config_or_kwargs(config_file, **kwargs):
     help_str = "Valid Parameters are:\n"
     help_str += "\n".join(list(yaml_config.keys()))
     # passed kwargs will override yaml config
-    # for key in kwargs.keys(): assert key in yaml_config, "Parameter {} invalid!\n".format(key) + help_str
+    # for key in kwargs.keys():
+    #    assert key in yaml_config, "Parameter {} invalid!\n".format(key)
     return dict(yaml_config, **kwargs)
 
 
