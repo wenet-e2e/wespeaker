@@ -100,6 +100,11 @@ def train(config='conf/config.yaml', **kwargs):
     # model
     logger.info("<== Model ==>")
     model = get_speaker_model(configs['model'])(**configs['model_args'])
+    if configs['model_init'] is not None:
+        logger.info('Load intial model from {}'.format(configs['model_init']))
+        load_checkpoint(model, configs['model_init'])
+    else:
+        logger.info('Train model from scratch...')
     # projection layer
     configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
     configs['projection_args']['num_class'] = len(spk2id_dict)
@@ -108,11 +113,6 @@ def train(config='conf/config.yaml', **kwargs):
         configs['projection_args']['num_class'] *= 3
     projection = get_projection(configs['projection_args'])
     model.add_module("projection", projection)
-    if configs['model_init'] is not None:
-        logger.info('Load intial model from {}'.format(configs['model_init']))
-        load_checkpoint(model, configs['model_init'])
-    else:
-        logger.info('Train model from scratch...')
     if rank == 0:
         # print model
         for line in pformat(model).split('\n'):
@@ -141,10 +141,6 @@ def train(config='conf/config.yaml', **kwargs):
         logger.info("optimizer is: " + configs['optimizer'])
 
     # scheduler
-    if configs['feature_args']['raw_wav']:
-        configs['num_epochs'] = int(
-            configs['num_epochs'] /
-            (1.0 - configs['dataset_args']['aug_prob']))  # add num_epochs
     configs['scheduler_args']['num_epochs'] = configs['num_epochs']
     configs['scheduler_args']['epoch_iter'] = len(train_dataloader)
     configs['scheduler_args']['process_num'] = world_size
@@ -156,7 +152,7 @@ def train(config='conf/config.yaml', **kwargs):
 
     # margin scheduler
     configs['margin_update']['epoch_iter'] = len(train_dataloader)
-    margin_scheduler = schedulers.MarginScheduler(
+    margin_scheduler = getattr(schedulers, configs['margin_scheduler'])(
         model=model, **configs['margin_update'])
     if rank == 0:
         logger.info("<== MarginScheduler ==>")
