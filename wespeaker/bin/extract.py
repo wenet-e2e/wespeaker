@@ -41,6 +41,7 @@ def extract(config='conf/config.yaml', **kwargs):
     # prepare dataset and dataloader
     data_list = read_scp(data_scp)
     dataset = FeatList_LableDict_Dataset(data_list,
+                                         utt2spkid_dict={},
                                          whole_utt=(batch_size == 1),
                                          raw_wav=raw_wav,
                                          feat_dim=feat_dim,
@@ -58,9 +59,7 @@ def extract(config='conf/config.yaml', **kwargs):
     with torch.no_grad():
         with kaldiio.WriteHelper('ark,scp:' + embed_ark + "," +
                                  embed_scp) as writer:
-            t_bar = tqdm(ncols=100,
-                         total=len(dataloader),
-                         desc='extract_embed: ')
+            t_bar = tqdm(ncols=100, total=len(dataloader), desc='extract_embed: ')
             for i, (utts, feats, _) in enumerate(dataloader):
                 t_bar.update()
 

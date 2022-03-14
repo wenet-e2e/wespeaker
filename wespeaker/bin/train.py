@@ -101,13 +101,11 @@ def train(config='conf/config.yaml', **kwargs):
     logger.info("<== Model ==>")
     model = get_speaker_model(configs['model'])(**configs['model_args'])
     # projection layer
-    configs['projection_args']['embed_dim'] = configs['model_args'][
-        'embed_dim']
+    configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
     configs['projection_args']['num_class'] = len(spk2id_dict)
-    if configs['feature_args']['raw_wav'] and configs['dataset_args'][
-            'speed_perturb']:
-        configs['projection_args'][
-            'num_class'] *= 3  # diff speed is regarded as diff spk
+    if configs['feature_args']['raw_wav'] and configs['dataset_args']['speed_perturb']:
+        # diff speed is regarded as diff spk
+        configs['projection_args']['num_class'] *= 3
     projection = get_projection(configs['projection_args'])
     model.add_module("projection", projection)
     if configs['model_init'] is not None:
@@ -127,8 +125,7 @@ def train(config='conf/config.yaml', **kwargs):
 
     # ddp_model
     model.cuda()
-    ddp_model = torch.nn.parallel.DistributedDataParallel(
-        model)  # , find_unused_parameters=True)
+    ddp_model = torch.nn.parallel.DistributedDataParallel(model)
     device = torch.device("cuda")
 
     criterion = getattr(torch.nn, configs['loss'])(**configs['loss_args'])
@@ -137,13 +134,13 @@ def train(config='conf/config.yaml', **kwargs):
         logger.info("loss criterion is: " + configs['loss'])
 
     configs['optimizer_args']['lr'] = configs['scheduler_args']['initial_lr']
-    optimizer = getattr(torch.optim,
-                        configs['optimizer'])(ddp_model.parameters(),
-                                              **configs['optimizer_args'])
+    optimizer = getattr(torch.optim, configs['optimizer'])(
+        ddp_model.parameters(), **configs['optimizer_args'])
     if rank == 0:
         logger.info("<== Optimizer ==>")
         logger.info("optimizer is: " + configs['optimizer'])
 
+    # scheduler
     if configs['feature_args']['raw_wav']:
         configs['num_epochs'] = int(
             configs['num_epochs'] /
@@ -151,17 +148,16 @@ def train(config='conf/config.yaml', **kwargs):
     configs['scheduler_args']['num_epochs'] = configs['num_epochs']
     configs['scheduler_args']['epoch_iter'] = len(train_dataloader)
     configs['scheduler_args']['process_num'] = world_size
-    scheduler = getattr(schedulers,
-                        configs['scheduler'])(optimizer,
-                                              **configs['scheduler_args'])
+    scheduler = getattr(schedulers, configs['scheduler'])(
+        optimizer, **configs['scheduler_args'])
     if rank == 0:
         logger.info("<== Scheduler ==>")
         logger.info("scheduler is: " + configs['scheduler'])
 
+    # margin scheduler
     configs['margin_update']['epoch_iter'] = len(train_dataloader)
-    margin_scheduler = getattr(schedulers,
-                               "MarginScheduler")(model=model,
-                                                  **configs['margin_update'])
+    margin_scheduler = schedulers.MarginScheduler(
+        model=model, **configs['margin_update'])
     if rank == 0:
         logger.info("<== MarginScheduler ==>")
 
@@ -198,9 +194,8 @@ def train(config='conf/config.yaml', **kwargs):
         if rank == 0:
             if epoch % configs['save_epoch_interval'] == 0 or epoch >= configs[
                     'num_epochs'] - configs['num_avg']:
-                save_checkpoint(
-                    model, os.path.join(model_dir,
-                                        'model_{}.pt'.format(epoch)))
+                save_checkpoint(model, os.path.join(model_dir,
+                                                    'model_{}.pt'.format(epoch)))
 
     if rank == 0:
         os.symlink('model_{}.pt'.format(configs['num_epochs']),

@@ -23,7 +23,7 @@ class FeatList_LableDict_Dataset(Dataset):
     """
     def __init__(self,
                  data_list,
-                 utt2spkid_dict={},
+                 utt2spkid_dict,
                  whole_utt=False,
                  **kwargs):
         super(FeatList_LableDict_Dataset, self).__init__()
@@ -110,17 +110,13 @@ class FeatList_LableDict_Dataset(Dataset):
 class Augment_Wav:
     def __init__(self, musan_scp, rirs_scp):
 
-        self.noise_snr = {
-            'noise': [0, 15],
-            'speech': [13, 20],
-            'music': [5, 15]
-        }
+        self.noise_snr = {'noise': [0, 15], 'speech': [13, 20], 'music': [5, 15]}
         self.num_noise = {'noise': [1, 1], 'speech': [3, 7], 'music': [1, 1]}
 
         self.rir_list = read_scp(rirs_scp)
 
-        self.noise_dict = {
-        }  # {'noise':noise_list,'speech':speech_list,'music':music_list}
+        # {'noise': noise_list, 'speech': speech_list, 'music': music_list}
+        self.noise_dict = {}
         with open(musan_scp, 'r') as fp:
             for line in fp.readlines():
                 segs = line.strip().split()
@@ -154,8 +150,7 @@ class Augment_Wav:
                                        self.noise_snr[noise_type][1])
             noise_db = 10 * np.log10(np.mean(noise_audio**2) + 1e-4)
             noise_list.append(
-                np.sqrt(10**((audio_db - noise_db - noise_snr) / 10)) *
-                noise_audio)
+                np.sqrt(10**((audio_db - noise_db - noise_snr) / 10)) * noise_audio)
 
         return np.sum(np.stack(noise_list), axis=0) + audio
 
