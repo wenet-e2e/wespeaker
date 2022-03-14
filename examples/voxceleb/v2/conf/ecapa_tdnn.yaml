@@ -1,11 +1,11 @@
 ### train configuraton
 
-exp_dir: exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch66
+exp_dir: exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
 gpus: "[0,1]"
 num_avg: 10
 
 seed: 42
-num_epochs: 66
+num_epochs: 150
 save_epoch_interval: 5 # save model every 5 epochs
 log_batch_interval: 100 # log every 100 batchs
 
@@ -40,6 +40,7 @@ projection_args:
   scale: 32.0
   easy_margin: False
 
+margin_scheduler: MarginScheduler
 margin_update:
   initial_margin: 0.0
   final_margin: 0.2
