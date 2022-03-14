@@ -51,8 +51,7 @@ class ArcMarginProduct(nn.Module):
         self.out_features = out_features
         self.scale = scale
         self.margin = margin
-        self.weight = nn.Parameter(torch.FloatTensor(out_features,
-                                                     in_features))
+        self.weight = nn.Parameter(torch.FloatTensor(out_features, in_features))
         nn.init.xavier_uniform_(self.weight)
 
         self.easy_margin = easy_margin
@@ -124,10 +123,10 @@ class AddMarginProduct(nn.Module):
         nn.init.xavier_uniform_(self.weight)
 
     def forward(self, input, label):
-        # --------------------- cos(theta) & phi(theta) ----------------
+        # ---------------- cos(theta) & phi(theta) ---------------
         cosine = F.linear(F.normalize(input), F.normalize(self.weight))
         phi = cosine - self.margin
-        # --------------------- convert label to one-hot ---------------
+        # ---------------- convert label to one-hot ---------------
         one_hot = input.new_zeros(cosine.size())
         one_hot.scatter_(1, label.view(-1, 1).long(), 1)
         output = (one_hot * phi) + ((1.0 - one_hot) * cosine)
@@ -160,8 +159,7 @@ class SphereProduct(nn.Module):
         self.power = 1
         self.LambdaMin = 5.0
         self.iter = 0
-        self.weight = nn.Parameter(torch.FloatTensor(out_features,
-                                                     in_features))
+        self.weight = nn.Parameter(torch.FloatTensor(out_features, in_features))
         nn.init.xavier_uniform(self.weight)
 
         # duplication formula

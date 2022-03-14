@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding=utf-8
 # Author: wsstriving@gmail.com (Shuai Wang)
+
 """
 Pooling functions to aggregate frame-level deep features
 into segment-level speaker embeddings

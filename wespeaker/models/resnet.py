@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding=utf-8
 # Author: wsstriving@gmail.com (Shuai Wang)
+
 '''ResNet in PyTorch.
 
 Some modifications from the original architecture:
@@ -46,7 +47,8 @@ class BasicBlock(nn.Module):
                           self.expansion * planes,
                           kernel_size=1,
                           stride=stride,
-                          bias=False), nn.BatchNorm2d(self.expansion * planes))
+                          bias=False),
+                nn.BatchNorm2d(self.expansion * planes))
 
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
@@ -83,7 +85,8 @@ class Bottleneck(nn.Module):
                           self.expansion * planes,
                           kernel_size=1,
                           stride=stride,
-                          bias=False), nn.BatchNorm2d(self.expansion * planes))
+                          bias=False),
+                nn.BatchNorm2d(self.expansion * planes))
 
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
@@ -133,9 +136,8 @@ class ResNet(nn.Module):
                                        stride=2)
 
         self.n_stats = 1 if pooling_func == 'TAP' or pooling_func == "TSDP" else 2
-        self.pool = getattr(pooling_layers,
-                            pooling_func)(in_dim=self.stats_dim *
-                                          block.expansion)
+        self.pool = getattr(pooling_layers, pooling_func)(
+            in_dim=self.stats_dim * block.expansion)
         self.seg_1 = nn.Linear(self.stats_dim * block.expansion * self.n_stats,
                                embed_dim)
         self.seg_bn_1 = nn.BatchNorm1d(embed_dim, affine=False)

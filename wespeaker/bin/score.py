@@ -93,8 +93,8 @@ def trials_cosine_score(eval_scp_path='',
                     w_f.write('{} {} {:.5f} {}\n'.format(
                         segs[0], segs[1], cos_score, segs[2]))
                 else:  # enroll_name test_name
-                    w_f.write('{} {} {:.5f}\n'.format(segs[0], segs[1],
-                                                      cos_score))
+                    w_f.write('{} {} {:.5f}\n'.format(
+                        segs[0], segs[1], cos_score))
 
 
 def main(exp_dir,
