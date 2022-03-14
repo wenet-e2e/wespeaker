@@ -29,7 +29,8 @@ def extract(config='conf/config.yaml', **kwargs):
     feat_dim = configs['feature_args'].get('feat_dim', 80)
     num_frms = configs['feature_args'].get('num_frms', 200)
 
-    # Since the input length is not fixed, we set the built-in cudnn auto-tuner to False
+    # Since the input length is not fixed, we set the built-in cudnn
+    # auto-tuner to False
     torch.backends.cudnn.benchmark = False
 
     model = get_speaker_model(configs['model'])(**configs['model_args'])
@@ -39,17 +40,27 @@ def extract(config='conf/config.yaml', **kwargs):
 
     # prepare dataset and dataloader
     data_list = read_scp(data_scp)
-    dataset = FeatList_LableDict_Dataset(data_list, whole_utt=(batch_size == 1), raw_wav=raw_wav, feat_dim=feat_dim,
+    dataset = FeatList_LableDict_Dataset(data_list,
+                                         whole_utt=(batch_size == 1),
+                                         raw_wav=raw_wav,
+                                         feat_dim=feat_dim,
                                          num_frms=num_frms)
-    dataloader = DataLoader(dataset, shuffle=False, batch_size=batch_size, num_workers=num_workers, prefetch_factor=4)
+    dataloader = DataLoader(dataset,
+                            shuffle=False,
+                            batch_size=batch_size,
+                            num_workers=num_workers,
+                            prefetch_factor=4)
 
     validate_path(embed_ark)
     embed_ark = os.path.abspath(embed_ark)
     embed_scp = embed_ark[:-3] + "scp"
 
     with torch.no_grad():
-        with kaldiio.WriteHelper('ark,scp:' + embed_ark + "," + embed_scp) as writer:
-            t_bar = tqdm(ncols=100, total=len(dataloader), desc='extract_embed: ')
+        with kaldiio.WriteHelper('ark,scp:' + embed_ark + "," +
+                                 embed_scp) as writer:
+            t_bar = tqdm(ncols=100,
+                         total=len(dataloader),
+                         desc='extract_embed: ')
             for i, (utts, feats, _) in enumerate(dataloader):
                 t_bar.update()
 

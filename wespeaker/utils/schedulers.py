@@ -6,11 +6,19 @@ import math
 
 
 class MarginScheduler:
-    def __init__(self, model, epoch_iter, increase_start_epoch, fix_start_epoch, initial_margin, final_margin,
-                 update_margin, increase_type='exp'):
+    def __init__(self,
+                 model,
+                 epoch_iter,
+                 increase_start_epoch,
+                 fix_start_epoch,
+                 initial_margin,
+                 final_margin,
+                 update_margin,
+                 increase_type='exp'):
         '''
-        The margin is fixed as initial_margin before increase_start_epoch, between increase_start_epoch and
-        fix_start_epoch, the margin is exponentially increasing from initial_margin to final_margin
+        The margin is fixed as initial_margin before increase_start_epoch,
+        between increase_start_epoch and fix_start_epoch, the margin is
+        exponentially increasing from initial_margin to final_margin
         after fix_start_epoch, the margin is fixed as final_margin.
         '''
         self.model = model
@@ -22,7 +30,8 @@ class MarginScheduler:
 
         self.fix_already = False
         self.current_iter = 0
-        self.update_margin = update_margin and hasattr(self.model.projection, 'update')
+        self.update_margin = update_margin and hasattr(self.model.projection,
+                                                       'update')
         self.increase_iter = self.fix_start_iter - self.increase_start_iter
 
         self.init_margin()
@@ -39,10 +48,12 @@ class MarginScheduler:
 
         if self.increase_type == 'exp':  # exponentially increase the margin
             ratio = 1.0 - math.exp(
-                (current_iter / self.increase_iter) * math.log(final_val / (initial_val + 1e-6))) * initial_val
+                (current_iter / self.increase_iter) *
+                math.log(final_val / (initial_val + 1e-6))) * initial_val
         else:  # linearly increase the margin
             ratio = 1.0 * current_iter / self.increase_iter
-        return self.initial_margin + (self.final_margin - self.initial_margin) * ratio
+        return self.initial_margin + (self.final_margin -
+                                      self.initial_margin) * ratio
 
     def step(self, current_iter=None):
         if not self.update_margin or self.fix_already:
@@ -74,11 +85,18 @@ class BaseClass:
     '''
     Base Class for learning rate scheduler
     '''
-
-    def __init__(self, optimizer, num_epochs, epoch_iter, initial_lr, final_lr, warm_up_epoch=6, process_num=1):
+    def __init__(self,
+                 optimizer,
+                 num_epochs,
+                 epoch_iter,
+                 initial_lr,
+                 final_lr,
+                 warm_up_epoch=6,
+                 process_num=1):
         '''
         warm_up_epoch: the first warm_up_epoch is the multiprocess warm-up stage
-        process_num: multiplied to the current lr in the multiprocess training process
+        process_num: multiplied to the current lr in the multiprocess training
+        process
         '''
         self.optimizer = optimizer
         self.max_iter = num_epochs * epoch_iter
@@ -91,7 +109,8 @@ class BaseClass:
     def get_multi_process_coeff(self):
         lr_coeff = 1.0 * self.process_num
         if self.current_iter < self.warm_up_iter and self.process_num > 1:
-            lr_coeff = float(self.current_iter) * (self.process_num - 1) / self.warm_up_iter + 1.0
+            lr_coeff = float(self.current_iter) * (self.process_num -
+                                                   1) / self.warm_up_iter + 1.0
 
         return lr_coeff
 
@@ -127,13 +146,22 @@ class BaseClass:
 
 
 class ExponentialDecrease(BaseClass):
-    def __init__(self, optimizer, num_epochs, epoch_iter, initial_lr, final_lr, warm_up_epoch=6, process_num=1):
-        super().__init__(optimizer, num_epochs, epoch_iter, initial_lr, final_lr, warm_up_epoch, process_num)
+    def __init__(self,
+                 optimizer,
+                 num_epochs,
+                 epoch_iter,
+                 initial_lr,
+                 final_lr,
+                 warm_up_epoch=6,
+                 process_num=1):
+        super().__init__(optimizer, num_epochs, epoch_iter, initial_lr,
+                         final_lr, warm_up_epoch, process_num)
 
     def get_current_lr(self):
         lr_coeff = self.get_multi_process_coeff()
         current_lr = lr_coeff * self.initial_lr * math.exp(
-            (self.current_iter / self.max_iter) * math.log(self.final_lr / self.initial_lr))
+            (self.current_iter / self.max_iter) *
+            math.log(self.final_lr / self.initial_lr))
         return current_lr
 
 
@@ -141,10 +169,18 @@ class TriAngular2(BaseClass):
     '''
     The implementation of https://arxiv.org/pdf/1506.01186.pdf
     '''
-
-    def __init__(self, optimizer, num_epochs, epoch_iter, initial_lr, final_lr, warm_up_epoch=6, process_num=1,
-                 cycle_step=2, reduce_lr_diff_ratio=0.5):
-        super().__init__(optimizer, num_epochs, epoch_iter, initial_lr, final_lr, warm_up_epoch, process_num)
+    def __init__(self,
+                 optimizer,
+                 num_epochs,
+                 epoch_iter,
+                 initial_lr,
+                 final_lr,
+                 warm_up_epoch=6,
+                 process_num=1,
+                 cycle_step=2,
+                 reduce_lr_diff_ratio=0.5):
+        super().__init__(optimizer, num_epochs, epoch_iter, initial_lr,
+                         final_lr, warm_up_epoch, process_num)
 
         self.reduce_lr_diff_ratio = reduce_lr_diff_ratio
         self.cycle_iter = cycle_step * epoch_iter
@@ -159,12 +195,14 @@ class TriAngular2(BaseClass):
         point = self.current_iter % self.cycle_iter
         cycle_index = self.current_iter // self.cycle_iter
 
-        self.max_lr = self.min_lr + self.gap * self.reduce_lr_diff_ratio ** cycle_index
+        self.max_lr = self.min_lr + self.gap * self.reduce_lr_diff_ratio**cycle_index
 
         if point <= self.step_size:
-            current_lr = self.min_lr + (self.max_lr - self.min_lr) * point / self.step_size
+            current_lr = self.min_lr + (self.max_lr -
+                                        self.min_lr) * point / self.step_size
         else:
-            current_lr = self.max_lr - (self.max_lr - self.min_lr) * (point - self.step_size) / self.step_size
+            current_lr = self.max_lr - (self.max_lr - self.min_lr) * (
+                point - self.step_size) / self.step_size
 
         current_lr = lr_coeff * current_lr
 
@@ -195,8 +233,17 @@ if __name__ == '__main__':
     final_lr = 0.1
     warm_up_epoch = 2
     process_num = 4
-    scheduler = ExponentialDecrease(optimizer, num_epochs, epoch_iter, initial_lr, final_lr, warm_up_epoch, process_num)
-    # scheduler = TriAngular2(optimizer, num_epochs, epoch_iter, initial_lr, final_lr, warm_up_epoch, process_num,
-    #                         cycle_step=2, reduce_lr_diff_ratio=0.5)
+    scheduler = ExponentialDecrease(optimizer, num_epochs, epoch_iter,
+                                    initial_lr, final_lr, warm_up_epoch,
+                                    process_num)
+    # scheduler = TriAngular2(optimizer,
+    #                         num_epochs,
+    #                         epoch_iter,
+    #                         initial_lr,
+    #                         final_lr,
+    #                         warm_up_epoch,
+    #                         process_num,
+    #                         cycle_step=2,
+    #                         reduce_lr_diff_ratio=0.5)
 
     show_lr_curve(scheduler)

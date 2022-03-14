@@ -13,15 +13,19 @@ from scipy.io import wavfile
 import torchaudio.compliance.kaldi as kaldi
 
 from wespeaker.utils.file_utils import read_scp
-from wespeaker.utils.dataset_utils import get_random_chunk, speed_perturb, spec_augmentation
+from wespeaker.utils.dataset_utils import (get_random_chunk, speed_perturb,
+                                           spec_augmentation)
 
 
 class FeatList_LableDict_Dataset(Dataset):
     """
     shuffle wav.scp/feats.scp, load all labels into cpu memory
     """
-
-    def __init__(self, data_list, utt2spkid_dict={}, whole_utt=False, **kwargs):
+    def __init__(self,
+                 data_list,
+                 utt2spkid_dict={},
+                 whole_utt=False,
+                 **kwargs):
         super(FeatList_LableDict_Dataset, self).__init__()
         self.data_list = data_list
         self.length = len(data_list)
@@ -33,7 +37,8 @@ class FeatList_LableDict_Dataset(Dataset):
         self.feat_dim = kwargs.get('feat_dim', 80)
         self.num_frms = kwargs.get('num_frms', 200)
         # chunk config (sample rate is 16kHZ)
-        self.chunk_len = (self.num_frms - 1) * 160 + 400 if self.raw_wav else self.num_frms
+        self.chunk_len = (self.num_frms -
+                          1) * 160 + 400 if self.raw_wav else self.num_frms
 
         # dataset config (for wav augmentation only)
         if self.raw_wav:
@@ -57,12 +62,14 @@ class FeatList_LableDict_Dataset(Dataset):
             # load wav file
             sr, waveform = wavfile.read(data_path)
             # kaldiio.load_mat() is a little slower than wavfile.read(),
-            # but supports cloud io (e.g., kaldiio.load_mat('ffmpeg -i http://ip/xxx.wav -ac 1 -ar 16000 -f wav - |'))
+            # but supports cloud io (e.g., kaldiio.load_mat(
+            # 'ffmpeg -i http://ip/xxx.wav -ac 1 -ar 16000 -f wav - |'))
 
             # speed perturb
             if self.speed_perturb:
                 speed_perturb_idx = random.randint(0, 2)
-                waveform = speed_perturb(waveform, speed_perturb_idx=speed_perturb_idx)
+                waveform = speed_perturb(waveform,
+                                         speed_perturb_idx=speed_perturb_idx)
             # chunk/pad
             if not self.whole_utt:
                 waveform = get_random_chunk(waveform, self.chunk_len)
@@ -70,9 +77,15 @@ class FeatList_LableDict_Dataset(Dataset):
             if self.aug_prob > random.random():
                 waveform = self.augment_wav.process(waveform)
             # make fbank feature
-            feat_tensor = kaldi.fbank(torch.FloatTensor(waveform).unsqueeze(0), num_mel_bins=self.feat_dim,
-                                      frame_shift=10, frame_length=25, energy_floor=0.0, window_type='hamming',
-                                      htk_compat=True, use_energy=False, dither=1)
+            feat_tensor = kaldi.fbank(torch.FloatTensor(waveform).unsqueeze(0),
+                                      num_mel_bins=self.feat_dim,
+                                      frame_shift=10,
+                                      frame_length=25,
+                                      energy_floor=0.0,
+                                      window_type='hamming',
+                                      htk_compat=True,
+                                      use_energy=False,
+                                      dither=1)
             feat = feat_tensor.detach().numpy()
         else:
             # load feat
@@ -97,12 +110,17 @@ class FeatList_LableDict_Dataset(Dataset):
 class Augment_Wav:
     def __init__(self, musan_scp, rirs_scp):
 
-        self.noise_snr = {'noise': [0, 15], 'speech': [13, 20], 'music': [5, 15]}
+        self.noise_snr = {
+            'noise': [0, 15],
+            'speech': [13, 20],
+            'music': [5, 15]
+        }
         self.num_noise = {'noise': [1, 1], 'speech': [3, 7], 'music': [1, 1]}
 
         self.rir_list = read_scp(rirs_scp)
 
-        self.noise_dict = {}  # {'noise':noise_list,'speech':speech_list,'music':music_list}
+        self.noise_dict = {
+        }  # {'noise':noise_list,'speech':speech_list,'music':music_list}
         with open(musan_scp, 'r') as fp:
             for line in fp.readlines():
                 segs = line.strip().split()
@@ -120,18 +138,24 @@ class Augment_Wav:
         """
         audio = audio.astype(np.float32)
         audio_len = audio.shape[0]
-        audio_db = 10 * np.log10(np.mean(audio ** 2) + 1e-4)
+        audio_db = 10 * np.log10(np.mean(audio**2) + 1e-4)
 
         num_noise = self.num_noise[noise_type]
-        noise_idx_list = random.sample(self.noise_dict[noise_type], random.randint(num_noise[0], num_noise[1]))
+        noise_idx_list = random.sample(
+            self.noise_dict[noise_type],
+            random.randint(num_noise[0], num_noise[1]))
         noise_list = []
         for _, noise_path in noise_idx_list:
             _, noise_audio = wavfile.read(noise_path)
-            noise_audio = get_random_chunk(noise_audio, audio_len).astype(np.float32)
+            noise_audio = get_random_chunk(noise_audio,
+                                           audio_len).astype(np.float32)
 
-            noise_snr = random.uniform(self.noise_snr[noise_type][0], self.noise_snr[noise_type][1])
-            noise_db = 10 * np.log10(np.mean(noise_audio ** 2) + 1e-4)
-            noise_list.append(np.sqrt(10 ** ((audio_db - noise_db - noise_snr) / 10)) * noise_audio)
+            noise_snr = random.uniform(self.noise_snr[noise_type][0],
+                                       self.noise_snr[noise_type][1])
+            noise_db = 10 * np.log10(np.mean(noise_audio**2) + 1e-4)
+            noise_list.append(
+                np.sqrt(10**((audio_db - noise_db - noise_snr) / 10)) *
+                noise_audio)
 
         return np.sum(np.stack(noise_list), axis=0) + audio
 
@@ -145,7 +169,7 @@ class Augment_Wav:
         _, rir_wav = random.choice(self.rir_list)
         _, rir_audio = wavfile.read(rir_wav)
         rir_audio = rir_audio.astype(np.float32)
-        rir_audio = rir_audio / np.sqrt(np.sum(rir_audio ** 2))
+        rir_audio = rir_audio / np.sqrt(np.sum(rir_audio**2))
 
         return signal.convolve(audio, rir_audio, mode='full')[:audio_len]
 
