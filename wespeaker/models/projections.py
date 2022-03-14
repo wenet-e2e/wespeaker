@@ -97,9 +97,11 @@ class ArcMarginProduct(nn.Module):
         return output
 
     def extra_repr(self):
-        return 'in_features={}, out_features={}, scale={}, margin={}, easy_margin={}'.format(
-            self.in_features, self.out_features, self.scale, self.margin,
-            self.easy_margin)
+        return '''in_features={}, out_features={}, scale={},
+                  margin={}, easy_margin={}'''.format(self.in_features,
+                                                      self.out_features,
+                                                      self.scale, self.margin,
+                                                      self.easy_margin)
 
 
 class AddMarginProduct(nn.Module):
