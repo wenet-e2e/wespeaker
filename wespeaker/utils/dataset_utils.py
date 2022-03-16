@@ -24,12 +24,10 @@ def get_random_chunk(data, chunk_len):
 
 
 def spec_augmentation(x,
-                      warp_for_time=False,
                       num_t_mask=1,
                       num_f_mask=1,
                       max_t=10,
                       max_f=8,
-                      max_w=80,
                       prob=0.5):
     """ do spec augmentation on x
 
@@ -39,7 +37,6 @@ def spec_augmentation(x,
         num_f_mask: number of freq mask to apply
         max_t: max width of time mask
         max_f: max width of freq mask
-        max_w: max width of time warp
 
     Returns:
         augmented feature (x)
@@ -51,15 +48,6 @@ def spec_augmentation(x,
     max_frames = y.shape[0]
     max_freq = y.shape[1]
 
-    # time warp
-    if warp_for_time and max_frames > max_w * 2:
-        center = random.randrange(max_w, max_frames - max_w)
-        warped = random.randrange(center - max_w, center + max_w) + 1
-
-        left = Image.fromarray(x[:center]).resize((max_freq, warped), BICUBIC)
-        right = Image.fromarray(x[center:]).resize(
-            (max_freq, max_frames - warped), BICUBIC)
-        y = np.concatenate((left, right), 0)
     # time mask
     for i in range(num_t_mask):
         start = random.randint(0, max_frames - 1)
