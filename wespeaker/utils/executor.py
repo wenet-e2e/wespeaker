@@ -48,9 +48,9 @@ def run_epoch(dataloader,
             optimizer.step()
 
             # log
-            if i % log_batch_interval == 0:
+            if (i + 1) % log_batch_interval == 0:
                 logger.info(
-                    tp.row((epoch, i, scheduler.get_lr(),
+                    tp.row((epoch, i + 1, scheduler.get_lr(),
                             margin_scheduler.get_margin()) +
                            (loss_meter.value()[0], acc_meter.value()[0]),
                            width=10,
