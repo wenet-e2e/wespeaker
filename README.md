@@ -3,10 +3,14 @@
 WeSpeaker mainly focuses on speaker embedding learning, with application to the speaker verification task. We support
 online feature extraction or loading pre-extracted features in kaldi-format.
 
-## Installation && Run
+## Installation
 
-* Create Conda env: pytorch version >= 1.10.0 is required !!!
+* Clone this repo
+``` sh
+git clone https://github.com/wenet-e2e/wespeaker.git
+```
 
+* Create conda env: pytorch version >= 1.10.0 is required !!!
 ``` sh
 conda create -n wespeaker python=3.9
 conda activate wespeaker
@@ -14,43 +18,40 @@ conda install pytorch=1.10.1 torchaudio=0.10.1 cudatoolkit=11.3 -c pytorch -c co
 pip install -r requirements.txt
 ```
 
-* Run voxceleb recipe
+## Recipes
 
-``` sh
-cd examples/voxceleb/v2
-bash run.sh --stage 2 --stop-stage 4
-```
+* [VoxCeleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxceleb/v2)
+* CNCeleb
 
-## Dataset Support
+## Support List:
 
-- [Voxceleb dataset](https://github.com/wsstriving/wenet-speaker/tree/master/examples/voxceleb/v2)
-
-### Support list:
-
-* Model (SOTA models):
+* Model (SOTA Models)
     - [x] [Standard X-vector](http://www.danielpovey.com/files/2017_interspeech_embeddings.pdf)
     - [x] [ResNet](https://arxiv.org/pdf/1512.03385.pdf)
     - [x] [ECAPA_TDNN](https://arxiv.org/abs/2005.07143)
-* Pooling functions
+* Pooling Functions
     - [x] TAP(mean) / TSDP(std) / TSTP(mean+std)
-    - [x] Attentive statistics pooling (ASTP)
+    - [x] Attentive Statistics Pooling (ASTP)
     - [ ] [Learnable Dictionary Encoding (LDE)](https://arxiv.org/pdf/1804.00385.pdf)
 * Criteria
-    - [x] softmax
-    - [x] sphere
-    - [x] [add_margin (AM-softmax)](https://arxiv.org/pdf/1801.05599.pdf)
-    - [x] [arc_margin (AAM-softmax)](https://arxiv.org/pdf/1801.07698v1.pdf)
-* Scoring:
-    - [x] cosine scoring
-    - [ ] python plda scoring
-    - [ ] score normalization (AS-Norm)
-* Online Augmentation：
-    - [x] rir+noise
-    - [x] speed perturb
-    - [x] specaug
+    - [x] Softmax
+    - [x] [Sphere (A-Softmax)](https://www.researchgate.net/publication/327389164)
+    - [x] [Add_Margin (AM-Softmax)](https://arxiv.org/pdf/1801.05599.pdf)
+    - [x] [Arc_Margin (AAM-Softmax)](https://arxiv.org/pdf/1801.07698v1.pdf)
+* Scoring
+    - [x] Cosine
+    - [ ] PLDA
+    - [ ] Score Normalization (AS-Norm)
+* Metric
+    - [x] EER
+    - [x] minDCF
+* Online Augmentation
+    - [x] Noise && RIR
+    - [x] Speed Perturb
+    - [x] Specaug
 * Literature
-    - [x] Awesome speaker papers
+    - [x] [Awesome Speaker Papers](https://github.com/wenet-e2e/wespeaker/blob/master/speaker_recognition_papers.md)
 
-### Looking for contributors
+## Looking for contributors
 
 If you are interested to contribute, feel free to contact @wsstriving or @robin1001
