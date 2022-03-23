@@ -116,7 +116,7 @@ def compute_c_dcf(fnr, fpr, p_target, c_miss=1, c_fa=1):
     return c_det
 
 
-def plot_det_curve(fnr, fpr):
+def plot_det_curve(fnr, fpr, save_path=None):
     """ plots the detection error trade-off (DET) curve
     """
 
@@ -153,7 +153,11 @@ def plot_det_curve(fnr, fpr):
         bbox=dict(boxstyle="round4", fc="w"),
     )
     plt.grid()
-    plt.show()
+    if save_path is not None:
+        plt.savefig(save_path)
+        plt.clf()
+    else:
+        plt.show()
 
 
 def compute_equalized_scores(max_tar_imp_counts, sc, labs, masks):
