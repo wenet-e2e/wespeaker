@@ -158,7 +158,6 @@ def plot_det_curve(fnr, fpr, save_path=None):
         plt.clf()
     else:
         plt.show()
-    
 
 
 def compute_equalized_scores(max_tar_imp_counts, sc, labs, masks):

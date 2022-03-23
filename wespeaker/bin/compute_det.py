@@ -6,18 +6,16 @@ import os
 import fire
 import numpy as np
 
-from wespeaker.utils.score_metrics import compute_pmiss_pfa_rbst, plot_det_curve 
+from wespeaker.utils.score_metrics import compute_pmiss_pfa_rbst, plot_det_curve
 
 
 def main(scores_dir, *trails):
 
     for trail in trails:
-        scoresfile = os.path.join(scores_dir, 
-                                trail + '.score')
-        det_path = os.path.join(scores_dir, 
-                                trail + '.det.png')
-        scores = [] 
-        labels = [] 
+        scoresfile = os.path.join(scores_dir, trail + '.score')
+        det_path = os.path.join(scores_dir, trail + '.det.png')
+        scores = []
+        labels = []
         with open(scoresfile) as readlines:
             for line in readlines:
                 tokens = line.strip().split()
@@ -30,6 +28,7 @@ def main(scores_dir, *trails):
 
         fnr, fpr = compute_pmiss_pfa_rbst(scores, labels)
         plot_det_curve(fnr, fpr, det_path)
+
 
 if __name__ == '__main__':
     fire.Fire(main)
