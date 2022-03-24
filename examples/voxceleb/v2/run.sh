@@ -47,23 +47,33 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   echo "Apply cosine scoring ..."
   mkdir -p ${exp_dir}/scores
   trials_dir=data/vox1/trials
-  python -u wespeaker/bin/score.py \
+  python wespeaker/bin/score.py \
     --exp_dir ${exp_dir} \
     --eval_scp_path ${exp_dir}/embeddings/vox1/xvector.scp \
     --cal_mean True \
     --cal_mean_dir ${exp_dir}/embeddings/vox2_dev \
-    --p_target 0.01 \
-    --c_miss 1 \
-    --c_fa 1 \
-    ${trials_dir}/vox1_O_cleaned.kaldi ${trials_dir}/vox1_E_cleaned.kaldi ${trials_dir}/vox1_H_cleaned.kaldi \
-    2>&1 | tee ${exp_dir}/scores/vox1_cos_result
+    ${trials_dir}/vox1_O_cleaned.kaldi \
+    ${trials_dir}/vox1_E_cleaned.kaldi \
+    ${trials_dir}/vox1_H_cleaned.kaldi
 fi
 
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
-  echo "Compute det curve ..."
+  echo "Compute metrics (EER/minDCF) ..."
+  scores_dir=${exp_dir}/scores
+  python wespeaker/bin/compute_metrics.py \
+    --p_target 0.01 \
+    --c_fa 1 \
+    --c_miss 1 \
+    ${scores_dir}/vox1_O_cleaned.kaldi.score \
+    ${scores_dir}/vox1_E_cleaned.kaldi.score \
+    ${scores_dir}/vox1_H_cleaned.kaldi.score \
+    2>&1 | tee ${scores_dir}/vox1_cos_result
+
+  echo "Compute DET curve ..."
   python wespeaker/bin/compute_det.py \
-    --scores_dir ${exp_dir}/scores \
-    vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi
+    ${scores_dir}/vox1_O_cleaned.kaldi.score \
+    ${scores_dir}/vox1_E_cleaned.kaldi.score \
+    ${scores_dir}/vox1_H_cleaned.kaldi.score
 fi
 
 if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
