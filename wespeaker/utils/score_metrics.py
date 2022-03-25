@@ -196,9 +196,9 @@ def compute_equalized_scores(max_tar_imp_counts, sc, labs, masks):
 if __name__ == '__main__':
     scores = []
     labels = []
-    scoresfile = sys.argv[1]
+    scores_file = sys.argv[1]
 
-    with open(scoresfile) as readlines:
+    with open(scores_file) as readlines:
         for line in readlines:
             tokens = line.strip().split()
             scores.append(float(tokens[-1]))
