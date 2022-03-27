@@ -182,7 +182,7 @@ def train(config='conf/config.yaml', **kwargs):
             logger.info(line)
     dist.barrier()  # synchronize here
 
-    for epoch in range(1, configs['num_epochs'] + 1):
+    for epoch in range(start_epoch, configs['num_epochs'] + 1):
         train_sampler.set_epoch(epoch)
 
         run_epoch(train_dataloader,
