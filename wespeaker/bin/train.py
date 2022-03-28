@@ -46,7 +46,8 @@ def train(config='conf/config.yaml', **kwargs):
             os.makedirs(model_dir)
         except IOError:
             print(model_dir + " already exists !!!")
-            exit(1)
+            if checkpoint is None:
+                exit(1)
     dist.barrier()  # let the rank 0 mkdir first
 
     logger = get_logger(configs['exp_dir'], 'train.log')
