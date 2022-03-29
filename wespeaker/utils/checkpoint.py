@@ -2,6 +2,9 @@
 # coding=utf-8
 # Author: Hongji Wang
 
+import os
+import re
+import yaml
 import torch
 
 
@@ -11,9 +14,15 @@ def load_checkpoint(model: torch.nn.Module, path: str):
     else:
         checkpoint = torch.load(path, map_location='cpu')
     model.load_state_dict(checkpoint, strict=False)
+    info_path = re.sub('.pt$', '.yaml', path)
+    configs = {}
+    if os.path.exists(info_path):
+        with open(info_path, 'r') as fin:
+            configs = yaml.load(fin, Loader=yaml.FullLoader)
+    return configs
 
 
-def save_checkpoint(model: torch.nn.Module, path: str):
+def save_checkpoint(model: torch.nn.Module, path: str, infos=None):
     if isinstance(model, torch.nn.DataParallel):
         state_dict = model.module.state_dict()
     elif isinstance(model, torch.nn.parallel.DistributedDataParallel):
@@ -21,3 +30,9 @@ def save_checkpoint(model: torch.nn.Module, path: str):
     else:
         state_dict = model.state_dict()
     torch.save(state_dict, path)
+    info_path = re.sub('.pt$', '.yaml', path)
+    if infos is None:
+        infos = {}
+    with open(info_path, 'w') as fout:
+        data = yaml.dump(infos)
+        fout.write(data)

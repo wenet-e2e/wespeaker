@@ -32,7 +32,7 @@ def train(config='conf/config.yaml', **kwargs):
     """
 
     configs = parse_config_or_kwargs(config, **kwargs)
-
+    checkpoint = configs.get('checkpoint', None)
     # dist configs
     rank = int(os.environ['LOCAL_RANK'])
     world_size = int(os.environ['WORLD_SIZE'])
@@ -46,7 +46,8 @@ def train(config='conf/config.yaml', **kwargs):
             os.makedirs(model_dir)
         except IOError:
             print(model_dir + " already exists !!!")
-            exit(1)
+            if checkpoint is None:
+                exit(1)
     dist.barrier()  # let the rank 0 mkdir first
 
     logger = get_logger(configs['exp_dir'], 'train.log')
@@ -123,6 +124,15 @@ def train(config='conf/config.yaml', **kwargs):
         script_model = torch.jit.script(model)
         script_model.save(os.path.join(model_dir, 'init.zip'))
 
+    # If specify checkpoint, load some info from checkpoint.
+    if checkpoint is not None:
+        infos = load_checkpoint(model, checkpoint)
+        logger.info('checkpoint: {}'.format(checkpoint))
+    else:
+        infos = {}
+    start_epoch = infos.get('epoch', 0) + 1
+    logger.info('start_epoch: {}'.format(start_epoch))
+
     # ddp_model
     model.cuda()
     ddp_model = torch.nn.parallel.DistributedDataParallel(model)
@@ -173,7 +183,7 @@ def train(config='conf/config.yaml', **kwargs):
             logger.info(line)
     dist.barrier()  # synchronize here
 
-    for epoch in range(1, configs['num_epochs'] + 1):
+    for epoch in range(start_epoch, configs['num_epochs'] + 1):
         train_sampler.set_epoch(epoch)
 
         run_epoch(train_dataloader,
@@ -190,8 +200,13 @@ def train(config='conf/config.yaml', **kwargs):
         if rank == 0:
             if epoch % configs['save_epoch_interval'] == 0 or epoch >= configs[
                     'num_epochs'] - configs['num_avg']:
-                save_checkpoint(model, os.path.join(model_dir,
-                                                    'model_{}.pt'.format(epoch)))
+                save_checkpoint(
+                    model,
+                    os.path.join(model_dir, 'model_{}.pt'.format(epoch)), {
+                        'epoch': epoch,
+                        'lr': scheduler.get_lr(),
+                        'margin': margin_scheduler.get_margin()
+                    })
 
     if rank == 0:
         os.symlink('model_{}.pt'.format(configs['num_epochs']),

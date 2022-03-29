@@ -11,6 +11,7 @@ config=conf/ecapa_tdnn.yaml
 exp_dir=exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
 gpus="[0,1]"
 num_avg=10
+checkpoint=
 
 . tools/parse_options.sh || exit 1
 
@@ -26,7 +27,8 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     wespeaker/bin/train.py --config $config \
       --exp_dir ${exp_dir} \
       --gpus $gpus \
-      --num_avg ${num_avg}
+      --num_avg ${num_avg} \
+      ${checkpoint:+--checkpoint $checkpoint}
 fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
