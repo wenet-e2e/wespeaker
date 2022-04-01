@@ -19,6 +19,7 @@ import torch.distributed as dist
 from torch.utils.data import IterableDataset
 
 from wespeaker.utils.file_utils import read_lists, read_scp
+from wespeaker.dataset.lmdb_data import LmdbData
 import wespeaker.dataset.processor as processor
 
 
@@ -115,7 +116,11 @@ class DataList(IterableDataset):
             yield data
 
 
-def Dataset(data_list_file, spk2id_file, conf):
+def Dataset(data_list_file,
+            spk2id_file,
+            conf,
+            reverb_lmdb_file=None,
+            noise_lmdb_file=None):
     """ Construct dataset from arguments
 
         We have two shuffle stage in the Dataset. The first is global
@@ -123,7 +128,10 @@ def Dataset(data_list_file, spk2id_file, conf):
         at training samples level.
 
         Args:
-            data_type(str): raw/shard
+            data_list_file: shard list file
+            spk2id_file: speaker to id file
+            reverb_lmdb_file: reverb data source lmdb file
+            noise_lmdb_file: noise data source lmdb file
     """
     lists = read_lists(data_list_file)
     shuffle = conf.get('shuffle', False)
@@ -147,7 +155,15 @@ def Dataset(data_list_file, spk2id_file, conf):
     # random chunk
     dataset = Processor(dataset, processor.random_chunk, 2.0)
 
-    # TODO(Binbin Zhang): Support reverb, noise
+    # Optional add reverb
+    if reverb_lmdb_file is not None:
+        reverb_data = LmdbData(reverb_lmdb_file)
+        dataset = Processor(dataset, processor.add_reverb, reverb_data)
+
+    # Optional add noise
+    if noise_lmdb_file:
+        noise_data = LmdbData(noise_lmdb_file)
+        dataset = Processor(dataset, processor.add_noise, noise_data)
 
     fbank_conf = conf.get('fbank_conf', {})
     dataset = Processor(dataset, processor.compute_fbank, **fbank_conf)

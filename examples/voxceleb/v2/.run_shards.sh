@@ -22,6 +22,7 @@ fi
 
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
+  # Covert training data to shard
   python tools/make_shard_list.py --num_utts_per_shard 1000 \
       --num_threads 16 \
       --prefix shards \
@@ -29,6 +30,10 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
       --shuffle \
       data/vox2_dev/wav.scp data/vox2_dev/utt2spk \
       data/vox2_dev/shards data/vox2_dev/shard.list
+  # Convert all musan data to LMDB
+  python tools/make_lmdb.py data/musan/wav.scp data/musan/lmdb
+  # Convert all rirs data to LMDB
+  python tools/make_lmdb.py data/rirs/wav.scp data/rirs/lmdb
 fi
 
 
@@ -38,6 +43,8 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   python wespeaker/bin/train_uio.py --config $config \
       --train_list data/vox2_dev/shard.list \
       --spk2id data/vox2_dev/spk2id \
+      --reverb_lmdb data/rirs/lmdb \
+      --noise_lmdb data/musan/lmdb \
       --exp_dir ${exp_dir}
 fi
 

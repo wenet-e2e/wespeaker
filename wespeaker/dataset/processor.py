@@ -12,13 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import random
+import io
 import logging
+import random
 import tarfile
 from subprocess import PIPE, Popen
 from urllib.parse import urlparse
 
 import numpy as np
+from scipy import signal
+from scipy.io import wavfile
 import torch
 import torchaudio
 import torchaudio.compliance.kaldi as kaldi
@@ -221,6 +224,78 @@ def random_chunk(data, chunk_len=2.0):
             wav = np.resize(wav, new_shape)
             wav = torch.from_numpy(wav)
         sample['wav'] = wav
+        yield sample
+
+
+def add_reverb(data, reverb_source):
+    """ Extract fbank
+
+        Args:
+            data: Iterable[{key, wav, label, sample_rate}]
+            reverb_source: LMDB data source
+
+        Returns:
+            Iterable[{key, wav, label, sample_rate}]
+    """
+    for sample in data:
+        assert 'wav' in sample
+        assert 'key' in sample
+        audio = sample['wav'].numpy()[0]
+        audio_len = audio.shape[0]
+        _, rir_data = reverb_source.random_one()
+        rir_io = io.BytesIO(rir_data)
+        _, rir_audio = wavfile.read(rir_io)
+        rir_audio = rir_audio.astype(np.float32)
+        rir_audio = rir_audio / np.sqrt(np.sum(rir_audio**2))
+        out_audio = signal.convolve(audio, rir_audio, mode='full')[:audio_len]
+        out_audio = torch.from_numpy(out_audio)
+        out_audio = torch.unsqueeze(out_audio, 0)
+        sample['wav'] = out_audio
+        yield sample
+
+
+def add_noise(data, noise_source):
+    """ Extract fbank
+
+        Args:
+            data: Iterable[{key, wav, label, sample_rate}]
+            noise_source: LMDB data source
+
+        Returns:
+            Iterable[{key, wav, label, sample_rate}]
+    """
+    for sample in data:
+        assert 'wav' in sample
+        assert 'key' in sample
+        audio = sample['wav'].numpy()[0]
+        audio_len = audio.shape[0]
+        audio_db = 10 * np.log10(np.mean(audio**2) + 1e-4)
+
+        key, noise_data = noise_source.random_one()
+        if key.startswith('noise'):
+            snr_range = [0, 15]
+        elif key.startswith('speech'):
+            snr_range = [3, 30]
+        elif key.startswith('music'):
+            snr_range = [5, 15]
+        else:
+            snr_range = [0, 15]
+        _, noise_audio = wavfile.read(io.BytesIO(noise_data))
+        noise_audio = noise_audio.astype(np.float32)
+        if noise_audio.shape[0] > audio_len:
+            start = random.randint(0, noise_audio.shape[0] - audio_len)
+            noise_audio = noise_audio[start:start + audio_len]
+        else:
+            # Resize will repeat copy
+            noise_audio = np.resize(noise_audio, (audio_len, ))
+        noise_snr = random.uniform(snr_range[0], snr_range[1])
+        noise_db = 10 * np.log10(np.mean(noise_audio**2) + 1e-4)
+        noise_audio = np.sqrt(10**(
+            (audio_db - noise_db - noise_snr) / 10)) * noise_audio
+        out_audio = audio + noise_audio
+        out_audio = torch.from_numpy(out_audio)
+        out_audio = torch.unsqueeze(out_audio, 0)
+        sample['wav'] = out_audio
         yield sample
 
 

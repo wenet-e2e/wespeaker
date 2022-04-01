@@ -17,10 +17,15 @@ def train(config='conf/config.yaml', **kwargs):
     """
 
     configs = parse_config_or_kwargs(config, **kwargs)
-    dataset = Dataset(configs['train_list'], configs['spk2id'],
-                      configs['dataset_conf'])
+    dataset = Dataset(
+        configs['train_list'],
+        configs['spk2id'],
+        configs['dataset_conf'],
+        reverb_lmdb_file=configs.get('reverb_lmdb', None),
+        noise_lmdb_file=configs.get('noise_lmdb', None),
+    )
     for i, item in enumerate(dataset):
-        print(item['key'], item['feat'].size())
+        print(item['key'])
         if i > 5:
             break
 
