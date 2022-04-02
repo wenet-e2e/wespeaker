@@ -4,8 +4,8 @@
 
 exp_dir=''
 model_path=''
-nj=1
-gpus=
+nj=4
+gpus="[0,1]"
 
 . tools/parse_options.sh
 set -e

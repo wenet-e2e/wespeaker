@@ -9,8 +9,8 @@ store_dir='vox2_dev/vox1'
 batch_size=1
 num_workers=1
 raw_wav=True
-nj=1
-gpus=
+nj=4
+gpus="[0,1]"
 
 . tools/parse_options.sh
 set -e
@@ -27,11 +27,11 @@ num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
 gpus=(`echo $gpus | cut -d '[' -f2 | cut -d ']' -f1 | tr ',' ' '`)
 
 for suffix in $(seq 0 $(($nj - 1))); do
-  ids=$[$suffix % $num_gpus]
+  idx=$[$suffix % $num_gpus]
   suffix=$(printf '%03d' $suffix)
   data_scp_subfile=${log_dir}/split_${suffix}
   embed_ark=${embed_dir}/xvector_${suffix}.ark
-  CUDA_VISIBLE_DEVICES=${gpus[$ids]} python3 wespeaker/bin/extract.py \
+  CUDA_VISIBLE_DEVICES=${gpus[$idx]} python3 wespeaker/bin/extract.py \
     --config ${exp_dir}/config.yaml \
     --model_path ${model_path} \
     --data_scp ${data_scp_subfile} \
