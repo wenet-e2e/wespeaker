@@ -4,7 +4,8 @@
 
 exp_dir=''
 model_path=''
-nj=1
+nj=4
+gpus="[0,1]"
 
 . tools/parse_options.sh
 set -e
@@ -15,7 +16,7 @@ raw_wav_array=(True True)
 #raw_wav_array=(False False)
 
 data_name_array=("vox2_dev" "vox1")
-nj_array=($nj $nj)      # nj should not exceed num of gpus in local machine !!!
+nj_array=($nj $nj)
 batch_size_array=(16 1) # batch_size of test set must be 1 !!!
 num_workers_array=(4 1)
 count=${#data_name_array[@]}
@@ -28,7 +29,8 @@ for i in $(seq 0 $(($count - 1))); do
     --batch_size ${batch_size_array[$i]} \
     --num_workers ${num_workers_array[$i]} \
     --raw_wav ${raw_wav_array[$i]} \
-    --nj ${nj_array[$i]} &
+    --nj ${nj_array[$i]} \
+    --gpus $gpus &
 done
 
 wait

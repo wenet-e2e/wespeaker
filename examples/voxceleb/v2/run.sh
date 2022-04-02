@@ -40,9 +40,8 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
     --num ${num_avg}
 
   echo "Extract embeddings ..."
-  # !!!IMPORTANT!!!
-  # nj should not exceed num of gpus in local machine
-  local/extract_vox.sh --exp_dir $exp_dir --model_path $avg_model --nj 4
+
+  local/extract_vox.sh --exp_dir $exp_dir --model_path $avg_model --nj 4 --gpus $gpus
 fi
 
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
