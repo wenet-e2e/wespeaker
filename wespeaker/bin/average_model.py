@@ -2,7 +2,7 @@
 # Author: di.wu@mobvoi.com (DI WU)
 import argparse
 import glob
-import os
+import re
 
 import torch
 
@@ -36,7 +36,9 @@ def main():
     val_scores = []
 
     path_list = glob.glob('{}/[!avg][!final]*.pt'.format(args.src_path))
-    path_list = sorted(path_list, key=os.path.getmtime)
+    path_list = sorted(
+        path_list,
+        key=lambda p: int(re.findall(r"(?<=model_)\d*(?=.pt)", p)[0]))
     path_list = path_list[-args.num:]
     print(path_list)
     avg = None
