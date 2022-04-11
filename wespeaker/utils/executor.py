@@ -2,6 +2,7 @@
 # coding=utf-8
 # Author: Hongji Wang
 
+from contextlib import nullcontext
 import tableprint as tp
 
 import torch
@@ -23,7 +24,13 @@ def run_epoch(dataloader,
     loss_meter = tnt.meter.AverageValueMeter()
     acc_meter = tnt.meter.ClassErrorMeter(accuracy=True)
 
-    with torch.set_grad_enabled(True):
+    # https://github.com/wenet-e2e/wenet/blob/main/wenet/utils/executor.py#L40
+    if isinstance(model, torch.nn.parallel.DistributedDataParallel):
+        model_context = model.join
+    else:
+        model_context = nullcontext
+
+    with torch.set_grad_enabled(True), model_context():
         for i, (utts, features, targets) in enumerate(dataloader):
 
             cur_iter = (epoch - 1) * len(dataloader) + i
