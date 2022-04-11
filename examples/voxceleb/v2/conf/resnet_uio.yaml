@@ -1,0 +1,80 @@
+### train configuraton
+
+exp_dir: exp/ResNet34-TSTP-emb256-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150_UIO
+gpus: "[2,3]"
+num_avg: 10
+
+seed: 42
+num_epochs: 150
+save_epoch_interval: 5 # save model every 5 epochs
+log_batch_interval: 100 # log every 100 batchs
+
+feature_args:
+  raw_wav: True
+  num_frms: 200
+
+dataloader_args:
+  batch_size: 128
+  num_workers: 16
+  pin_memory: False
+  prefetch_factor: 8
+  drop_last: True
+
+dataset_conf:
+    train_scp: data/vox2_dev/wav.scp
+    train_label: data/vox2_dev/utt2spk
+    aug_prob: 0.6
+    musan_scp: data/musan/wav.scp
+    rirs_scp: data/rirs/wav.scp
+    speed_perturb: True
+    fbank_conf:
+        num_mel_bins: 80
+        frame_shift: 10
+        frame_length: 25
+        dither: 1.0
+    spec_aug: False
+    spec_aug_conf:
+        num_t_mask: 1
+        num_f_mask: 1
+        max_t: 10
+        max_f: 8
+        prob: 0.5
+    shuffle: True
+    shuffle_conf:
+        shuffle_size: 1500
+
+model: ResNet34 # ResNet18, ResNet34, ResNet50, ResNet101, ResNet152
+model_init: null
+model_args:
+  feat_dim: 80
+  embed_dim: 256
+  pooling_func: 'TSTP'
+projection_args:
+  project_type: 'arc_margin' # add_margin, arc_margin, sphere, softmax
+  scale: 32.0
+  easy_margin: False
+
+margin_scheduler: MarginScheduler
+margin_update:
+  initial_margin: 0.0
+  final_margin: 0.2
+  increase_start_epoch: 20
+  fix_start_epoch: 40
+  update_margin: True
+  increase_type: 'exp'  # exp, linear
+
+loss: CrossEntropyLoss
+loss_args: { }
+
+optimizer: SGD
+optimizer_args:
+  momentum: 0.9
+  nesterov: True
+  weight_decay: 0.0001
+
+scheduler: ExponentialDecrease
+scheduler_args:
+  initial_lr: 0.1
+  final_lr: 0.00005
+  warm_up_epoch: 6
+  process_num: 1
