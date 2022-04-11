@@ -13,3 +13,10 @@ def read_scp(scp_file):
             key_value_list.append((key, value))
             line = fp.readline()
     return key_value_list
+
+def read_lists(list_file):
+    lists = []
+    with open(list_file, 'r', encoding='utf8') as fin:
+        for line in fin:
+            lists.append(line.strip())
+    return lists
