@@ -160,17 +160,20 @@ def Dataset(data_list_file,
     # Optional add reverb
     # if reverb_lmdb_file is not None:
     #     reverb_data = LmdbData(reverb_lmdb_file)
-    #     dataset = Processor(dataset, processor.add_reverb, reverb_data, conf['aug_prob'])
+    #     dataset = Processor(dataset, processor.add_reverb,
+    #                           reverb_data, conf['aug_prob'])
     # # TODO: aug_prob
     # # Optional add noise
     # if noise_lmdb_file:
     #     noise_data = LmdbData(noise_lmdb_file)
-    #     dataset = Processor(dataset, processor.add_noise, noise_data, conf['aug_prob'])
+    #     dataset = Processor(dataset, processor.add_noise,
+    #                           noise_data, conf['aug_prob'])
 
     if reverb_lmdb_file and noise_lmdb_file:
         reverb_data = LmdbData(reverb_lmdb_file)
         noise_data = LmdbData(noise_lmdb_file)
-        dataset = Processor(dataset, processor.add_noise_reverb, noise_data, reverb_data, conf['aug_prob'])
+        dataset = Processor(dataset, processor.add_noise_reverb, noise_data,
+                            reverb_data, conf['aug_prob'])
 
     fbank_conf = conf.get('fbank_conf', {})
     dataset = Processor(dataset, processor.compute_fbank, **fbank_conf)

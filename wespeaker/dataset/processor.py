@@ -321,7 +321,7 @@ def add_noise_reverb(data, noise_source, reverb_source, aug_prob):
                 out_audio = torch.unsqueeze(out_audio, 0)
                 sample['wav'] = out_audio
             elif augtype == 2:
-                # 
+                # add noise
                 audio = sample['wav'].numpy()[0]
                 audio_len = audio.shape[0]
                 audio_db = 10 * np.log10(np.mean(audio**2) + 1e-4)
