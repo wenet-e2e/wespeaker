@@ -7,6 +7,7 @@ from pprint import pformat
 import fire
 import yaml
 import tableprint as tp
+import re
 
 import torch
 import torch.distributed as dist
@@ -17,7 +18,7 @@ from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.models.projections import get_projection
 from wespeaker.utils.utils import get_logger, parse_config_or_kwargs, set_seed, spk2id
 from wespeaker.utils.file_utils import read_scp
-from wespeaker.utils.executor import run_epoch
+from wespeaker.utils.executor_uio import run_epoch
 from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
 from wespeaker.dataset.udataset import Dataset
 
@@ -44,8 +45,8 @@ def train(config='conf/config.yaml', **kwargs):
             os.makedirs(model_dir)
         except IOError:
             print(model_dir + " already exists !!!")
-            # if checkpoint is None:
-            #     # exit(1)
+            if checkpoint is None:
+                exit(1)
     dist.barrier()  # let the rank 0 mkdir first
 
     logger = get_logger(configs['exp_dir'], 'train.log')
@@ -145,11 +146,12 @@ def train(config='conf/config.yaml', **kwargs):
 
     # If specify checkpoint, load some info from checkpoint.
     if checkpoint is not None:
-        infos = load_checkpoint(model, checkpoint)
+        load_checkpoint(model, checkpoint)
+        start_epoch = int(re.findall(r"(?<=model_)\d*(?=.pt)",
+                                     checkpoint)[0]) + 1
         logger.info('checkpoint: {}'.format(checkpoint))
     else:
-        infos = {}
-    start_epoch = infos.get('epoch', 0) + 1
+        start_epoch = 1
     logger.info('start_epoch: {}'.format(start_epoch))
 
     # ddp_model
@@ -224,11 +226,7 @@ def train(config='conf/config.yaml', **kwargs):
                     'num_epochs'] - configs['num_avg']:
                 save_checkpoint(
                     model,
-                    os.path.join(model_dir, 'model_{}.pt'.format(epoch)), {
-                        'epoch': epoch,
-                        'lr': scheduler.get_lr(),
-                        'margin': margin_scheduler.get_margin()
-                    })
+                    os.path.join(model_dir, 'model_{}.pt'.format(epoch)))
 
     if rank == 0:
         os.symlink('model_{}.pt'.format(configs['num_epochs']),
