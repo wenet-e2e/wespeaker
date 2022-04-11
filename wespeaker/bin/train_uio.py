@@ -2,6 +2,7 @@
 # coding=utf-8
 # Author: Hongji Wang
 
+<<<<<<< HEAD
 import os
 from pprint import pformat
 import fire
@@ -24,6 +25,14 @@ from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
 from wespeaker.dataset.dataset import FeatList_LableDict_Dataset
 from wespeaker.dataset.udataset import Dataset
 
+=======
+import fire
+
+from wespeaker.utils.utils import parse_config_or_kwargs
+from wespeaker.dataset.udataset import Dataset
+
+
+>>>>>>> upstream/binbin-uio
 def train(config='conf/config.yaml', **kwargs):
     """Trains a model on the given features and spk labels.
 
@@ -33,6 +42,7 @@ def train(config='conf/config.yaml', **kwargs):
     """
 
     configs = parse_config_or_kwargs(config, **kwargs)
+<<<<<<< HEAD
     checkpoint = configs.get('checkpoint', None)
     # dist configs
     rank = int(os.environ['LOCAL_RANK'])
@@ -98,10 +108,14 @@ def train(config='conf/config.yaml', **kwargs):
 
     # shards
     train_dataset = Dataset(
+=======
+    dataset = Dataset(
+>>>>>>> upstream/binbin-uio
         configs['train_list'],
         configs['spk2id'],
         configs['dataset_conf'],
         reverb_lmdb_file=configs.get('reverb_lmdb', None),
+<<<<<<< HEAD
         noise_lmdb_file=configs.get('noise_lmdb', None)
     )
     # train_sampler = DistributedSampler(train_dataset, shuffle=True)
@@ -237,6 +251,14 @@ def train(config='conf/config.yaml', **kwargs):
         os.symlink('model_{}.pt'.format(configs['num_epochs']),
                    os.path.join(model_dir, 'final_model.pt'))
         logger.info(tp.bottom(len(header), width=10, style='grid'))
+=======
+        noise_lmdb_file=configs.get('noise_lmdb', None),
+    )
+    for i, item in enumerate(dataset):
+        print(item['key'])
+        if i > 5:
+            break
+>>>>>>> upstream/binbin-uio
 
 
 if __name__ == '__main__':

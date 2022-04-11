@@ -35,7 +35,10 @@ class Processor(IterableDataset):
     def set_epoch(self, epoch):
         self.source.set_epoch(epoch)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/binbin-uio
     def __iter__(self):
         """ Return an iterator over the source dataset processed by the
             given processor.
@@ -107,7 +110,10 @@ class DataList(IterableDataset):
     def set_epoch(self, epoch):
         self.sampler.set_epoch(epoch)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/binbin-uio
     def __iter__(self):
         sampler_info = self.sampler.update()
         indexes = self.sampler.sample(self.lists)
@@ -158,6 +164,7 @@ def Dataset(data_list_file,
     dataset = Processor(dataset, processor.random_chunk, 2.0)
 
     # Optional add reverb
+<<<<<<< HEAD
     # if reverb_lmdb_file is not None:
     #     reverb_data = LmdbData(reverb_lmdb_file)
     #     dataset = Processor(dataset, processor.add_reverb, reverb_data, conf['aug_prob'])
@@ -171,6 +178,16 @@ def Dataset(data_list_file,
         reverb_data = LmdbData(reverb_lmdb_file)
         noise_data = LmdbData(noise_lmdb_file)
         dataset = Processor(dataset, processor.add_noise_reverb, noise_data, reverb_data, conf['aug_prob'])
+=======
+    if reverb_lmdb_file is not None:
+        reverb_data = LmdbData(reverb_lmdb_file)
+        dataset = Processor(dataset, processor.add_reverb, reverb_data)
+
+    # Optional add noise
+    if noise_lmdb_file:
+        noise_data = LmdbData(noise_lmdb_file)
+        dataset = Processor(dataset, processor.add_noise, noise_data)
+>>>>>>> upstream/binbin-uio
 
     fbank_conf = conf.get('fbank_conf', {})
     dataset = Processor(dataset, processor.compute_fbank, **fbank_conf)

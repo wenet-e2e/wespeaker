@@ -33,7 +33,11 @@ class LmdbData:
 
     def random_one(self):
         assert len(self.keys) > 0
+<<<<<<< HEAD
         index = random.randint(0, len(self.keys) - 1)
+=======
+        index = random.randint(0, len(self.keys))
+>>>>>>> upstream/binbin-uio
         key = self.keys[index]
         with self.db.begin(write=False) as txn:
             value = txn.get(key.encode())
