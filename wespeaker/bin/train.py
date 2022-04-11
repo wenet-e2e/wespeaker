@@ -7,6 +7,7 @@ from pprint import pformat
 import fire
 import yaml
 import tableprint as tp
+import re
 
 import torch
 import torch.distributed as dist
@@ -126,11 +127,12 @@ def train(config='conf/config.yaml', **kwargs):
 
     # If specify checkpoint, load some info from checkpoint.
     if checkpoint is not None:
-        infos = load_checkpoint(model, checkpoint)
+        load_checkpoint(model, checkpoint)
+        start_epoch = int(re.findall(r"(?<=model_)\d*(?=.pt)",
+                                     checkpoint)[0]) + 1
         logger.info('checkpoint: {}'.format(checkpoint))
     else:
-        infos = {}
-    start_epoch = infos.get('epoch', 0) + 1
+        start_epoch = 1
     logger.info('start_epoch: {}'.format(start_epoch))
 
     # ddp_model
@@ -202,11 +204,7 @@ def train(config='conf/config.yaml', **kwargs):
                     'num_epochs'] - configs['num_avg']:
                 save_checkpoint(
                     model,
-                    os.path.join(model_dir, 'model_{}.pt'.format(epoch)), {
-                        'epoch': epoch,
-                        'lr': scheduler.get_lr(),
-                        'margin': margin_scheduler.get_margin()
-                    })
+                    os.path.join(model_dir, 'model_{}.pt'.format(epoch)))
 
     if rank == 0:
         os.symlink('model_{}.pt'.format(configs['num_epochs']),
