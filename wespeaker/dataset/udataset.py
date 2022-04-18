@@ -118,7 +118,8 @@ class DataList(IterableDataset):
             yield data
 
 
-def Dataset(data_list_file,
+def Dataset(data_type,
+            data_list_file,
             spk2id_file,
             conf,
             reverb_lmdb_file=None,
@@ -130,17 +131,22 @@ def Dataset(data_list_file,
         at training samples level.
 
         Args:
+            data_type(str): raw/shard
             data_list_file: shard list file
             spk2id_file: speaker to id file
             reverb_lmdb_file: reverb data source lmdb file
             noise_lmdb_file: noise data source lmdb file
     """
+    assert data_type in ['raw', 'shard']
     lists = read_lists(data_list_file)
     shuffle = conf.get('shuffle', False)
     # Global shuffle
     dataset = DataList(lists, shuffle=shuffle)
-    dataset = Processor(dataset, processor.url_opener)
-    dataset = Processor(dataset, processor.tar_file_and_group)
+    if data_type == 'shard':
+        dataset = Processor(dataset, processor.url_opener)
+        dataset = Processor(dataset, processor.tar_file_and_group)
+    else:
+        dataset = Processor(dataset, processor.parse_raw)
     # Local shuffle
     if shuffle:
         shuffle_conf = conf.get('shuffle_conf', {})

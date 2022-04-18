@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import io
+import json
 import logging
 import random
 import tarfile
@@ -109,6 +110,36 @@ def tar_file_and_group(data):
         if 'process' in sample:
             sample['process'].communicate()
         sample['stream'].close()
+
+
+def parse_raw(data):
+    """ Parse key/wav/txt from json line
+
+        Args:
+            data: Iterable[str], str is a json line has key/wav/txt
+
+        Returns:
+            Iterable[{key, wav, txt, sample_rate}]
+    """
+    for sample in data:
+        assert 'src' in sample
+        json_line = sample['src']
+        obj = json.loads(json_line)
+        assert 'key' in obj
+        assert 'wav' in obj
+        assert 'speaker' in obj
+        key = obj['key']
+        wav_file = obj['wav']
+        speaker = obj['speaker']
+        try:
+            waveform, sample_rate = torchaudio.load(wav_file)
+            example = dict(key=key,
+                           speaker=speaker,
+                           wav=waveform,
+                           sample_rate=sample_rate)
+            yield example
+        except Exception as ex:
+            logging.warning('Failed to read {}'.format(wav_file))
 
 
 def shuffle(data, shuffle_size=1500):
@@ -248,7 +279,8 @@ def add_reverb(data, reverb_source, aug_prob):
             _, rir_audio = wavfile.read(rir_io)
             rir_audio = rir_audio.astype(np.float32)
             rir_audio = rir_audio / np.sqrt(np.sum(rir_audio**2))
-            out_audio = signal.convolve(audio, rir_audio, mode='full')[:audio_len]
+            out_audio = signal.convolve(audio, rir_audio,
+                                        mode='full')[:audio_len]
             out_audio = torch.from_numpy(out_audio)
             out_audio = torch.unsqueeze(out_audio, 0)
             sample['wav'] = out_audio
@@ -316,7 +348,8 @@ def add_noise_reverb(data, noise_source, reverb_source, aug_prob):
                 _, rir_audio = wavfile.read(rir_io)
                 rir_audio = rir_audio.astype(np.float32)
                 rir_audio = rir_audio / np.sqrt(np.sum(rir_audio**2))
-                out_audio = signal.convolve(audio, rir_audio, mode='full')[:audio_len]
+                out_audio = signal.convolve(audio, rir_audio,
+                                            mode='full')[:audio_len]
                 out_audio = torch.from_numpy(out_audio)
                 out_audio = torch.unsqueeze(out_audio, 0)
                 sample['wav'] = out_audio

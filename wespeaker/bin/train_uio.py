@@ -29,7 +29,6 @@ def train(config='conf/config.yaml', **kwargs):
              config can also be manually adjusted with --ARG VALUE
     :returns: None
     """
-
     configs = parse_config_or_kwargs(config, **kwargs)
     checkpoint = configs.get('checkpoint', None)
     # dist configs
@@ -83,31 +82,16 @@ def train(config='conf/config.yaml', **kwargs):
         logger.info("train label num: {}, spk num: {}".format(
             len(train_utt2spkid_dict), len(spk2id_dict)))
 
-    # dataset and dataloader
-    # configs['feature_args']['feat_dim'] = configs['model_args']['feat_dim']
-    # train_dataset = FeatList_LableDict_Dataset(train_data_list,
-    #                                            train_utt2spkid_dict,
-    #                                            **configs['feature_args'],
-    #                                            **configs['dataset_args'])
-    # train_sampler = DistributedSampler(train_dataset, shuffle=True)
-    # train_dataloader = DataLoader(train_dataset,
-    #                               sampler=train_sampler,
-    #                               **configs['dataloader_args'])
-
-    # shards
     train_dataset = Dataset(
+        configs.get('data_type', 'raw'),
         configs['train_list'],
         configs['spk2id'],
         configs['dataset_conf'],
         reverb_lmdb_file=configs.get('reverb_lmdb', None),
         noise_lmdb_file=configs.get('noise_lmdb', None)
     )
-    # train_sampler = DistributedSampler(train_dataset, shuffle=True)
     train_dataloader = DataLoader(train_dataset,
                                   **configs['dataloader_args'])
-    # train_dataloader = DataLoader(train_dataset,
-    #                                 batch_size=configs['dataloader_args']['batch_size'],
-    #                                 )
     batchsize = configs['dataloader_args']['batch_size']
     lenloader = len(train_data_list) // batchsize // world_size
     logger.info('word_size: {}'.format(world_size))

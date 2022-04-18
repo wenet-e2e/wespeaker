@@ -15,6 +15,7 @@ exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFa
 
 gpus="[2,3]"
 num_avg=10
+data_type="shard"  # shard/raw
 # checkpoint=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150_UIO_0404/models/model_25.pt
 checkpoint=
 
@@ -28,14 +29,19 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
 fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
-  echo "Covert training data to shard ..."
-  python tools/make_shard_list.py --num_utts_per_shard 1000 \
-      --num_threads 16 \
-      --prefix shards \
-      --seed '777' \
-      --shuffle \
-      data/vox2_dev/wav.scp data/vox2_dev/utt2spk \
-      data/vox2_dev/shards data/vox2_dev/shard.list
+  echo "Covert training data to ${data_type}..."
+  if [ $data_type == "shard" ]; then
+    python tools/make_shard_list.py --num_utts_per_shard 1000 \
+        --num_threads 16 \
+        --prefix shards \
+        --seed '777' \
+        --shuffle \
+        data/vox2_dev/wav.scp data/vox2_dev/utt2spk \
+        data/vox2_dev/shards data/vox2_dev/shard.list
+  else
+    python tools/make_raw_list.py data/vox2_dev/wav.scp \
+        data/vox2_dev/utt2spk data/vox2_dev/raw.list
+  fi
   # Convert all musan data to LMDB
   python tools/make_lmdb.py data/musan/wav.scp data/musan/lmdb
   # Convert all rirs data to LMDB
@@ -50,7 +56,8 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
       --exp_dir ${exp_dir} \
       --gpus $gpus \
       --num_avg ${num_avg} \
-      --train_list data/vox2_dev/shard.list \
+      --data_type "${data_type}" \
+      --train_list data/vox2_dev/${data_type}.list \
       --spk2id data/vox2_dev/spk2id \
       --reverb_lmdb data/rirs/lmdb \
       --noise_lmdb data/musan/lmdb \
