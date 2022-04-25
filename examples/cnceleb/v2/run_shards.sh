@@ -81,7 +81,7 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
     --exp_dir ${exp_dir} \
     --eval_scp_path ${exp_dir}/embeddings/eval/xvector.scp \
     --cal_mean True \
-    --cal_mean_dir ${exp_dir}/embeddings/cnceleb_train \
+    --cal_mean_dir ${exp_dir}/embeddings/train \
     ${trials_dir}/CNC-Eval-Core.lst
 fi
 
