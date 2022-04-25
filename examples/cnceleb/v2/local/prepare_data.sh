@@ -92,7 +92,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   find $(pwd)/${rawdata_dir}/CN-Celeb_wav/eval -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' | sort >data/eval/wav.scp
   awk '{print $1}' data/eval/wav.scp | awk -F "/" '{print $0,$1}' >data/eval/utt2spk
   ./tools/utt2spk_to_spk2utt.pl data/eval/utt2spk >data/eval/spk2utt
-  
+
   echo "Prepare evalution trials ..."
   mkdir -p data/eval/trials
   python local/format_trials_cnceleb.py \
@@ -101,4 +101,3 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
 
   echo "Success !!! Now data preparation is done !!!"
 fi
-
