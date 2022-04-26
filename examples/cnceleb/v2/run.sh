@@ -1,0 +1,81 @@
+#!/bin/bash
+# coding:utf-8
+# Author: Hongji Wang
+
+. ./path.sh
+
+stage=-1
+stop_stage=-1
+
+config=conf/resnet.yaml
+exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-cnceleb-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
+
+gpus="[0,1]"
+num_avg=10
+checkpoint=
+
+. tools/parse_options.sh || exit 1
+
+if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
+  echo "Preparing datasets ..."
+  ./local/prepare_data.sh --stage 4 --stop_stage 4
+fi
+
+if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
+  echo "Start training ..."
+  num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
+  torchrun --standalone --nnodes=1 --nproc_per_node=$num_gpus \
+    wespeaker/bin/train.py --config $config \
+      --exp_dir ${exp_dir} \
+      --gpus $gpus \
+      --num_avg ${num_avg} \
+      ${checkpoint:+--checkpoint $checkpoint}
+fi
+
+if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
+  echo "Do model average ..."
+  avg_model=$exp_dir/models/avg_model.pt
+  python wespeaker/bin/average_model.py \
+    --dst_model $avg_model \
+    --src_path $exp_dir/models \
+    --num ${num_avg}
+
+  echo "Extract embeddings ..."
+
+  local/extract_cnc.sh --exp_dir $exp_dir --model_path $avg_model --nj 4 --gpus $gpus
+fi
+
+if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
+  echo "Apply cosine scoring ..."
+  mkdir -p ${exp_dir}/scores
+  trials_dir=data/eval/trials
+  python wespeaker/bin/score.py \
+    --exp_dir ${exp_dir} \
+    --eval_scp_path ${exp_dir}/embeddings/eval/xvector.scp \
+    --cal_mean True \
+    --cal_mean_dir ${exp_dir}/embeddings/train \
+    ${trials_dir}/CNC-Eval-Core.lst
+fi
+
+if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
+  echo "Compute metrics (EER/minDCF) ..."
+  scores_dir=${exp_dir}/scores
+  python wespeaker/bin/compute_metrics.py \
+    --p_target 0.01 \
+    --c_fa 1 \
+    --c_miss 1 \
+    ${scores_dir}/CNC-Eval-Core.lst.score \
+    2>&1 | tee ${scores_dir}/cnc_cos_result
+
+  echo "Compute DET curve ..."
+  python wespeaker/bin/compute_det.py \
+    ${scores_dir}/CNC-Eval-Core.lst.score
+fi
+
+if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
+  echo "Export the best model ..."
+  python wespeaker/bin/export_jit.py \
+    --config $exp_dir/config.yaml \
+    --checkpoint $exp_dir/models/avg_model.pt \
+    --output_file $exp_dir/models/final.zip
+fi
