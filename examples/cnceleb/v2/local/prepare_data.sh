@@ -9,8 +9,6 @@ stop_stage=-1
 
 download_dir=data/download_data
 rawdata_dir=data/raw_data
-# download_dir=/home/yaojiadi/asv/cnceleb
-# rawdata_dir=/home/yaojiadi/asv/cnceleb/raw_data
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "Download musan.tar.gz, rirs_noises.zip, cn-celeb_v2.tar.gz and cn-celeb2_v2.tar.gz."
@@ -37,11 +35,11 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
   fi
 
   if [ ! -d ${rawdata_dir}/CN-Celeb_flac ]; then
-    tar -xzvf ${download_dir}/cn-celeb_v2.tar.gz -C ${raw_data}
+    tar -xzvf ${download_dir}/cn-celeb_v2.tar.gz -C ${rawdata_dir}
   fi
 
   if [ ! -d ${rawdata_dir}/CN-Celeb2_flac ]; then
-    tar -xzvf ${download_dir}/cn-celeb2_v2.tar.gz -C ${raw_data}
+    tar -xzvf ${download_dir}/cn-celeb2_v2.tar.gz -C ${rawdata_dir}
   fi
 
   echo "Decompress success !!!"
@@ -90,7 +88,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
 
   echo "Prepare data for testing ..."
   find $(pwd)/${rawdata_dir}/CN-Celeb_wav/eval -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' | sort >data/eval/wav.scp
-  awk '{print $1}' data/eval/wav.scp | awk -F "/" '{print $0,$1}' >data/eval/utt2spk
+  awk '{print $1}' data/eval/wav.scp | awk -F "[/-]" '{print $0,$3}' >data/eval/utt2spk
   ./tools/utt2spk_to_spk2utt.pl data/eval/utt2spk >data/eval/spk2utt
 
   echo "Prepare evalution trials ..."
