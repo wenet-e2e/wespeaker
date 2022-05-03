@@ -92,7 +92,7 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
     --p_target 0.01 \
     --c_fa 1 \
     --c_miss 1 \
-    ${scores_dir}/CNC-Eval-Core.lst \
+    ${scores_dir}/CNC-Eval-Core.lst.score \
     2>&1 | tee ${scores_dir}/cnc_cos_result
 
   echo "Compute DET curve ..."
