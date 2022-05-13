@@ -7,17 +7,15 @@
 stage=-1
 stop_stage=-1
 
-# config=conf/ecapa_tdnn.yaml
-# exp_dir=exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
-# config=conf/resnet.yaml
 config=conf/resnet_uio.yaml
-exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150_UIO_0410
+exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150_UIO
 
 gpus="[2,3]"
 num_avg=10
 data_type="shard"  # shard/raw
-# checkpoint=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150_UIO_0404/models/model_25.pt
 checkpoint=
+score_norm_method="asnorm"  # asnorm/snorm
+top_n=100
 
 . tools/parse_options.sh || exit 1
 
@@ -111,6 +109,16 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
 fi
 
 if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
+  echo "score norm ..."
+  local/score_norm.sh \
+    --stage 0 --stop-stage 3 \
+    --score_norm_method $score_norm_method \
+    --cohort_set vox2_dev \
+    --top_n $top_n \
+    --exp_dir $exp_dir
+fi
+
+if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
   echo "Export the best model ..."
   python wespeaker/bin/export_jit.py \
     --config $exp_dir/config.yaml \

@@ -12,6 +12,8 @@ exp_dir=exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-fbank80-num_frms200-vox2_dev-aug0.6
 gpus="[0,1]"
 num_avg=10
 checkpoint=
+score_norm_method="asnorm"  # asnorm/snorm
+top_n=100
 
 . tools/parse_options.sh || exit 1
 
@@ -78,6 +80,16 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
 fi
 
 if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
+  echo "score norm ..."
+  local/score_norm.sh \
+    --stage 0 --stop-stage 3 \
+    --score_norm_method $score_norm_method \
+    --cohort_set vox2_dev \
+    --top_n $top_n \
+    --exp_dir $exp_dir
+fi
+
+if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
   echo "Export the best model ..."
   python wespeaker/bin/export_jit.py \
     --config $exp_dir/config.yaml \
