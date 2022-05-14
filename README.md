@@ -52,6 +52,13 @@ pip install -r requirements.txt
 * Literature
     - [x] [Awesome Speaker Papers](https://github.com/wenet-e2e/wespeaker/blob/master/speaker_recognition_papers.md)
 
+## Discussion
+
+For Chinese users, you can scan the QR code on the left to follow our offical account of `WeNet Community`.
+We also created a WeChat group for better discussion and quicker response. Please scan the QR code on the right to join the chat group.
+| <img src="https://github.com/wenet-e2e/wenet-contributors/blob/main/wenet_official.jpeg" width="250px"> | <img src="https://github.com/wenet-e2e/wenet-contributors/blob/main/wespeaker/wangshuai.jpg" width="250px"> |
+| ---- | ---- |
+
 ## Looking for contributors
 
 If you are interested to contribute, feel free to contact @wsstriving or @robin1001
