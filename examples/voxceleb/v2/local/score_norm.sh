@@ -64,7 +64,10 @@ if [ $stage -le 3 ] && [ $stop_stage -ge 3 ]; then
       --p_target 0.01 \
       --c_fa 1 \
       --c_miss 1 \
+      ${scores_dir}/${output_name}_${x}.score \
+      2>&1 | tee -a ${scores_dir}/vox1_${score_norm_method}${top_n}_result_0512
+
+    python wespeaker/bin/compute_det.py \
       ${scores_dir}/${output_name}_${x}.score
-      &> ${scores_dir}/vox1_${cohort_method}${top_n}_result
   done
 fi

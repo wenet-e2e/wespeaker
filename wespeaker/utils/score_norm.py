@@ -5,10 +5,9 @@
 import os
 import kaldiio
 import fire
-import logging
 import numpy as np
 from tqdm import tqdm
-
+import logging
 
 from wespeaker.utils.file_utils import read_lists
 
