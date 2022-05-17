@@ -12,7 +12,7 @@ We'll first export our model to onnx and then convert our onnx model to tensorrt
 cd wespeaker/examples/voxceleb/v2
 . ./path.sh
 exp_dir=exp/resnet
-python3 wespeaker/bin/export_onnx_gpu.py --config=${exp_dir}/config.yaml --checkpoint=${exp_dir}/models/avg_model.pt --output_model=${exp_dir}/models/avg_model.onnx 
+python3 wespeaker/bin/export_onnx_gpu.py --config=${exp_dir}/config.yaml --checkpoint=${exp_dir}/models/avg_model.pt --output_model=${exp_dir}/models/avg_model.onnx
 
 # If you want to minus the mean vector in the onnx model, you may simply add the --mean_vec to the .npy mean vector file.
 python3 wespeaker/bin/export_onnx_gpu.py --config=${exp_dir}/config.yaml --checkpoint=exp/resnet/models/avg_model.pt --output_model=exp/resnet/models/avg_model.onnx --mean_vec=${exp_dir}/embeddings/vox2_dev/mean_vec.npy
@@ -24,7 +24,7 @@ Now let's convert our onnx model to tensorrt engine. We will deploy our model on
 docker run --gpus '"device=0"' -it -v <the output onnx model directory>:/models nvcr.io/nvidia/tensorrt:22.03-py3
 cd /models/
 # shape=BxTxF  batchsize, sequence_length, feature_size
-trtexec --saveEngine=b1_b128_s3000_fp16.trt  --onnx=/models/avg_model.onnx --minShapes=feats:1x200x80 --optShapes=feats:64x200x80 --maxShapes=feats:128x3000x80 --fp16 
+trtexec --saveEngine=b1_b128_s3000_fp16.trt  --onnx=/models/avg_model.onnx --minShapes=feats:1x200x80 --optShapes=feats:64x200x80 --maxShapes=feats:128x3000x80 --fp16
 ```
 Here we get an engine which has maximum sequence length of 3000 and minimum length of 200. Since the frame stride is 10ms, 200 and 3000 corresponds to 2.02 seconds and 30.02 seconds respectively(kaldi feature extractor). Notice these numbers will differ and depend on your feature extractor parameters.
 
@@ -52,10 +52,9 @@ Then you may find `198` is the actual number of frames for audio of 2 seconds lo
 
 That's it！We build an engine that can accept 2.02 to 30.02 seconds long audio. If your application will only accept fixed audio segments, we suggest you to set the `minShapes`, `optShapes` and `maxShapes` to the same shape.
 
-Now edit the config file under `model_repo/speaker_model/config.pbtxt` and replace `default_model_filename:xxx` with the name of your engine (e.g., `b1_b128_s3000_fp16.trt`) and put the engine under `model_repo/speaker_model/1/`. 
+Now edit the config file under `model_repo/speaker_model/config.pbtxt` and replace `default_model_filename:xxx` with the name of your engine (e.g., `b1_b128_s3000_fp16.trt`) and put the engine under `model_repo/speaker_model/1/`.
 And if you use other model settings or different model from ours (resnet34), for example, ecapa model, the embedding dim of which is 192, therefore, you should edit the `model_repo/speaker_model/config.pbtxt` and `model_repo/speaker/config.pbtxt` and set embedding dim to 192.
 
- 
 ## Step 2. Build server and start server
 
 Notice we use triton 22.03 in dockerfile. Be sure to use the triton that has the same version as your tensorrt.
@@ -104,15 +103,15 @@ exp_dir=exp/resnet
 mkdir -p embeddings/scores
 trials_dir=data/vox1/trials
 python -u wespeaker/bin/score.py \
---exp_dir ${exp_dir} \
---eval_scp_path /raid/dgxsa/slyne/wespeaker/runtime/server/x86_gpu/embeddings/xvector.scp \  # embeddings generated from our server
---cal_mean True \
---cal_mean_dir ${exp_dir}/embeddings/vox2_dev \
---p_target 0.01 \
---c_miss 1 \
---c_fa 1 \
-${trials_dir}/vox1_O_cleaned.kaldi ${trials_dir}/vox1_E_cleaned.kaldi ${trials_dir}/vox1_H_cleaned.kaldi \
-2>&1 | tee /raid/dgxsa/slyne/wespeaker/runtime/server/x86_gpu/embeddings/scores/vox1_cos_result
+    --exp_dir ${exp_dir} \
+    --eval_scp_path /raid/dgxsa/slyne/wespeaker/runtime/server/x86_gpu/embeddings/xvector.scp \  # embeddings generated from our server
+    --cal_mean True \
+    --cal_mean_dir ${exp_dir}/embeddings/vox2_dev \
+    --p_target 0.01 \
+    --c_miss 1 \
+    --c_fa 1 \
+    ${trials_dir}/vox1_O_cleaned.kaldi ${trials_dir}/vox1_E_cleaned.kaldi ${trials_dir}/vox1_H_cleaned.kaldi \
+    2>&1 | tee /raid/dgxsa/slyne/wespeaker/runtime/server/x86_gpu/embeddings/scores/vox1_cos_result
 ```
 
 # More

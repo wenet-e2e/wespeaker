@@ -42,7 +42,7 @@ def set_quantizers(name, mod, which='both', **kwargs):
     logger.info(s)
 
 def set_quantizer_by_name(model, names, **kwargs):
-    """Set quantizer attributes for layers where name 
+    """Set quantizer attributes for layers where name
     contains a substring in names."""
 
     for name, mod in model.named_modules():

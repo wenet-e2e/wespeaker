@@ -106,7 +106,7 @@ if __name__ == '__main__':
             path = os.path.join(FLAGS.data_dir, path)
         if os.path.exists(path):
             filenames = [(audio_file, path)]
-    elif FLAGS.wavscp is not None: 
+    elif FLAGS.wavscp is not None:
         with open(FLAGS.wavscp, "r", encoding="utf-8") as f:
             for line in f:
                 aid, path = line.strip().split()
@@ -122,7 +122,7 @@ if __name__ == '__main__':
         if not os.path.exists(dir_name) and (dir_name != ''):
             os.makedirs(dir_name)
 
-        embed_ark = os.path.abspath(dir_name) + "/xvector_{:0>3d}.ark".format(idx) 
+        embed_ark = os.path.abspath(dir_name) + "/xvector_{:0>3d}.ark".format(idx)
         embed_scp = embed_ark[:-3] + "scp"
 
         with grpcclient.InferenceServerClient(url=FLAGS.url,

@@ -53,7 +53,6 @@ ensemble_scheduling {
         key: "feats"
         value: "SPEECH"
         }
-      
         output_map {
             key: "embs"
             value: "EMBEDDINGS"

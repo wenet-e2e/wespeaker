@@ -108,7 +108,7 @@ def main():
     # trtexec --onnx=avg_model.onnx --minShapes=feats:1x100x80 \
     # --optShapes=feats:64x200x80 --maxShapes=feats:128x500x80 \
     # --fp16
-    # If it is an model with QDQ nodes, please add --int8  
+    # If it is an model with QDQ nodes, please add --int8
 
 if __name__ == '__main__':
     main()

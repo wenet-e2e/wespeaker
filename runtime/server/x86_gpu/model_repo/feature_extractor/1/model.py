@@ -49,7 +49,7 @@ class TritonPythonModel:
           Both keys and values are strings. The dictionary keys and values are:
           * model_config: A JSON string containing the model configuration
           * model_instance_kind: A string containing model instance kind
-          * model_instance_device_id: A string containing model instance 
+          * model_instance_device_id: A string containing model instance
           *                           device ID
           * model_repository: Model repository path
           * model_version: Model version
@@ -108,7 +108,7 @@ class TritonPythonModel:
         responses = []
         for request in requests:
             # the requests will all have the same shape
-            # different shape request will be 
+            # different shape request will be
             # separated by triton inference server
             input0 = pb_utils.get_input_tensor_by_name(request, "wav")
             cur_b_wav = from_dlpack(input0.to_dlpack())
