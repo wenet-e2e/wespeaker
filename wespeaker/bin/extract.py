@@ -29,6 +29,20 @@ def extract(config='conf/config.yaml', **kwargs):
     feat_dim = configs['feature_args'].get('feat_dim', 80)
     num_frms = configs['feature_args'].get('num_frms', 200)
 
+    quantized = False
+    # check the checkpoint to find if the model is quantized
+    temp_model = torch.load(model_path)
+    for key in temp_model.keys():
+        if key.endswith("quantizer._amax"):
+            quantized = True
+            break
+
+    if quantized:
+        print("extracting embeddings from quantized model")
+        from pytorch_quantization import quant_modules
+        from pytorch_quantization import nn as quant_nn
+        quant_modules.initialize()
+
     # Since the input length is not fixed, we set the built-in cudnn
     # auto-tuner to False
     torch.backends.cudnn.benchmark = False
@@ -37,6 +51,12 @@ def extract(config='conf/config.yaml', **kwargs):
     load_checkpoint(model, model_path)
     device = torch.device("cuda")
     model.to(device).eval()
+
+    if quantized:
+        # enable all possible modules and quantizers
+        for name, module in model.named_modules():
+            if isinstance(module, quant_nn.TensorQuantizer):
+                module.enable()
 
     # prepare dataset and dataloader
     data_list = read_scp(data_scp)

@@ -19,6 +19,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import wespeaker.models.pooling_layers as pooling_layers
 
+import pytorch_quantization.nn as quant_nn
+from pytorch_quantization.nn.modules.tensor_quantizer import TensorQuantizer
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -50,10 +52,20 @@ class BasicBlock(nn.Module):
                           bias=False),
                 nn.BatchNorm2d(self.expansion * planes))
 
+        # Quantize the inputs to the residual add
+        desc_input = quant_nn.QuantLinear.default_quant_desc_input
+        self.add_local_input_quantizer = TensorQuantizer(desc_input, disabled=True)
+        self.add_residual_input_quantizer = TensorQuantizer(desc_input, disabled=True)
+
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
-        out += self.shortcut(x)
+        # out += self.shortcut(x)
+        # replace short cut with quantizers
+        residual = self.shortcut(x)
+        add_local = self.add_local_input_quantizer(out)
+        add_residual = self.add_residual_input_quantizer(residual)
+        out = add_local + add_residual
         out = F.relu(out)
         return out
 
@@ -88,11 +100,22 @@ class Bottleneck(nn.Module):
                           bias=False),
                 nn.BatchNorm2d(self.expansion * planes))
 
+        # Quantize the inputs to the residual add
+        desc_input = quant_nn.QuantLinear.default_quant_desc_input
+        self.add_local_input_quantizer = TensorQuantizer(desc_input, disabled=True)
+        self.add_residual_input_quantizer = TensorQuantizer(desc_input, disabled=True)
+
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
         out = F.relu(self.bn2(self.conv2(out)))
         out = self.bn3(self.conv3(out))
-        out += self.shortcut(x)
+        # out += self.shortcut(x)
+        # add quantizers
+        residual = self.shortcut(x)
+        add_local = self.add_local_input_quantizer(out)
+        add_residual = self.add_residual_input_quantizer(residual)
+        out = add_local + add_residual
+
         out = F.relu(out)
         return out
 

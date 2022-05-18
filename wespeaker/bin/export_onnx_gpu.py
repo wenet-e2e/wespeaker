@@ -15,14 +15,12 @@
 from __future__ import print_function
 
 import argparse
-import os
 
 import torch
 import yaml
 
 from wespeaker.utils.checkpoint import load_checkpoint
 from wespeaker.models.speaker_model import get_speaker_model
-from wespeaker.utils.quant_helper import set_quantizer_by_name
 import torch.nn as nn
 from pytorch_quantization import quant_modules
 from pytorch_quantization import nn as quant_nn
@@ -44,8 +42,6 @@ def get_args():
 
 def main():
     args = get_args()
-    # No need gpu for model export
-    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
     with open(args.config, 'r') as fin:
         configs = yaml.load(fin, Loader=yaml.FullLoader)
@@ -58,16 +54,20 @@ def main():
 
     model = get_speaker_model(configs['model'])(**configs['model_args'])
 
-    load_checkpoint(model, args.checkpoint)
+    if args.quantized:
+        for name, module in model.named_modules():
+            if isinstance(module, quant_nn.TensorQuantizer):
+                module.enable()
 
-    if not args.quantized:
-        set_quantizer_by_name(model, [''], _disabled=True)
+    load_checkpoint(model, args.checkpoint)
+    device = torch.device("cuda")
+    model.to(device).eval()
 
     if args.mean_vec:
-        mean_vec = torch.tensor(np.load(args.mean_vec), dtype=torch.float32)
+        mean_vec = torch.tensor(np.load(args.mean_vec), dtype=torch.float32).cuda()
     else:
         embed_dim = configs["model_args"]["embed_dim"]
-        mean_vec = torch.zeros(embed_dim, dtype=torch.float32)
+        mean_vec = torch.zeros(embed_dim, dtype=torch.float32).cuda()
 
     class Model(nn.Module):
         def __init__(self, model, mean_vec=None):
@@ -89,7 +89,7 @@ def main():
     if args.quantized:
         quant_nn.TensorQuantizer.use_fb_fake_quant = True
 
-    dummy_input = torch.ones(1, num_frms, feat_dim)
+    dummy_input = torch.ones(1, num_frms, feat_dim).cuda()
     torch.onnx.export(
         model, dummy_input,
         args.output_model,

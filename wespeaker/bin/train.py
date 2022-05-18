@@ -23,7 +23,6 @@ from wespeaker.utils.executor import run_epoch
 from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
 from wespeaker.dataset.dataset import FeatList_LableDict_Dataset
 
-
 def train(config='conf/config.yaml', **kwargs):
     """Trains a model on the given features and spk labels.
 
@@ -41,7 +40,18 @@ def train(config='conf/config.yaml', **kwargs):
     os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu)
     dist.init_process_group(backend='nccl')
 
-    model_dir = os.path.join(configs['exp_dir'], "models")
+    logger = get_logger(configs['exp_dir'], 'train.log')
+
+    qat = configs.get("qat", False)
+    qat_dir = ""
+    if qat:
+        from pytorch_quantization import quant_modules
+        from pytorch_quantization import nn as quant_nn
+        quant_modules.initialize()
+        logger.info("QUANT MODULES INITIALIZED")
+        qat_dir = "qat"
+
+    model_dir = os.path.join(configs['exp_dir'], "models", qat_dir)
     if rank == 0:
         try:
             os.makedirs(model_dir)
@@ -51,7 +61,6 @@ def train(config='conf/config.yaml', **kwargs):
                 exit(1)
     dist.barrier()  # let the rank 0 mkdir first
 
-    logger = get_logger(configs['exp_dir'], 'train.log')
     if world_size > 1:
         logger.info('training on multiple gpus, this gpu {}'.format(gpu))
 
@@ -102,6 +111,10 @@ def train(config='conf/config.yaml', **kwargs):
     # model
     logger.info("<== Model ==>")
     model = get_speaker_model(configs['model'])(**configs['model_args'])
+    if qat:
+        for name, module in model.named_modules():
+            if isinstance(module, quant_nn.TensorQuantizer):
+                module.enable()
     if configs['model_init'] is not None:
         logger.info('Load intial model from {}'.format(configs['model_init']))
         load_checkpoint(model, configs['model_init'])
@@ -115,7 +128,7 @@ def train(config='conf/config.yaml', **kwargs):
         configs['projection_args']['num_class'] *= 3
     projection = get_projection(configs['projection_args'])
     model.add_module("projection", projection)
-    if rank == 0:
+    if rank == 0 and not qat:
         # print model
         for line in pformat(model).split('\n'):
             logger.info(line)

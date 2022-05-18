@@ -26,7 +26,7 @@ cd /models/
 # shape=BxTxF  batchsize, sequence_length, feature_size
 trtexec --saveEngine=b1_b128_s3000_fp16.trt  --onnx=/models/avg_model.onnx --minShapes=feats:1x200x80 --optShapes=feats:64x200x80 --maxShapes=feats:128x3000x80 --fp16
 ```
-Here we get an engine which has maximum sequence length of 3000 and minimum length of 200. Since the frame stride is 10ms, 200 and 3000 corresponds to 2.02 seconds and 30.02 seconds respectively(kaldi feature extractor). Notice these numbers will differ and depend on your feature extractor parameters.
+Here we get an engine which has maximum sequence length of 3000 and minimum length of 200. Since the frame stride is 10ms, 200 and 3000 corresponds to 2.02 seconds and 30.02 seconds respectively(kaldi feature extractor). Notice these numbers will differ and depend on your feature extractor parameters. Notice we've added `--fp16` and in pratice, we found this option will not affect the final accuracy and improve the perf at the same time.
 
 You may set these numbers by your production requirements. If you only know the seconds of audio you will use and have no idea of how many frames it will generate, you may try the below script:
 ```python
@@ -50,9 +50,10 @@ print(feat_tensor.shape) # (198, 80)
 ```
 Then you may find `198` is the actual number of frames for audio of 2 seconds long.
 
-That's it！We build an engine that can accept 2.02 to 30.02 seconds long audio. If your application will only accept fixed audio segments, we suggest you to set the `minShapes`, `optShapes` and `maxShapes` to the same shape.
+That's it！We build an engine that can accept 2.02 to 30.02 seconds long audio. If your application can accept fixed audio segments, we suggest you to set the `minShapes`, `optShapes` and `maxShapes` to the same shape.
 
 Now edit the config file under `model_repo/speaker_model/config.pbtxt` and replace `default_model_filename:xxx` with the name of your engine (e.g., `b1_b128_s3000_fp16.trt`) and put the engine under `model_repo/speaker_model/1/`.
+
 And if you use other model settings or different model from ours (resnet34), for example, ecapa model, the embedding dim of which is 192, therefore, you should edit the `model_repo/speaker_model/config.pbtxt` and `model_repo/speaker/config.pbtxt` and set embedding dim to 192.
 
 ## Step 2. Build server and start server
@@ -115,10 +116,20 @@ python -u wespeaker/bin/score.py \
 ```
 
 # More
-Now we will talk about how to do PTQ and QAT with [NVIDIA's pytorch quantization package](https://github.com/NVIDIA/TensorRT/tree/master/tools/pytorch-quantization).
+Now we will talk about how to do PTQ and QAT with [NVIDIA's pytorch quantization package](https://github.com/NVIDIA/TensorRT/tree/master/tools/pytorch-quantization)by inserting QDQ nodes to our network. We only found GPU performance gain on Resnet series models and no perf gain in TDNN based models in wespeaker (more details, please refer to **Perf** section). Therefore if your model is Resnet based, you will find the below steps useful.
+
+Notice this is `Explicit Quantization` different from Tensorrt `Implicit Quantization`. Check [here](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#explicit-implicit-quantization) for reference.
+
+We usually have the below pipeline:
+
+![PTQ-QAT](PTQ-QAT-FLOW.JPG)
+
+You first start with a regular model and then insert QDQ nodes to it. Next, we do PTQ and if we are lucky, we may have a model meeting the production accuracy requriement and we can stop. If it doesn't, then we can try some other calibrators and parameters. If after serveral try, we still cannot get a good enough model, we can move to the QAT pipeline. The QAT is just like another training process and you need to finetune your model for several epochs until the accuracy recovers.
+
 
 ## PTQ
-As for PTQ, we only found GPU performance gain on Resnet series models and no perf gain in TDNN based models in wespeaker (more details, please refer to **Perf** section).
+
+
 ```
 avg_model=$exp_dir/models/avg_model.pt
 data_scp="data/vox2_dev/wav.scp"
@@ -126,45 +137,61 @@ batch_size=16
 num_calib_batch=10
 raw_wav=True
 num_workers=10
-calibrator="max"
+calibrator="max"  # other options: mse, entropy, percentile
 calibrated_model_path=$exp_dir/models/avg_model_calibrate-${calibrator}.pt
 
 python3 -u wespeaker/bin/calibrate.py \
---model_path ${avg_model} \
---config ${exp_dir}/config.yaml \
---data_scp ${data_scp} \
---batch-size ${batch_size} \
---num-workers ${num_workers} \
---num_calib_batch ${num_calib_batch} \
---calibrated_model_path ${calibrated_model_path} \
---raw-wav ${raw_wav} \
---calibrator "max"
+    --model_path ${avg_model} \
+    --config ${exp_dir}/config.yaml \
+    --data_scp ${data_scp} \
+    --batch-size ${batch_size} \
+    --num-workers ${num_workers} \
+    --num_calib_batch ${num_calib_batch} \
+    --calibrated_model_path ${calibrated_model_path} \
+    --raw-wav ${raw_wav} \
+    --calibrator "max"
 ```
+
 Here we have `--num_calib_batch` to inidicate how many batches we use to calibrate,  `--calibrator` to select the calibrator (other calibrators: 'percentile', 'mse', 'entropy') and `--calibrated_model_path` the output calibrated model.
 After calibration, you will see `avg_model_calibrate-${calibrator}.pt` and an onnx model `avg_model_calibrate-${calibrator}.onnx`. Notice you may also use `export_onnx.py` with `--quantized` option to export the calibrated checkpoint.
 
+Before converting to tensorrt, you might extract the embeddings and test score as usual:
+```
+local/extract_vox.sh --exp_dir $exp_dir --model_path ${calibrated_model_path} --nj 4 --gpus $gpus
+local/score.sh \
+    --stage 1 --stop-stage 2 \
+    --exp_dir $exp_dir \
+    --trials "$trials"
+```
+
+If the accuracy is good
 Let's export our calibrated onnx model to tensorrt engine by adding `--int8`:
 ```
 trtexec --saveEngine=b1_b128_s3000_fp16_int8.trt  --onnx=resnet/resnet_avg_model_calibrate-max.onnx --minShapes=feats:1x200x80 --optShapes=feats:64x200x80 --maxShapes=feats:128x3000x80 --fp16 --int8
 ```
 
 ## QAT
+
 If the accuracy of the PTQ model drops a lot, you may try QAT to recover the accuracy.
+You need to start from a calibrated model and train by adding `--qat True`:
+
 ```
 gpus="[0,1]"
 echo "Start training ..."
 num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
 torchrun --standalone --nnodes=1 --nproc_per_node=$num_gpus \
-wespeaker/bin/train_qat.py --config ${exp_dir}/config.yaml \
+wespeaker/bin/train.py --config ${exp_dir}/config.yaml \
     --exp_dir ${exp_dir} \
     --gpus $gpus \
     --model_init ${calibrated_model_path} \
     --qat True
 ```
-Please edit `config.yaml` to change the number of epochs for QAT. After training for several epochs, you may find the checkpoint under `${exp_dir}/models/qat/`.  You may also use ```export_onnx.py``` to export the checkpoint:
+Please edit `config.yaml` to change the number of epochs for QAT. After training for several epochs, you may find the checkpoint under `${exp_dir}/models/qat/`.  You may also use `export_onnx_gpu.py` to export the checkpoint:
 ```
-python3 export_onnx.py --config=exp/resnet/config.yaml --checkpoint=exp/resnet/models/qat/5.pt --output_model=exp/resnet/models/qat/qat_model.onnx --quantized
+python3 wespeaker/bin/export_onnx_gpu.py --config=exp/resnet/config.yaml --checkpoint=exp/resnet/models/qat/5.pt --output_model=exp/resnet/models/qat/qat_model.onnx --quantized
 ```
+
+The `qat_model.onnx` can then be converted by Tensorrt.
 
 # Perf
 
@@ -180,15 +207,17 @@ trtexec --saveEngine=ecapa_b1_b128_s200_fp16.trt  --onnx=ecapa/ecapa_avg_model.o
 * GPU: T4
 * resnet: resnet34.
 
-
 |Engine                              |Throughput (bz=64)| utter/s|
 |------------------------------------|------------------|--------|
 |resnet_b1_b128_s200_fp16_int8.trt   |54.8157           |3508    |
 |resnet_b1_b128_s200_fp16.trt        |39.7842           |2546    |
 |ecapa_b1_b128_s200_fp16.trt         |52.958            |3389    |
 
-Pipeline Perf
+### Pipeline Perf
+
+In client docker, we may test the whole pipeline performance.
 ```
+cd client/
 # generate test input
 python3 generate_input.py --audio_file=test.wav --seconds=2.02
 
