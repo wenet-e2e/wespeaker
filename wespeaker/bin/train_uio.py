@@ -62,45 +62,32 @@ def train(config='conf/config.yaml', **kwargs):
     # seed
     set_seed(configs['seed'] + rank)
 
-    # wav/feat
-    train_scp = configs['dataset_conf']['train_scp']
-    train_label = configs['dataset_conf']['train_label']
-    train_data_list = read_scp(train_scp)
-    if rank == 0:
-        logger.info("<== Feature ==>")
-        logger.info("train wav/feat num: {}".format(len(train_data_list)))
-
-    # spk label
+    # train data
+    train_label = configs['train_label']
     train_utt_spk_list = read_scp(train_label)
     spk2id_dict = spk2id(train_utt_spk_list)
-    train_utt2spkid_dict = {
-        utt_spk[0]: spk2id_dict[utt_spk[1]]
-        for utt_spk in train_utt_spk_list
-    }
     if rank == 0:
-        logger.info("<== Labels ==>")
-        logger.info("train label num: {}, spk num: {}".format(
-            len(train_utt2spkid_dict), len(spk2id_dict)))
+        logger.info("<== Data ==>")
+        logger.info("train data num: {}, spk num: {}".format(
+            len(train_utt_spk_list), len(spk2id_dict)))
 
+    # dataset and dataloader
     train_dataset = Dataset(
-        configs.get('data_type', 'raw'),
-        configs['train_list'],
-        configs['spk2id'],
-        configs['dataset_conf'],
-        reverb_lmdb_file=configs.get('reverb_lmdb', None),
-        noise_lmdb_file=configs.get('noise_lmdb', None)
+        configs['data_type'],
+        configs['train_data_list'],
+        configs['dataset_args'],
+        spk2id_dict,
+        reverb_lmdb_file=configs.get('reverb_data', None),
+        noise_lmdb_file=configs.get('noise_data', None)
     )
     train_dataloader = DataLoader(train_dataset,
                                   **configs['dataloader_args'])
-    batchsize = configs['dataloader_args']['batch_size']
-    lenloader = len(train_data_list) // batchsize // world_size
-    logger.info('word_size: {}'.format(world_size))
-    logger.info('lenloader: {}'.format(lenloader))
-
-
+    batch_size = configs['dataloader_args']['batch_size']
+    loader_size = len(train_utt_spk_list) // batch_size // world_size
     if rank == 0:
         logger.info("<== Dataloaders ==>")
         logger.info("train dataloaders created")
+        logger.info('loader size: {}'.format(loader_size))
 
     # model
     logger.info("<== Model ==>")
@@ -113,7 +100,7 @@ def train(config='conf/config.yaml', **kwargs):
     # projection layer
     configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
     configs['projection_args']['num_class'] = len(spk2id_dict)
-    if configs['feature_args']['raw_wav'] and configs['dataset_conf']['speed_perturb']:
+    if configs['feature_args']['raw_wav'] and configs['dataset_args']['speed_perturb']:
         # diff speed is regarded as diff spk
         configs['projection_args']['num_class'] *= 3
     projection = get_projection(configs['projection_args'])
@@ -156,9 +143,8 @@ def train(config='conf/config.yaml', **kwargs):
         logger.info("optimizer is: " + configs['optimizer'])
 
     # scheduler
-    print(world_size)
     configs['scheduler_args']['num_epochs'] = configs['num_epochs']
-    configs['scheduler_args']['epoch_iter'] = lenloader
+    configs['scheduler_args']['epoch_iter'] = loader_size
     configs['scheduler_args']['process_num'] = world_size
     scheduler = getattr(schedulers, configs['scheduler'])(
         optimizer, **configs['scheduler_args'])
@@ -167,7 +153,7 @@ def train(config='conf/config.yaml', **kwargs):
         logger.info("scheduler is: " + configs['scheduler'])
 
     # margin scheduler
-    configs['margin_update']['epoch_iter'] = lenloader
+    configs['margin_update']['epoch_iter'] = loader_size
     margin_scheduler = getattr(schedulers, configs['margin_scheduler'])(
         model=model, **configs['margin_update'])
     if rank == 0:
@@ -194,7 +180,7 @@ def train(config='conf/config.yaml', **kwargs):
         train_dataset.set_epoch(epoch)
 
         run_epoch(train_dataloader,
-                  lenloader,
+                  loader_size,
                   ddp_model,
                   criterion,
                   optimizer,

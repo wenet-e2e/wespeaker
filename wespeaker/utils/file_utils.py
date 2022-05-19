@@ -4,14 +4,14 @@
 
 def read_scp(scp_file):
     key_value_list = []
-    with open(scp_file, "r") as fp:
-        line = fp.readline()
+    with open(scp_file, "r") as fin:
+        line = fin.readline()
         while line:
             tokens = line.strip().split()
             key = tokens[0]
             value = " ".join(tokens[1:])
             key_value_list.append((key, value))
-            line = fp.readline()
+            line = fin.readline()
     return key_value_list
 
 def read_lists(list_file):

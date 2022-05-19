@@ -29,25 +29,24 @@ AUDIO_FORMAT_SETS = set(['flac', 'mp3', 'm4a', 'ogg', 'opus', 'wav', 'wma'])
 def write_tar_file(data_list, tar_file, index=0, total=1):
     logging.info('Processing {} {}/{}'.format(tar_file, index, total))
     read_time = 0.0
-    save_time = 0.0
     write_time = 0.0
     with tarfile.open(tar_file, "w") as tar:
         for item in data_list:
-            key, txt, wav = item
+            key, spk, wav = item
             suffix = wav.split('.')[-1]
             assert suffix in AUDIO_FORMAT_SETS
             ts = time.time()
             with open(wav, 'rb') as fin:
                 data = fin.read()
             read_time += (time.time() - ts)
-            assert isinstance(txt, str)
+            assert isinstance(spk, str)
             ts = time.time()
-            txt_file = key + '.speaker'
-            txt = txt.encode('utf8')
-            txt_data = io.BytesIO(txt)
-            txt_info = tarfile.TarInfo(txt_file)
-            txt_info.size = len(txt)
-            tar.addfile(txt_info, txt_data)
+            spk_file = key + '.spk'
+            spk = spk.encode('utf8')
+            spk_data = io.BytesIO(spk)
+            spk_info = tarfile.TarInfo(spk_file)
+            spk_info.size = len(spk)
+            tar.addfile(spk_info, spk_data)
 
             wav_file = key + '.' + suffix
             wav_data = io.BytesIO(data)
@@ -55,8 +54,7 @@ def write_tar_file(data_list, tar_file, index=0, total=1):
             wav_info.size = len(data)
             tar.addfile(wav_info, wav_data)
             write_time += (time.time() - ts)
-        logging.info('read {} save {} write {}'.format(read_time, save_time,
-                                                       write_time))
+        logging.info('read {} write {}'.format(read_time, write_time))
 
 
 def get_args():
@@ -72,12 +70,12 @@ def get_args():
     parser.add_argument('--prefix',
                         default='shards',
                         help='prefix of shards tar file')
-    parser.add_argument('--seed', default='777', help='random seed')
+    parser.add_argument('--seed', type=int, default=42, help='random seed')
     parser.add_argument('--shuffle',
                         action='store_true',
                         help='whether to shuffle data')
     parser.add_argument('wav_file', help='wav file')
-    parser.add_argument('speaker_file', help='speaker file')
+    parser.add_argument('utt2spk_file', help='utt2spk file')
     parser.add_argument('shards_dir', help='output shards dir')
     parser.add_argument('shards_list', help='output shards list file')
     args = parser.parse_args()
@@ -99,14 +97,14 @@ def main():
             wav_table[key] = arr[1]
 
     data = []
-    with open(args.speaker_file, 'r', encoding='utf8') as fin:
+    with open(args.utt2spk_file, 'r', encoding='utf8') as fin:
         for line in fin:
             arr = line.strip().split(maxsplit=1)
             key = os.path.splitext(arr[0])[0]
-            txt = arr[1]
+            spk = arr[1]
             assert key in wav_table
             wav = wav_table[key]
-            data.append((key, txt, wav))
+            data.append((key, spk, wav))
 
     if args.shuffle:
         random.shuffle(data)

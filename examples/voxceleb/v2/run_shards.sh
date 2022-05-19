@@ -8,12 +8,12 @@ stage=-1
 stop_stage=-1
 
 config=conf/resnet_uio.yaml
-exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150_UIO
-
-gpus="[2,3]"
+exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150-UIO
+gpus="[0,1]"
 num_avg=10
-data_type="shard"  # shard/raw
 checkpoint=
+
+data_type="shard"  # shard/raw
 score_norm_method="asnorm"  # asnorm/snorm
 top_n=100
 trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
@@ -23,8 +23,6 @@ trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "Preparing datasets ..."
   ./local/prepare_data.sh --stage 4 --stop_stage 4
-  cat data/vox2_dev/utt2spk | awk '{print $2}' | sort | uniq | \
-      awk '{print $1, NR - 1}' > data/vox2_dev/spk2id
 fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
@@ -33,7 +31,6 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     python tools/make_shard_list.py --num_utts_per_shard 1000 \
         --num_threads 16 \
         --prefix shards \
-        --seed '777' \
         --shuffle \
         data/vox2_dev/wav.scp data/vox2_dev/utt2spk \
         data/vox2_dev/shards data/vox2_dev/shard.list
@@ -56,10 +53,10 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
       --gpus $gpus \
       --num_avg ${num_avg} \
       --data_type "${data_type}" \
-      --train_list data/vox2_dev/${data_type}.list \
-      --spk2id data/vox2_dev/spk2id \
-      --reverb_lmdb data/rirs/lmdb \
-      --noise_lmdb data/musan/lmdb \
+      --train_data_list data/vox2_dev/${data_type}.list \
+      --train_label data/vox2_dev/utt2spk \
+      --reverb_data data/rirs/lmdb \
+      --noise_data data/musan/lmdb \
       ${checkpoint:+--checkpoint $checkpoint}
 fi
 

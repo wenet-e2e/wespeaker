@@ -107,7 +107,6 @@ class DataList(IterableDataset):
     def set_epoch(self, epoch):
         self.sampler.set_epoch(epoch)
 
-
     def __iter__(self):
         sampler_info = self.sampler.update()
         indexes = self.sampler.sample(self.lists)
@@ -120,26 +119,27 @@ class DataList(IterableDataset):
 
 def Dataset(data_type,
             data_list_file,
-            spk2id_file,
-            conf,
+            configs,
+            spk2id_dict={},
             reverb_lmdb_file=None,
             noise_lmdb_file=None):
     """ Construct dataset from arguments
 
         We have two shuffle stage in the Dataset. The first is global
-        shuffle at shards tar/raw file level. The second is global shuffle
+        shuffle at shards tar/raw file level. The second is local shuffle
         at training samples level.
 
         Args:
             data_type(str): raw/shard
             data_list_file: shard list file
-            spk2id_file: speaker to id file
+            configs: dataset configs
+            spk2id_dict: spk2id dict
             reverb_lmdb_file: reverb data source lmdb file
             noise_lmdb_file: noise data source lmdb file
     """
     assert data_type in ['raw', 'shard']
     lists = read_lists(data_list_file)
-    shuffle = conf.get('shuffle', False)
+    shuffle = configs.get('shuffle', False)
     # Global shuffle
     dataset = DataList(lists, shuffle=shuffle)
     if data_type == 'shard':
@@ -149,44 +149,33 @@ def Dataset(data_type,
         dataset = Processor(dataset, processor.parse_raw)
     # Local shuffle
     if shuffle:
-        shuffle_conf = conf.get('shuffle_conf', {})
-        dataset = Processor(dataset, processor.shuffle, **shuffle_conf)
+        dataset = Processor(dataset, processor.shuffle, **configs['shuffle_args'])
 
-    spk2id = read_scp(spk2id_file)
-    spk2id = {x[0]: int(x[1]) for x in spk2id}
-    dataset = Processor(dataset, processor.speaker_to_id, spk2id)
+    # spk2id
+    dataset = Processor(dataset, processor.spk_to_id, spk2id_dict)
 
-    speed_perturb_flag = conf.get('speed_perturb', False)
+    # speed perturb
+    speed_perturb_flag = configs.get('speed_perturb', True)
     if speed_perturb_flag:
-        dataset = Processor(dataset, processor.speed_perturb, len(spk2id))
+        dataset = Processor(dataset, processor.speed_perturb, len(spk2id_dict))
 
     # random chunk
-    dataset = Processor(dataset, processor.random_chunk, 2.0)
+    num_frms = configs.get('num_frms', 200)
+    dataset = Processor(dataset, processor.random_chunk, num_frms)
 
-    # Optional add reverb
-    # if reverb_lmdb_file is not None:
-    #     reverb_data = LmdbData(reverb_lmdb_file)
-    #     dataset = Processor(dataset, processor.add_reverb,
-    #                           reverb_data, conf['aug_prob'])
-    # # TODO: aug_prob
-    # # Optional add noise
-    # if noise_lmdb_file:
-    #     noise_data = LmdbData(noise_lmdb_file)
-    #     dataset = Processor(dataset, processor.add_noise,
-    #                           noise_data, conf['aug_prob'])
-
+    # add reverb & noise
     if reverb_lmdb_file and noise_lmdb_file:
         reverb_data = LmdbData(reverb_lmdb_file)
         noise_data = LmdbData(noise_lmdb_file)
-        dataset = Processor(dataset, processor.add_noise_reverb, noise_data,
-                            reverb_data, conf['aug_prob'])
+        dataset = Processor(dataset, processor.add_reverb_noise, reverb_data,
+                            noise_data, configs['aug_prob'])
 
-    fbank_conf = conf.get('fbank_conf', {})
-    dataset = Processor(dataset, processor.compute_fbank, **fbank_conf)
+    # compute fbank
+    dataset = Processor(dataset, processor.compute_fbank, **configs['fbank_args'])
 
-    spec_aug_flag = conf.get('spec_aug', True)
+    # spec augmentation
+    spec_aug_flag = configs.get('spec_aug', True)
     if spec_aug_flag:
-        spec_aug_conf = conf.get('spec_aug_conf', {})
-        dataset = Processor(dataset, processor.spec_aug, **spec_aug_conf)
+        dataset = Processor(dataset, processor.spec_aug, **configs['spec_aug_args'])
 
     return dataset

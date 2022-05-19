@@ -10,7 +10,7 @@ import torchnet as tnt
 
 
 def run_epoch(dataloader,
-              lenloader,
+              loader_size,
               model,
               criterion,
               optimizer,
@@ -37,7 +37,7 @@ def run_epoch(dataloader,
             targets = batch['label']
             features = batch['feat']
 
-            cur_iter = (epoch - 1) * lenloader + i
+            cur_iter = (epoch - 1) * loader_size + i
             scheduler.step(cur_iter)
             margin_scheduler.step(cur_iter)
 
@@ -67,8 +67,12 @@ def run_epoch(dataloader,
                            width=10,
                            style='grid'))
 
+            # trained batch num should be exactly loader_size !
+            if i + 1 == loader_size:
+                break
+
     logger.info(
-        tp.row((epoch, lenloader, scheduler.get_lr(),
+        tp.row((epoch, loader_size, scheduler.get_lr(),
                 margin_scheduler.get_margin()) +
                (loss_meter.value()[0], acc_meter.value()[0]),
                width=10,
