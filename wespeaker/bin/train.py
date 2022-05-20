@@ -83,7 +83,7 @@ def train(config='conf/config.yaml', **kwargs):
     train_dataloader = DataLoader(train_dataset,
                                   **configs['dataloader_args'])
     batch_size = configs['dataloader_args']['batch_size']
-    loader_size = len(train_utt_spk_list) // batch_size // world_size
+    loader_size = len(train_utt_spk_list) // world_size // batch_size
     if rank == 0:
         logger.info("<== Dataloaders ==>")
         logger.info("train dataloaders created")
@@ -100,7 +100,7 @@ def train(config='conf/config.yaml', **kwargs):
     # projection layer
     configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
     configs['projection_args']['num_class'] = len(spk2id_dict)
-    if configs['feature_args']['raw_wav'] and configs['dataset_args']['speed_perturb']:
+    if configs['data_type'] != 'feat' and configs['dataset_args']['speed_perturb']:
         # diff speed is regarded as diff spk
         configs['projection_args']['num_class'] *= 3
     projection = get_projection(configs['projection_args'])

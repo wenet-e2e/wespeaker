@@ -142,7 +142,7 @@ def parse_raw(data):
             logging.warning('Failed to read {}'.format(wav_file))
 
 
-def shuffle(data, shuffle_size=3000):
+def shuffle(data, shuffle_size=2500):
     """ Local shuffle the data
 
         Args:
@@ -228,7 +228,7 @@ def get_random_chunk(data, chunk_len):
 
 
 def random_chunk(data, num_frms=200):
-    """ the data
+    """ Random chunk the data into `num_frms` frames
 
         Args:
             data: Iterable[{key, wav, label, sample_rate}]
@@ -258,8 +258,83 @@ def random_chunk(data, num_frms=200):
         yield sample
 
 
+def add_reverb(data, reverb_source, aug_prob):
+    """ Add reverb aug
+
+        Args:
+            data: Iterable[{key, wav, label, sample_rate}]
+            reverb_source: reverb LMDB data source
+
+        Returns:
+            Iterable[{key, wav, label, sample_rate}]
+    """
+    for sample in data:
+        assert 'wav' in sample
+        assert 'key' in sample
+        if aug_prob > random.random():
+            audio = sample['wav'].numpy()[0]
+            audio_len = audio.shape[0]
+
+            _, rir_data = reverb_source.random_one()
+            _, rir_audio = wavfile.read(io.BytesIO(rir_data))
+            rir_audio = rir_audio.astype(np.float32)
+            rir_audio = rir_audio / np.sqrt(np.sum(rir_audio**2))
+            out_audio = signal.convolve(audio, rir_audio,
+                                        mode='full')[:audio_len]
+
+            out_audio = torch.from_numpy(out_audio)
+            sample['wav'] = torch.unsqueeze(out_audio, 0)
+        yield sample
+
+
+def add_noise(data, noise_source, aug_prob):
+    """ Add noise aug
+
+        Args:
+            data: Iterable[{key, wav, label, sample_rate}]
+            noise_source: noise LMDB data source
+
+        Returns:
+            Iterable[{key, wav, label, sample_rate}]
+    """
+    for sample in data:
+        assert 'wav' in sample
+        assert 'key' in sample
+        if aug_prob > random.random():
+            audio = sample['wav'].numpy()[0]
+            audio_len = audio.shape[0]
+            audio_db = 10 * np.log10(np.mean(audio**2) + 1e-4)
+
+            key, noise_data = noise_source.random_one()
+            if key.startswith('noise'):
+                snr_range = [0, 15]
+            elif key.startswith('speech'):
+                snr_range = [13, 30]
+            elif key.startswith('music'):
+                snr_range = [5, 15]
+            else:
+                snr_range = [0, 15]
+            _, noise_audio = wavfile.read(io.BytesIO(noise_data))
+            noise_audio = noise_audio.astype(np.float32)
+            if noise_audio.shape[0] > audio_len:
+                start = random.randint(0, noise_audio.shape[0] - audio_len)
+                noise_audio = noise_audio[start:start + audio_len]
+            else:
+                # Resize will repeat copy
+                noise_audio = np.resize(noise_audio, (audio_len, ))
+            noise_snr = random.uniform(snr_range[0], snr_range[1])
+            noise_db = 10 * np.log10(np.mean(noise_audio**2) + 1e-4)
+            noise_audio = np.sqrt(10**(
+                (audio_db - noise_db - noise_snr) / 10)) * noise_audio
+            out_audio = audio + noise_audio
+
+            out_audio = torch.from_numpy(out_audio)
+            sample['wav'] = torch.unsqueeze(out_audio, 0)
+        yield sample
+
+
 def add_reverb_noise(data, reverb_source, noise_source, aug_prob):
-    """ Add reverb & noise
+    """ Add reverb & noise aug
 
         Args:
             data: Iterable[{key, wav, label, sample_rate}]
@@ -298,7 +373,7 @@ def add_reverb_noise(data, reverb_source, noise_source, aug_prob):
                 if key.startswith('noise'):
                     snr_range = [0, 15]
                 elif key.startswith('speech'):
-                    snr_range = [13, 20]
+                    snr_range = [13, 30]
                 elif key.startswith('music'):
                     snr_range = [5, 15]
                 else:
@@ -356,12 +431,12 @@ def compute_fbank(data,
                           window_type='hamming',
                           htk_compat=True,
                           use_energy=False)
-        # CMN
+        # CMN, without CVN
         mat = mat - torch.mean(mat, dim=0)
         yield dict(key=sample['key'], label=sample['label'], feat=mat)
 
 
-def spec_aug(data, num_t_mask=1, num_f_mask=1, max_t=10, max_f=8, prob=0.5):
+def spec_aug(data, num_t_mask=1, num_f_mask=1, max_t=10, max_f=8, prob=0.6):
     """ Do spec augmentation
         Inplace operation
 
@@ -371,7 +446,7 @@ def spec_aug(data, num_t_mask=1, num_f_mask=1, max_t=10, max_f=8, prob=0.5):
             num_f_mask: number of freq mask to apply
             max_t: max width of time mask
             max_f: max width of freq mask
-            max_w: max width of time warp
+            prob: prob of spec_aug
 
         Returns
             Iterable[{key, feat, label}]
@@ -381,7 +456,8 @@ def spec_aug(data, num_t_mask=1, num_f_mask=1, max_t=10, max_f=8, prob=0.5):
             assert 'feat' in sample
             x = sample['feat']
             assert isinstance(x, torch.Tensor)
-            y = x.clone().detach()
+            #y = x.clone().detach()
+            y = x.detach() #  inplace operation
             max_frames = y.size(0)
             max_freq = y.size(1)
             # time mask

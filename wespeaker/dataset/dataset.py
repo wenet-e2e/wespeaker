@@ -18,7 +18,7 @@ import torch
 import torch.distributed as dist
 from torch.utils.data import IterableDataset
 
-from wespeaker.utils.file_utils import read_lists, read_scp
+from wespeaker.utils.file_utils import read_lists
 from wespeaker.dataset.lmdb_data import LmdbData
 import wespeaker.dataset.processor as processor
 

@@ -67,12 +67,8 @@ def run_epoch(dataloader,
                            width=10,
                            style='grid'))
 
-            # trained batch num should be exactly loader_size !
-            if i + 1 == loader_size:
-                break
-
     logger.info(
-        tp.row((epoch, loader_size, scheduler.get_lr(),
+        tp.row((epoch, i + 1, scheduler.get_lr(),
                 margin_scheduler.get_margin()) +
                (loss_meter.value()[0], acc_meter.value()[0]),
                width=10,
