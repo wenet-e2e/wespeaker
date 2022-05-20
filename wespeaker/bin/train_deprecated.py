@@ -12,15 +12,17 @@ import re
 import torch
 import torch.distributed as dist
 from torch.utils.data import DataLoader
+from torch.utils.data.distributed import DistributedSampler
 
 import wespeaker.utils.schedulers as schedulers
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.models.projections import get_projection
 from wespeaker.utils.utils import get_logger, parse_config_or_kwargs, set_seed, spk2id
 from wespeaker.utils.file_utils import read_scp
-from wespeaker.utils.executor_uio import run_epoch
+from wespeaker.utils.executor_deprecated import run_epoch
 from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
-from wespeaker.dataset.udataset import Dataset
+from wespeaker.dataset.dataset_deprecated import FeatList_LableDict_Dataset
+
 
 def train(config='conf/config.yaml', **kwargs):
     """Trains a model on the given features and spk labels.
@@ -29,6 +31,7 @@ def train(config='conf/config.yaml', **kwargs):
              config can also be manually adjusted with --ARG VALUE
     :returns: None
     """
+
     configs = parse_config_or_kwargs(config, **kwargs)
     checkpoint = configs.get('checkpoint', None)
     # dist configs
@@ -62,38 +65,45 @@ def train(config='conf/config.yaml', **kwargs):
     # seed
     set_seed(configs['seed'] + rank)
 
-    # train data
-    train_label = configs['train_label']
+    # wav/feat
+    train_scp = configs['dataset_args']['train_scp']
+    train_label = configs['dataset_args']['train_label']
+    train_data_list = read_scp(train_scp)
+    if rank == 0:
+        logger.info("<== Feature ==>")
+        logger.info("train wav/feat num: {}".format(len(train_data_list)))
+
+    # spk label
     train_utt_spk_list = read_scp(train_label)
     spk2id_dict = spk2id(train_utt_spk_list)
+    train_utt2spkid_dict = {
+        utt_spk[0]: spk2id_dict[utt_spk[1]]
+        for utt_spk in train_utt_spk_list
+    }
     if rank == 0:
-        logger.info("<== Data ==>")
-        logger.info("train data num: {}, spk num: {}".format(
-            len(train_utt_spk_list), len(spk2id_dict)))
+        logger.info("<== Labels ==>")
+        logger.info("train label num: {}, spk num: {}".format(
+            len(train_utt2spkid_dict), len(spk2id_dict)))
 
     # dataset and dataloader
-    train_dataset = Dataset(
-        configs['data_type'],
-        configs['train_data_list'],
-        configs['dataset_args'],
-        spk2id_dict,
-        reverb_lmdb_file=configs.get('reverb_data', None),
-        noise_lmdb_file=configs.get('noise_data', None)
-    )
+    configs['feature_args']['feat_dim'] = configs['model_args']['feat_dim']
+    train_dataset = FeatList_LableDict_Dataset(train_data_list,
+                                               train_utt2spkid_dict,
+                                               **configs['feature_args'],
+                                               **configs['dataset_args'])
+    train_sampler = DistributedSampler(train_dataset, shuffle=True)
     train_dataloader = DataLoader(train_dataset,
+                                  sampler=train_sampler,
                                   **configs['dataloader_args'])
-    batch_size = configs['dataloader_args']['batch_size']
-    loader_size = len(train_utt_spk_list) // batch_size // world_size
     if rank == 0:
         logger.info("<== Dataloaders ==>")
         logger.info("train dataloaders created")
-        logger.info('loader size: {}'.format(loader_size))
 
     # model
     logger.info("<== Model ==>")
     model = get_speaker_model(configs['model'])(**configs['model_args'])
     if configs['model_init'] is not None:
-        logger.info('Load intial model from {}'.format(configs['model_init']))
+        logger.info('Load initial model from {}'.format(configs['model_init']))
         load_checkpoint(model, configs['model_init'])
     else:
         logger.info('Train model from scratch...')
@@ -144,7 +154,7 @@ def train(config='conf/config.yaml', **kwargs):
 
     # scheduler
     configs['scheduler_args']['num_epochs'] = configs['num_epochs']
-    configs['scheduler_args']['epoch_iter'] = loader_size
+    configs['scheduler_args']['epoch_iter'] = len(train_dataloader)
     configs['scheduler_args']['process_num'] = world_size
     scheduler = getattr(schedulers, configs['scheduler'])(
         optimizer, **configs['scheduler_args'])
@@ -153,7 +163,7 @@ def train(config='conf/config.yaml', **kwargs):
         logger.info("scheduler is: " + configs['scheduler'])
 
     # margin scheduler
-    configs['margin_update']['epoch_iter'] = loader_size
+    configs['margin_update']['epoch_iter'] = len(train_dataloader)
     margin_scheduler = getattr(schedulers, configs['margin_scheduler'])(
         model=model, **configs['margin_update'])
     if rank == 0:
@@ -176,11 +186,9 @@ def train(config='conf/config.yaml', **kwargs):
     dist.barrier()  # synchronize here
 
     for epoch in range(start_epoch, configs['num_epochs'] + 1):
-        # train_sampler.set_epoch(epoch)
-        train_dataset.set_epoch(epoch)
+        train_sampler.set_epoch(epoch)
 
         run_epoch(train_dataloader,
-                  loader_size,
                   ddp_model,
                   criterion,
                   optimizer,

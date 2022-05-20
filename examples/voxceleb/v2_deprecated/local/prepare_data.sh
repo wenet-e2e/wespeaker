@@ -101,5 +101,5 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   awk '{print $1}' data/vox2_dev/wav.scp | awk -F "/" '{print $0,$1}' >data/vox2_dev/utt2spk
   ./tools/utt2spk_to_spk2utt.pl data/vox2_dev/utt2spk >data/vox2_dev/spk2utt
 
-  echo "Success !!!"
+  echo "Success !!! Now data preparation is done !!!"
 fi
