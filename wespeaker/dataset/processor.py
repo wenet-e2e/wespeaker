@@ -254,7 +254,7 @@ def random_chunk(data, num_frms=200):
             # Resize will repeat copy
             wav = np.resize(wav, new_shape)
             wav = torch.from_numpy(wav)
-        sample['wav'] = wav 
+        sample['wav'] = wav
         yield sample
 
 
@@ -352,8 +352,8 @@ def add_reverb_noise(data, reverb_source, noise_source, aug_prob):
             if augtype == 1:
                 # add reverb
                 audio = sample['wav'].numpy()[0]
-                audio_len = audio.shape[0]                
-                
+                audio_len = audio.shape[0]
+
                 _, rir_data = reverb_source.random_one()
                 _, rir_audio = wavfile.read(io.BytesIO(rir_data))
                 rir_audio = rir_audio.astype(np.float32)
@@ -392,7 +392,7 @@ def add_reverb_noise(data, reverb_source, noise_source, aug_prob):
                 noise_audio = np.sqrt(10**(
                     (audio_db - noise_db - noise_snr) / 10)) * noise_audio
                 out_audio = audio + noise_audio
-                
+
                 out_audio = torch.from_numpy(out_audio)
                 sample['wav'] = torch.unsqueeze(out_audio, 0)
 
@@ -456,8 +456,8 @@ def spec_aug(data, num_t_mask=1, num_f_mask=1, max_t=10, max_f=8, prob=0.6):
             assert 'feat' in sample
             x = sample['feat']
             assert isinstance(x, torch.Tensor)
-            #y = x.clone().detach()
-            y = x.detach() #  inplace operation
+            # y = x.clone().detach()
+            y = x.detach()  # inplace operation
             max_frames = y.size(0)
             max_freq = y.size(1)
             # time mask

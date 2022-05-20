@@ -120,7 +120,7 @@ class DataList(IterableDataset):
 def Dataset(data_type,
             data_list_file,
             configs,
-            spk2id_dict={},
+            spk2id_dict,
             reverb_lmdb_file=None,
             noise_lmdb_file=None):
     """ Construct dataset from arguments
