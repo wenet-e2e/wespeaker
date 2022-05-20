@@ -119,7 +119,7 @@ class TritonPythonModel:
             for wav in cur_b_wav:
                 total_waves.append(wav.to(self.device))
 
-        features = self.feature_extractor(total_waves)
+        features = self.feature_extractor(total_waves).cpu()
         idx = 0
         for b in batch_count:
             batch_speech = features[idx:idx + b]
