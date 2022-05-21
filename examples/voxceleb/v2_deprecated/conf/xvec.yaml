@@ -13,32 +13,21 @@ feature_args:
   raw_wav: True
   num_frms: 200
 
+dataset_args:
+  train_scp: data/vox2_dev/wav.scp
+  train_label: data/vox2_dev/utt2spk
+  aug_prob: 0.6
+  musan_scp: data/musan/wav.scp
+  rirs_scp: data/rirs/wav.scp
+  speed_perturb: True
+  spec_aug: False
+
 dataloader_args:
   batch_size: 128
-  num_workers: 8
+  num_workers: 16
   pin_memory: False
-  prefetch_factor: 4
+  prefetch_factor: 8
   drop_last: True
-
-dataset_args:
-  shuffle: True
-  shuffle_args:
-    shuffle_size: 2500
-  speed_perturb: True
-  num_frms: 200
-  aug_prob: 0.6 # prob to add reverb & noise aug per sample
-  fbank_args:
-    num_mel_bins: 80
-    frame_shift: 10
-    frame_length: 25
-    dither: 1.0
-  spec_aug: False
-  spec_aug_args:
-    num_t_mask: 1
-    num_f_mask: 1
-    max_t: 10
-    max_f: 8
-    prob: 0.6
 
 model: XVEC
 model_init: null

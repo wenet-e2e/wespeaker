@@ -1,6 +1,6 @@
 ### train configuraton
 
-exp_dir: exp/XVEC-TSTP-emb512-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
+exp_dir: exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
 gpus: "[0,1]"
 num_avg: 10
 
@@ -13,6 +13,15 @@ feature_args:
   raw_wav: True
   num_frms: 200
 
+dataset_args:
+  train_scp: data/vox2_dev/wav.scp
+  train_label: data/vox2_dev/utt2spk
+  aug_prob: 0.6
+  musan_scp: data/musan/wav.scp
+  rirs_scp: data/rirs/wav.scp
+  speed_perturb: True
+  spec_aug: False
+
 dataloader_args:
   batch_size: 128
   num_workers: 8
@@ -20,31 +29,11 @@ dataloader_args:
   prefetch_factor: 4
   drop_last: True
 
-dataset_args:
-  shuffle: True
-  shuffle_args:
-    shuffle_size: 2500
-  speed_perturb: True
-  num_frms: 200
-  aug_prob: 0.6 # prob to add reverb & noise aug per sample
-  fbank_args:
-    num_mel_bins: 80
-    frame_shift: 10
-    frame_length: 25
-    dither: 1.0
-  spec_aug: False
-  spec_aug_args:
-    num_t_mask: 1
-    num_f_mask: 1
-    max_t: 10
-    max_f: 8
-    prob: 0.6
-
-model: XVEC
+model: ResNet34 # ResNet18, ResNet34, ResNet50, ResNet101, ResNet152
 model_init: null
 model_args:
   feat_dim: 80
-  embed_dim: 512
+  embed_dim: 256
   pooling_func: 'TSTP'
 projection_args:
   project_type: 'arc_margin' # add_margin, arc_margin, sphere, softmax

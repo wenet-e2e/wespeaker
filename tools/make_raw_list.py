@@ -16,14 +16,13 @@
 
 import argparse
 import logging
-import os
 import json
 
 
 def get_args():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('wav_file', help='wav file')
-    parser.add_argument('speaker_file', help='speaker file')
+    parser.add_argument('utt2spk_file', help='utt2spk file')
     parser.add_argument('raw_list', help='output raw list file')
     args = parser.parse_args()
     return args
@@ -38,23 +37,23 @@ def main():
     with open(args.wav_file, 'r', encoding='utf8') as fin:
         for line in fin:
             arr = line.strip().split()
-            key = os.path.splitext(arr[0])[0]
+            key = arr[0]  # os.path.splitext(arr[0])[0]
             assert len(arr) == 2
             wav_table[key] = arr[1]
 
     data = []
-    with open(args.speaker_file, 'r', encoding='utf8') as fin:
+    with open(args.utt2spk_file, 'r', encoding='utf8') as fin:
         for line in fin:
             arr = line.strip().split(maxsplit=1)
-            key = os.path.splitext(arr[0])[0]
-            txt = arr[1]
+            key = arr[0]  # os.path.splitext(arr[0])[0]
+            spk = arr[1]
             assert key in wav_table
             wav = wav_table[key]
-            data.append((key, txt, wav))
+            data.append((key, spk, wav))
 
     with open(args.raw_list, 'w', encoding='utf8') as fout:
-        for key, speaker, wav in data:
-            line = dict(key=key, speaker=speaker, wav=wav)
+        for key, spk, wav in data:
+            line = dict(key=key, spk=spk, wav=wav)
             json_line = json.dumps(line, ensure_ascii=False)
             fout.write(json_line + '\n')
 

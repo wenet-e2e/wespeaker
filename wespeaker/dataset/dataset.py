@@ -1,183 +1,181 @@
-#!/usr/bin/env python3
-# coding=utf-8
-# Author: Hongji Wang
+# Copyright (c) 2022 Horizon Robtics. (authors: Binbin Zhang)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import random
-import numpy as np
+
 import torch
-from torch.utils.data import Dataset
+import torch.distributed as dist
+from torch.utils.data import IterableDataset
 
-import kaldiio
-from scipy import signal
-from scipy.io import wavfile
-import torchaudio.compliance.kaldi as kaldi
-
-from wespeaker.utils.file_utils import read_scp
-from wespeaker.utils.dataset_utils import (get_random_chunk, speed_perturb,
-                                           spec_augmentation)
+from wespeaker.utils.file_utils import read_lists
+from wespeaker.dataset.lmdb_data import LmdbData
+import wespeaker.dataset.processor as processor
 
 
-class FeatList_LableDict_Dataset(Dataset):
-    """
-    shuffle wav.scp/feats.scp, load all labels into cpu memory
-    """
-    def __init__(self,
-                 data_list,
-                 utt2spkid_dict,
-                 whole_utt=False,
-                 **kwargs):
-        super(FeatList_LableDict_Dataset, self).__init__()
-        self.data_list = data_list
-        self.length = len(data_list)
-        self.utt2spkid_dict = utt2spkid_dict
-        self.whole_utt = whole_utt  # True means batch_size=1 !!
+class Processor(IterableDataset):
 
-        # feat config
-        self.raw_wav = kwargs.get('raw_wav', True)
-        self.feat_dim = kwargs.get('feat_dim', 80)
-        self.num_frms = kwargs.get('num_frms', 200)
-        # chunk config (sample rate is 16kHZ)
-        self.chunk_len = (self.num_frms -
-                          1) * 160 + 400 if self.raw_wav else self.num_frms
+    def __init__(self, source, f, *args, **kw):
+        assert callable(f)
+        self.source = source
+        self.f = f
+        self.args = args
+        self.kw = kw
 
-        # dataset config (for wav augmentation only)
-        if self.raw_wav:
-            self.speed_perturb = kwargs.get('speed_perturb', False)
-            self.aug_prob = kwargs.get('aug_prob', 0.0)
-            self.musan_scp = kwargs.get('musan_scp', '')
-            self.rirs_scp = kwargs.get('rirs_scp', '')
-            if self.aug_prob > 0.0:
-                self.augment_wav = Augment_Wav(self.musan_scp, self.rirs_scp)
-        self.spec_aug = kwargs.get('spec_aug', False)
+    def set_epoch(self, epoch):
+        self.source.set_epoch(epoch)
 
-        # used for calculate the spk id after speed perturb
-        self.spk_num = len(set(utt2spkid_dict.values()))
 
-    def __getitem__(self, idx):
-        utt, data_path = self.data_list[idx]
-        spkid = self.utt2spkid_dict[utt] if utt in self.utt2spkid_dict else -1
+    def __iter__(self):
+        """ Return an iterator over the source dataset processed by the
+            given processor.
+        """
+        assert self.source is not None
+        assert callable(self.f)
+        return self.f(iter(self.source), *self.args, **self.kw)
 
-        speed_perturb_idx = 0
-        if self.raw_wav:
-            # load wav file
-            sr, waveform = wavfile.read(data_path)
-            # kaldiio.load_mat() is a little slower than wavfile.read(),
-            # but supports cloud io (e.g., kaldiio.load_mat(
-            # 'ffmpeg -i http://ip/xxx.wav -ac 1 -ar 16000 -f wav - |'))
+    def apply(self, f):
+        assert callable(f)
+        return Processor(self, f, *self.args, **self.kw)
 
-            # speed perturb
-            if self.speed_perturb:
-                speed_perturb_idx = random.randint(0, 2)
-                waveform = speed_perturb(waveform,
-                                         speed_perturb_idx=speed_perturb_idx)
-            # chunk/pad
-            if not self.whole_utt:
-                waveform = get_random_chunk(waveform, self.chunk_len)
-            # augment wav
-            if self.aug_prob > random.random():
-                waveform = self.augment_wav.process(waveform)
-            # make fbank feature
-            feat_tensor = kaldi.fbank(torch.FloatTensor(waveform).unsqueeze(0),
-                                      num_mel_bins=self.feat_dim,
-                                      frame_shift=10,
-                                      frame_length=25,
-                                      energy_floor=0.0,
-                                      window_type='hamming',
-                                      htk_compat=True,
-                                      use_energy=False,
-                                      dither=1)
-            feat = feat_tensor.detach().numpy()
+
+class DistributedSampler:
+
+    def __init__(self, shuffle=True, partition=True):
+        self.epoch = -1
+        self.update()
+        self.shuffle = shuffle
+        self.partition = partition
+
+    def update(self):
+        assert dist.is_available()
+        if dist.is_initialized():
+            self.rank = dist.get_rank()
+            self.world_size = dist.get_world_size()
         else:
-            # load feat
-            feat = kaldiio.load_mat(data_path)
-            # chunk/pad
-            if not self.whole_utt:
-                feat = get_random_chunk(feat, self.chunk_len)
+            self.rank = 0
+            self.world_size = 1
+        worker_info = torch.utils.data.get_worker_info()
+        if worker_info is None:
+            self.worker_id = 0
+            self.num_workers = 1
+        else:
+            self.worker_id = worker_info.id
+            self.num_workers = worker_info.num_workers
+        return dict(rank=self.rank,
+                    world_size=self.world_size,
+                    worker_id=self.worker_id,
+                    num_workers=self.num_workers)
 
-        # cmn, withnot cvn
-        feat = feat - np.mean(feat, axis=0)  # (T,F)
+    def set_epoch(self, epoch):
+        self.epoch = epoch
 
-        # spec augmentation
-        if self.spec_aug:
-            feat = spec_augmentation(feat)
+    def sample(self, data):
+        """ Sample data according to rank/world_size/num_workers
 
-        return utt, feat, spkid + self.spk_num * speed_perturb_idx
+            Args:
+                data(List): input data list
 
-    def __len__(self):
-        return self.length
-
-
-class Augment_Wav:
-    def __init__(self, musan_scp, rirs_scp):
-
-        self.noise_snr = {'noise': [0, 15], 'speech': [13, 20], 'music': [5, 15]}
-        self.num_noise = {'noise': [1, 1], 'speech': [3, 7], 'music': [1, 1]}
-
-        self.rir_list = read_scp(rirs_scp)
-
-        # {'noise': noise_list, 'speech': speech_list, 'music': music_list}
-        self.noise_dict = {}
-        with open(musan_scp, 'r') as fp:
-            for line in fp.readlines():
-                segs = line.strip().split()
-                noise_type = segs[0].split('/')[0]
-
-                if noise_type not in self.noise_dict:
-                    self.noise_dict[noise_type] = []
-                # utt_name wav_path
-                self.noise_dict[noise_type].append((segs[0], segs[1]))
-
-    def additive_noise(self, noise_type, audio):
+            Returns:
+                List: data list after sample
         """
-        :param noise_type: 'noise', 'speech', 'music'
-        :param audio: numpy array, (audio_len,)
-        """
-        audio = audio.astype(np.float32)
-        audio_len = audio.shape[0]
-        audio_db = 10 * np.log10(np.mean(audio**2) + 1e-4)
+        data = list(range(len(data)))
+        if self.partition:
+            if self.shuffle:
+                random.Random(self.epoch).shuffle(data)
+            data = data[self.rank::self.world_size]
+        data = data[self.worker_id::self.num_workers]
+        return data
 
-        num_noise = self.num_noise[noise_type]
-        noise_idx_list = random.sample(
-            self.noise_dict[noise_type],
-            random.randint(num_noise[0], num_noise[1]))
-        noise_list = []
-        for _, noise_path in noise_idx_list:
-            _, noise_audio = wavfile.read(noise_path)
-            noise_audio = get_random_chunk(noise_audio,
-                                           audio_len).astype(np.float32)
 
-            noise_snr = random.uniform(self.noise_snr[noise_type][0],
-                                       self.noise_snr[noise_type][1])
-            noise_db = 10 * np.log10(np.mean(noise_audio**2) + 1e-4)
-            noise_list.append(
-                np.sqrt(10**((audio_db - noise_db - noise_snr) / 10)) * noise_audio)
+class DataList(IterableDataset):
 
-        return np.sum(np.stack(noise_list), axis=0) + audio
+    def __init__(self, lists, shuffle=True, partition=True):
+        self.lists = lists
+        self.sampler = DistributedSampler(shuffle, partition)
 
-    def reverberate(self, audio):
-        """
-        :param audio: numpy array, (audio_len,)
-        """
-        audio = audio.astype(np.float32)
-        audio_len = audio.shape[0]
+    def set_epoch(self, epoch):
+        self.sampler.set_epoch(epoch)
 
-        _, rir_wav = random.choice(self.rir_list)
-        _, rir_audio = wavfile.read(rir_wav)
-        rir_audio = rir_audio.astype(np.float32)
-        rir_audio = rir_audio / np.sqrt(np.sum(rir_audio**2))
+    def __iter__(self):
+        sampler_info = self.sampler.update()
+        indexes = self.sampler.sample(self.lists)
+        for index in indexes:
+            # yield dict(src=src)
+            data = dict(src=self.lists[index])
+            data.update(sampler_info)
+            yield data
 
-        return signal.convolve(audio, rir_audio, mode='full')[:audio_len]
 
-    def process(self, audio):
-        augtype = random.randint(1, 4)
-        # print("augtype", augtype)
-        if augtype == 1:
-            audio = self.reverberate(audio)
-        elif augtype == 2:
-            audio = self.additive_noise('music', audio)
-        elif augtype == 3:
-            audio = self.additive_noise('speech', audio)
-        elif augtype == 4:
-            audio = self.additive_noise('noise', audio)
+def Dataset(data_type,
+            data_list_file,
+            configs,
+            spk2id_dict,
+            reverb_lmdb_file=None,
+            noise_lmdb_file=None):
+    """ Construct dataset from arguments
 
-        return audio
+        We have two shuffle stage in the Dataset. The first is global
+        shuffle at shards tar/raw file level. The second is local shuffle
+        at training samples level.
+
+        Args:
+            data_type(str): raw/shard
+            data_list_file: shard list file
+            configs: dataset configs
+            spk2id_dict: spk2id dict
+            reverb_lmdb_file: reverb data source lmdb file
+            noise_lmdb_file: noise data source lmdb file
+    """
+    assert data_type in ['raw', 'shard']
+    lists = read_lists(data_list_file)
+    shuffle = configs.get('shuffle', False)
+    # Global shuffle
+    dataset = DataList(lists, shuffle=shuffle)
+    if data_type == 'shard':
+        dataset = Processor(dataset, processor.url_opener)
+        dataset = Processor(dataset, processor.tar_file_and_group)
+    else:
+        dataset = Processor(dataset, processor.parse_raw)
+    # Local shuffle
+    if shuffle:
+        dataset = Processor(dataset, processor.shuffle, **configs['shuffle_args'])
+
+    # spk2id
+    dataset = Processor(dataset, processor.spk_to_id, spk2id_dict)
+
+    # speed perturb
+    speed_perturb_flag = configs.get('speed_perturb', True)
+    if speed_perturb_flag:
+        dataset = Processor(dataset, processor.speed_perturb, len(spk2id_dict))
+
+    # random chunk
+    num_frms = configs.get('num_frms', 200)
+    dataset = Processor(dataset, processor.random_chunk, num_frms)
+
+    # add reverb & noise
+    if reverb_lmdb_file and noise_lmdb_file:
+        reverb_data = LmdbData(reverb_lmdb_file)
+        noise_data = LmdbData(noise_lmdb_file)
+        dataset = Processor(dataset, processor.add_reverb_noise, reverb_data,
+                            noise_data, configs['aug_prob'])
+
+    # compute fbank
+    dataset = Processor(dataset, processor.compute_fbank, **configs['fbank_args'])
+
+    # spec augmentation
+    spec_aug_flag = configs.get('spec_aug', True)
+    if spec_aug_flag:
+        dataset = Processor(dataset, processor.spec_aug, **configs['spec_aug_args'])
+
+    return dataset

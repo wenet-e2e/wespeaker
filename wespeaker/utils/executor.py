@@ -10,6 +10,7 @@ import torchnet as tnt
 
 
 def run_epoch(dataloader,
+              loader_size,
               model,
               criterion,
               optimizer,
@@ -31,9 +32,12 @@ def run_epoch(dataloader,
         model_context = nullcontext
 
     with torch.set_grad_enabled(True), model_context():
-        for i, (utts, features, targets) in enumerate(dataloader):
+        for i, batch in enumerate(dataloader):
+            utts = batch['key']
+            targets = batch['label']
+            features = batch['feat']
 
-            cur_iter = (epoch - 1) * len(dataloader) + i
+            cur_iter = (epoch - 1) * loader_size + i
             scheduler.step(cur_iter)
             margin_scheduler.step(cur_iter)
 
@@ -64,7 +68,7 @@ def run_epoch(dataloader,
                            style='grid'))
 
     logger.info(
-        tp.row((epoch, len(dataloader), scheduler.get_lr(),
+        tp.row((epoch, i + 1, scheduler.get_lr(),
                 margin_scheduler.get_margin()) +
                (loss_meter.value()[0], acc_meter.value()[0]),
                width=10,

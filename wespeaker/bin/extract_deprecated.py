@@ -9,7 +9,7 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from wespeaker.dataset.dataset import FeatList_LableDict_Dataset
+from wespeaker.dataset.dataset_deprecated import FeatList_LableDict_Dataset
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.utils.checkpoint import load_checkpoint
 from wespeaker.utils.file_utils import read_scp

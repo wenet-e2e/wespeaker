@@ -150,7 +150,7 @@ class ECAPA_TDNN(nn.Module):
                  channels=512,
                  feat_dim=80,
                  embed_dim=192,
-                 pooling_func='ASP',
+                 pooling_func='ASTP',
                  global_context_att=False):
         super().__init__()
 

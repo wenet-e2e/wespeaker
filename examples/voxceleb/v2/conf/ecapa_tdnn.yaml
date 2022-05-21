@@ -1,6 +1,6 @@
 ### train configuraton
 
-exp_dir: exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-fbank80-num_frms200-vox2_dev-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
+exp_dir: exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
 gpus: "[0,1]"
 num_avg: 10
 
@@ -13,21 +13,32 @@ feature_args:
   raw_wav: True
   num_frms: 200
 
-dataset_args:
-  train_scp: data/vox2_dev/wav.scp
-  train_label: data/vox2_dev/utt2spk
-  aug_prob: 0.6 # for wav augmentation only
-  musan_scp: data/musan/wav.scp
-  rirs_scp: data/rirs/wav.scp
-  speed_perturb: True # for wav augmentation only
-  spec_aug: False
-
 dataloader_args:
   batch_size: 128
-  num_workers: 16
+  num_workers: 8
   pin_memory: False
-  prefetch_factor: 8
+  prefetch_factor: 4
   drop_last: True
+
+dataset_args:
+  shuffle: True
+  shuffle_args:
+    shuffle_size: 2500
+  speed_perturb: True
+  num_frms: 200
+  aug_prob: 0.6 # prob to add reverb & noise aug per sample
+  fbank_args:
+    num_mel_bins: 80
+    frame_shift: 10
+    frame_length: 25
+    dither: 1.0
+  spec_aug: False
+  spec_aug_args:
+    num_t_mask: 1
+    num_f_mask: 1
+    max_t: 10
+    max_f: 8
+    prob: 0.6
 
 model: ECAPA_TDNN_GLOB_c512 # ECAPA_TDNN_GLOB_c512, ECAPA_TDNN_GLOB_c1024
 model_init: null
@@ -63,4 +74,3 @@ scheduler_args:
   initial_lr: 0.1
   final_lr: 0.00005
   warm_up_epoch: 6
-  process_num: 1
