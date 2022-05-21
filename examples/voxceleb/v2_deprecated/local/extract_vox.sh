@@ -22,7 +22,7 @@ num_workers_array=(4 1)
 count=${#data_name_array[@]}
 
 for i in $(seq 0 $(($count - 1))); do
-  bash tools/extract_embedding.sh --exp_dir ${exp_dir} \
+  bash tools/extract_embedding_deprecated.sh --exp_dir ${exp_dir} \
     --model_path $model_path \
     --data_scp ${data_path_array[$i]} \
     --store_dir ${data_name_array[$i]} \
