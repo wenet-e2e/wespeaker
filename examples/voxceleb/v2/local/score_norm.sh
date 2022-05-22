@@ -2,7 +2,7 @@
 # coding:utf-8
 # Author: Chengdong Liang
 
-score_norm_method="snorm"  # asnorm/snorm
+score_norm_method="asnorm"  # asnorm/snorm
 cohort_set=vox2_dev
 top_n=100
 exp_dir=
@@ -65,7 +65,7 @@ if [ $stage -le 3 ] && [ $stop_stage -ge 3 ]; then
       --c_fa 1 \
       --c_miss 1 \
       ${scores_dir}/${output_name}_${x}.score \
-      2>&1 | tee -a ${scores_dir}/vox1_${score_norm_method}${top_n}_result_0512
+      2>&1 | tee -a ${scores_dir}/vox1_${score_norm_method}${top_n}_result
 
     python wespeaker/bin/compute_det.py \
       ${scores_dir}/${output_name}_${x}.score
