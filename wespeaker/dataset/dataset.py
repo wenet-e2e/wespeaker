@@ -122,7 +122,8 @@ def Dataset(data_type,
             configs,
             spk2id_dict,
             reverb_lmdb_file=None,
-            noise_lmdb_file=None):
+            noise_lmdb_file=None,
+            whole_uttr=False):
     """ Construct dataset from arguments
 
         We have two shuffle stage in the Dataset. The first is global
@@ -159,9 +160,10 @@ def Dataset(data_type,
     if speed_perturb_flag:
         dataset = Processor(dataset, processor.speed_perturb, len(spk2id_dict))
 
-    # random chunk
-    num_frms = configs.get('num_frms', 200)
-    dataset = Processor(dataset, processor.random_chunk, num_frms)
+    if not whole_uttr:
+        # random chunk
+        num_frms = configs.get('num_frms', 200)
+        dataset = Processor(dataset, processor.random_chunk, num_frms)
 
     # add reverb & noise
     if reverb_lmdb_file and noise_lmdb_file:

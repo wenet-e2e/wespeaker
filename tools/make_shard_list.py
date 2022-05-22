@@ -92,7 +92,7 @@ def main():
     with open(args.wav_file, 'r', encoding='utf8') as fin:
         for line in fin:
             arr = line.strip().split()
-            key = os.path.splitext(arr[0])[0]
+            key = arr[0]  # key = os.path.splitext(arr[0])[0]
             assert len(arr) == 2
             wav_table[key] = arr[1]
 
@@ -100,7 +100,7 @@ def main():
     with open(args.utt2spk_file, 'r', encoding='utf8') as fin:
         for line in fin:
             arr = line.strip().split(maxsplit=1)
-            key = os.path.splitext(arr[0])[0]
+            key = arr[0]  # key = os.path.splitext(arr[0])[0]
             spk = arr[1]
             assert key in wav_table
             wav = wav_table[key]
