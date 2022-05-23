@@ -26,18 +26,20 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
 fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
-  echo "Covert training data to ${data_type}..."
-  if [ $data_type == "shard" ]; then
-    python tools/make_shard_list.py --num_utts_per_shard 1000 \
-        --num_threads 16 \
-        --prefix shards \
-        --shuffle \
-        data/vox2_dev/wav.scp data/vox2_dev/utt2spk \
-        data/vox2_dev/shards data/vox2_dev/shard.list
-  else
-    python tools/make_raw_list.py data/vox2_dev/wav.scp \
-        data/vox2_dev/utt2spk data/vox2_dev/raw.list
-  fi
+  echo "Covert training and test data to ${data_type}..."
+  for dset in vox2_dev vox1; do
+    if [ $data_type == "shard" ]; then
+      python tools/make_shard_list.py --num_utts_per_shard 1000 \
+          --num_threads 16 \
+          --prefix shards \
+          --shuffle \
+          data/$dset/wav.scp data/$dset/utt2spk \
+          data/$dset/shards data/$dset/shard.list
+    else
+      python tools/make_raw_list.py data/$dset/wav.scp \
+          data/$dset/utt2spk data/$dset/raw.list
+    fi
+  done
   # Convert all musan data to LMDB
   python tools/make_lmdb.py data/musan/wav.scp data/musan/lmdb
   # Convert all rirs data to LMDB
@@ -69,7 +71,9 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
     --num ${num_avg}
 
   echo "Extract embeddings ..."
-  local/extract_vox.sh --exp_dir $exp_dir --model_path $avg_model --nj 4 --gpus $gpus
+  local/extract_vox.sh \
+    --exp_dir $exp_dir --model_path $avg_model \
+    --nj 4 --gpus $gpus --data_type $data_type
 fi
 
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
