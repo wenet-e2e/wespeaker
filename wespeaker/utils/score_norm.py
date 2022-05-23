@@ -29,11 +29,15 @@ def split_embedding(utt_list_file, emb_scp, mean_vec):
     utt_list = read_lists(utt_list_file)
     embs = []
     utt2idx = {}
+    utt2emb = {}
     for utt, emb in kaldiio.load_scp_sequential(emb_scp):
         emb = emb - mean_vec
-        if utt in utt_list:
-            embs.append(np.array(emb))
-            utt2idx[utt] = len(embs) - 1
+        utt2emb[utt] = emb
+
+    for utt in utt_list:
+        embs.append(np.array(utt2emb[utt]))
+        utt2idx[utt] = len(embs) - 1
+
     return np.array(embs), utt2idx
 
 
@@ -63,7 +67,6 @@ def main(enroll_list_file, test_list_file, cohort_list_file, score_norm_method,
     if score_norm_method == "asnorm":
         top_n = top_n
     elif score_norm_method == "snorm":
-        print(cohort_emb.shape[0])
         top_n = cohort_emb.shape[0]
     else:
         raise ValueError(score_norm_method)
