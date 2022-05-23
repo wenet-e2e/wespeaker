@@ -20,7 +20,7 @@ trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
 . tools/parse_options.sh || exit 1
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
-  echo "Preparing datasets ..."
+  echo "Prepare datasets ..."
   ./local/prepare_data.sh --stage 2 --stop_stage 4
 fi
 

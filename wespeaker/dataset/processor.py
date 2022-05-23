@@ -178,7 +178,11 @@ def spk_to_id(data, spk2id):
     """
     for sample in data:
         assert 'spk' in sample
-        sample['label'] = spk2id[sample['spk']]
+        if sample['spk'] in spk2id:
+            label = spk2id[sample['spk']]
+        else:
+            label = -1
+        sample['label'] = label
         yield sample
 
 

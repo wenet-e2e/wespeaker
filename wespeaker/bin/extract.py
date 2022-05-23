@@ -36,8 +36,6 @@ def extract(config='conf/config.yaml', **kwargs):
     model.to(device).eval()
 
     # test_configs
-    utt_spk_list = read_scp(configs['utt2spk'])
-    spk2id_dict = spk2id(utt_spk_list)
     test_conf = copy.deepcopy(configs['dataset_args'])
     test_conf['speed_perturb'] = False
     if 'fbank_args' in test_conf:
@@ -50,8 +48,8 @@ def extract(config='conf/config.yaml', **kwargs):
     dataset = Dataset(configs['data_type'],
                       configs['data_list'],
                       test_conf,
-                      spk2id_dict,
-                      whole_uttr=(batch_size == 1),
+                      spk2id_dict={},
+                      whole_utt=(batch_size == 1),
                       reverb_lmdb_file=None,
                       noise_lmdb_file=None)
     dataloader = DataLoader(dataset,
