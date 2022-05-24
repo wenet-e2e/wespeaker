@@ -9,10 +9,6 @@ num_epochs: 150
 save_epoch_interval: 5 # save model every 5 epochs
 log_batch_interval: 100 # log every 100 batchs
 
-feature_args:
-  raw_wav: True
-  num_frms: 200
-
 dataloader_args:
   batch_size: 128
   num_workers: 8
