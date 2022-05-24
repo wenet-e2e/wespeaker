@@ -178,7 +178,11 @@ def spk_to_id(data, spk2id):
     """
     for sample in data:
         assert 'spk' in sample
-        sample['label'] = spk2id[sample['spk']]
+        if sample['spk'] in spk2id:
+            label = spk2id[sample['spk']]
+        else:
+            label = -1
+        sample['label'] = label
         yield sample
 
 
@@ -211,18 +215,17 @@ def speed_perturb(data, num_spks):
 
 
 def get_random_chunk(data, chunk_len):
-    # chunking: randomly select a range of size min(chunk_len, len).
     data_len = len(data)
     data_shape = data.shape
-    adjust_chunk_len = min(data_len, chunk_len)
-    chunk_start = random.randint(0, data_len - adjust_chunk_len)
-
-    data = data[chunk_start:chunk_start + adjust_chunk_len]
-    # padding if needed
-    if adjust_chunk_len < chunk_len:
+    # random chunk
+    if data_len >= chunk_len:
+        chunk_start = random.randint(0, data_len - chunk_len)
+        data = data[chunk_start:chunk_start + chunk_len]
+    else:
+        # padding
         chunk_shape = chunk_len if len(data_shape) == 1 else (chunk_len,
                                                               data.shape[1])
-        data = np.resize(data, chunk_shape)  # repeating
+        data = np.resize(data, chunk_shape)  # resize will repeat copy
 
     return data
 
@@ -239,97 +242,14 @@ def random_chunk(data, num_frms=200):
     """
     # Note(Binbin Zhang): We assume the sample rate is 16000,
     #                     frame shift 10ms, frame length 25ms
-    chunk_size = (num_frms - 1) * 160 + 400
+    chunk_len = (num_frms - 1) * 160 + 400
     for sample in data:
         assert 'key' in sample
         assert 'wav' in sample
-        data_size = sample['wav'].size(1)
-        if data_size >= chunk_size:
-            chunk_start = random.randint(0, data_size - chunk_size)
-            wav = sample['wav'][:, chunk_start:chunk_start + chunk_size]
-        else:
-            # TODO(Binbin Zhang): Change to pytorch tensor operation
-            wav = sample['wav'].numpy()
-            new_shape = [wav.shape[0], chunk_size]
-            # Resize will repeat copy
-            wav = np.resize(wav, new_shape)
-            wav = torch.from_numpy(wav)
-        sample['wav'] = wav
-        yield sample
 
-
-def add_reverb(data, reverb_source, aug_prob):
-    """ Add reverb aug
-
-        Args:
-            data: Iterable[{key, wav, label, sample_rate}]
-            reverb_source: reverb LMDB data source
-
-        Returns:
-            Iterable[{key, wav, label, sample_rate}]
-    """
-    for sample in data:
-        assert 'wav' in sample
-        assert 'key' in sample
-        if aug_prob > random.random():
-            audio = sample['wav'].numpy()[0]
-            audio_len = audio.shape[0]
-
-            _, rir_data = reverb_source.random_one()
-            _, rir_audio = wavfile.read(io.BytesIO(rir_data))
-            rir_audio = rir_audio.astype(np.float32)
-            rir_audio = rir_audio / np.sqrt(np.sum(rir_audio**2))
-            out_audio = signal.convolve(audio, rir_audio,
-                                        mode='full')[:audio_len]
-
-            out_audio = torch.from_numpy(out_audio)
-            sample['wav'] = torch.unsqueeze(out_audio, 0)
-        yield sample
-
-
-def add_noise(data, noise_source, aug_prob):
-    """ Add noise aug
-
-        Args:
-            data: Iterable[{key, wav, label, sample_rate}]
-            noise_source: noise LMDB data source
-
-        Returns:
-            Iterable[{key, wav, label, sample_rate}]
-    """
-    for sample in data:
-        assert 'wav' in sample
-        assert 'key' in sample
-        if aug_prob > random.random():
-            audio = sample['wav'].numpy()[0]
-            audio_len = audio.shape[0]
-            audio_db = 10 * np.log10(np.mean(audio**2) + 1e-4)
-
-            key, noise_data = noise_source.random_one()
-            if key.startswith('noise'):
-                snr_range = [0, 15]
-            elif key.startswith('speech'):
-                snr_range = [13, 30]
-            elif key.startswith('music'):
-                snr_range = [5, 15]
-            else:
-                snr_range = [0, 15]
-            _, noise_audio = wavfile.read(io.BytesIO(noise_data))
-            noise_audio = noise_audio.astype(np.float32)
-            if noise_audio.shape[0] > audio_len:
-                start = random.randint(0, noise_audio.shape[0] - audio_len)
-                noise_audio = noise_audio[start:start + audio_len]
-            else:
-                # Resize will repeat copy
-                noise_audio = np.resize(noise_audio, (audio_len, ))
-            noise_snr = random.uniform(snr_range[0], snr_range[1])
-            noise_db = 10 * np.log10(np.mean(noise_audio**2) + 1e-4)
-            noise_audio = np.sqrt(10**(
-                (audio_db - noise_db - noise_snr) / 10)) * noise_audio
-            out_audio = audio + noise_audio
-
-            out_audio = torch.from_numpy(out_audio)
-            sample['wav'] = torch.unsqueeze(out_audio, 0)
+        wav = sample['wav'].numpy()[0]
+        wav = get_random_chunk(wav, chunk_len)
+        sample['wav'] = torch.from_numpy(wav).unsqueeze(0)
         yield sample
 
 
@@ -360,9 +280,6 @@ def add_reverb_noise(data, reverb_source, noise_source, aug_prob):
                 rir_audio = rir_audio / np.sqrt(np.sum(rir_audio**2))
                 out_audio = signal.convolve(audio, rir_audio,
                                             mode='full')[:audio_len]
-
-                out_audio = torch.from_numpy(out_audio)
-                sample['wav'] = torch.unsqueeze(out_audio, 0)
             elif augtype == 2:
                 # add noise
                 audio = sample['wav'].numpy()[0]
@@ -373,28 +290,23 @@ def add_reverb_noise(data, reverb_source, noise_source, aug_prob):
                 if key.startswith('noise'):
                     snr_range = [0, 15]
                 elif key.startswith('speech'):
-                    snr_range = [13, 30]
+                    snr_range = [10, 30]
                 elif key.startswith('music'):
                     snr_range = [5, 15]
                 else:
                     snr_range = [0, 15]
                 _, noise_audio = wavfile.read(io.BytesIO(noise_data))
-                noise_audio = noise_audio.astype(np.float32)
-                # chunk noise
-                if noise_audio.shape[0] > audio_len:
-                    start = random.randint(0, noise_audio.shape[0] - audio_len)
-                    noise_audio = noise_audio[start:start + audio_len]
-                else:
-                    # Resize will repeat copy
-                    noise_audio = np.resize(noise_audio, (audio_len, ))
+                noise_audio = noise_audio.astype(np.float32) / (1 << 15)
+                noise_audio = get_random_chunk(noise_audio, audio_len)
                 noise_snr = random.uniform(snr_range[0], snr_range[1])
                 noise_db = 10 * np.log10(np.mean(noise_audio**2) + 1e-4)
                 noise_audio = np.sqrt(10**(
                     (audio_db - noise_db - noise_snr) / 10)) * noise_audio
                 out_audio = audio + noise_audio
 
-                out_audio = torch.from_numpy(out_audio)
-                sample['wav'] = torch.unsqueeze(out_audio, 0)
+            # normalize into [-1, 1]
+            out_audio = out_audio / (np.max(np.abs(out_audio)) + 1e-4)
+            sample['wav'] = torch.from_numpy(out_audio).unsqueeze(0)
 
         yield sample
 

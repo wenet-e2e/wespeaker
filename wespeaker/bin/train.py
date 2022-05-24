@@ -74,7 +74,7 @@ def train(config='conf/config.yaml', **kwargs):
     # dataset and dataloader
     train_dataset = Dataset(
         configs['data_type'],
-        configs['train_data_list'],
+        configs['train_data'],
         configs['dataset_args'],
         spk2id_dict,
         reverb_lmdb_file=configs.get('reverb_data', None),

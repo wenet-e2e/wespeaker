@@ -21,12 +21,12 @@ trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
 . tools/parse_options.sh || exit 1
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
-  echo "Preparing datasets ..."
+  echo "Prepare datasets ..."
   ./local/prepare_data.sh --stage 2 --stop_stage 4
 fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
-  echo "Covert training and test data to ${data_type}..."
+  echo "Covert train and test data to ${data_type}..."
   for dset in vox2_dev vox1; do
     if [ $data_type == "shard" ]; then
       python tools/make_shard_list.py --num_utts_per_shard 1000 \
@@ -55,7 +55,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
       --gpus $gpus \
       --num_avg ${num_avg} \
       --data_type "${data_type}" \
-      --train_data_list data/vox2_dev/${data_type}.list \
+      --train_data data/vox2_dev/${data_type}.list \
       --train_label data/vox2_dev/utt2spk \
       --reverb_data data/rirs/lmdb \
       --noise_data data/musan/lmdb \
@@ -77,7 +77,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
 fi
 
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
-  echo "Computing scores ..."
+  echo "Score ..."
   local/score.sh \
     --stage 1 --stop-stage 2 \
     --exp_dir $exp_dir \
