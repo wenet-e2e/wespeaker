@@ -226,7 +226,7 @@ def get_random_chunk(data, chunk_len):
         chunk_shape = chunk_len if len(data_shape) == 1 else (chunk_len,
                                                               data.shape[1])
         data = np.resize(data, chunk_shape)  # resize will repeat copy
-    
+
     return data
 
 
@@ -296,7 +296,7 @@ def add_reverb_noise(data, reverb_source, noise_source, aug_prob):
                 else:
                     snr_range = [0, 15]
                 _, noise_audio = wavfile.read(io.BytesIO(noise_data))
-                noise_audio = noise_audio.astype(np.float32) / (1 << 15) 
+                noise_audio = noise_audio.astype(np.float32) / (1 << 15)
                 noise_audio = get_random_chunk(noise_audio, audio_len)
                 noise_snr = random.uniform(snr_range[0], snr_range[1])
                 noise_db = 10 * np.log10(np.mean(noise_audio**2) + 1e-4)
@@ -304,7 +304,8 @@ def add_reverb_noise(data, reverb_source, noise_source, aug_prob):
                     (audio_db - noise_db - noise_snr) / 10)) * noise_audio
                 out_audio = audio + noise_audio
 
-            out_audio = out_audio / (np.max(np.abs(out_audio)) + 1e-4)  # normalize to [-1, 1]
+            # normalize into [-1, 1]
+            out_audio = out_audio / (np.max(np.abs(out_audio)) + 1e-4)
             sample['wav'] = torch.from_numpy(out_audio).unsqueeze(0)
 
         yield sample

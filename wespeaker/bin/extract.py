@@ -13,8 +13,7 @@ from tqdm import tqdm
 from wespeaker.dataset.dataset import Dataset
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.utils.checkpoint import load_checkpoint
-from wespeaker.utils.file_utils import read_scp
-from wespeaker.utils.utils import parse_config_or_kwargs, spk2id, validate_path
+from wespeaker.utils.utils import parse_config_or_kwargs, validate_path
 
 
 def extract(config='conf/config.yaml', **kwargs):
