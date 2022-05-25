@@ -40,8 +40,13 @@ def split_embedding(utt_list, emb_scp, mean_vec):
     return np.array(embs), utt2idx
 
 
-def main(score_norm_method, top_n, trial_score_file, score_norm_file,
-         cohort_emb_scp, eval_emb_scp, mean_vec_path=None):
+def main(score_norm_method,
+         top_n,
+         trial_score_file,
+         score_norm_file,
+         cohort_emb_scp,
+         eval_emb_scp,
+         mean_vec_path=None):
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s %(levelname)s %(message)s')
     # get embedding
@@ -49,7 +54,9 @@ def main(score_norm_method, top_n, trial_score_file, score_norm_file,
         print("Do not do mean normalization for evaluation embeddings.")
         mean_vec = 0.0
     else:
-        assert os.path.exists(mean_vec_path), "mean_vec file ({}) does not exist !!!".format(mean_vec_path)
+        assert os.path.exists(
+            mean_vec_path), "mean_vec file ({}) does not exist !!!".format(
+                mean_vec_path)
         mean_vec = np.load(mean_vec_path)
 
     # get embedding
@@ -58,11 +65,10 @@ def main(score_norm_method, top_n, trial_score_file, score_norm_file,
     enroll_list, test_list, _, _ = zip(*read_table(trial_score_file))
     enroll_list = sorted(list(set(enroll_list)))  # remove overlap and sort
     test_list = sorted(list(set(test_list)))
-    enroll_emb, enroll_utt2idx = split_embedding(enroll_list,
-                                                 eval_emb_scp, mean_vec)
-    test_emb, test_utt2idx = split_embedding(test_list, eval_emb_scp,
-                                             mean_vec)
-    
+    enroll_emb, enroll_utt2idx = split_embedding(enroll_list, eval_emb_scp,
+                                                 mean_vec)
+    test_emb, test_utt2idx = split_embedding(test_list, eval_emb_scp, mean_vec)
+
     cohort_list, _ = zip(*read_table(cohort_emb_scp))
     cohort_emb, _ = split_embedding(cohort_list, cohort_emb_scp, mean_vec)
 
