@@ -1,6 +1,6 @@
 ### train configuraton
 
-exp_dir: exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
+exp_dir: exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
 gpus: "[0,1]"
 num_avg: 10
 
@@ -11,9 +11,9 @@ log_batch_interval: 100 # log every 100 batchs
 
 dataloader_args:
   batch_size: 128
-  num_workers: 16
+  num_workers: 8
   pin_memory: False
-  prefetch_factor: 8
+  prefetch_factor: 4
   drop_last: True
 
 dataset_args:
@@ -36,12 +36,12 @@ dataset_args:
     max_f: 8
     prob: 0.6
 
-model: ResNet34 # ResNet18, ResNet34, ResNet50, ResNet101, ResNet152
+model: ECAPA_TDNN_GLOB_c512 # ECAPA_TDNN_GLOB_c512, ECAPA_TDNN_GLOB_c1024
 model_init: null
 model_args:
   feat_dim: 80
-  embed_dim: 256
-  pooling_func: 'TSTP'
+  embed_dim: 192
+  pooling_func: 'ASTP'
 projection_args:
   project_type: 'arc_margin' # add_margin, arc_margin, sphere, softmax
   scale: 32.0
