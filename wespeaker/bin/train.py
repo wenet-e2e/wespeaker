@@ -17,7 +17,7 @@ import wespeaker.utils.schedulers as schedulers
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.models.projections import get_projection
 from wespeaker.utils.utils import get_logger, parse_config_or_kwargs, set_seed, spk2id
-from wespeaker.utils.file_utils import read_scp
+from wespeaker.utils.file_utils import read_table
 from wespeaker.utils.executor import run_epoch
 from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
 from wespeaker.dataset.dataset import Dataset
@@ -64,7 +64,7 @@ def train(config='conf/config.yaml', **kwargs):
 
     # train data
     train_label = configs['train_label']
-    train_utt_spk_list = read_scp(train_label)
+    train_utt_spk_list = read_table(train_label)
     spk2id_dict = spk2id(train_utt_spk_list)
     if rank == 0:
         logger.info("<== Data statistics ==>")
