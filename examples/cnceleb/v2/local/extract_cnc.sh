@@ -6,29 +6,29 @@ exp_dir=''
 model_path=''
 nj=4
 gpus="[0,1]"
+data_type="shard/raw"  # shard/raw
 
 . tools/parse_options.sh
 set -e
 
-data_path_array=("data/cnceleb_train/wav.scp" "data/eval/wav.scp")
-raw_wav_array=(True True)
-#data_path_array=("data/vox2_dev/feats.scp" "data/vox1/feats.scp")
-#raw_wav_array=(False False)
-
-data_name_array=("train" "eval")
+data_name_array=("cnceleb_train" "eval")
+data_list_path_array=("data/cnceleb_train/${data_type}.list" "data/eval/${data_type}.list")
+data_scp_path_array=("data/cnceleb_train/wav.scp" "data/eval/wav.scp")
 nj_array=($nj $nj)
 batch_size_array=(16 1) # batch_size of test set must be 1 !!!
 num_workers_array=(4 1)
 count=${#data_name_array[@]}
 
 for i in $(seq 0 $(($count - 1))); do
-  bash tools/extract_embedding_deprecated.sh --exp_dir ${exp_dir} \
+  wavs_num=$(wc -l ${data_scp_path_array[$i]} | awk '{print $1}')
+  bash tools/extract_embedding.sh --exp_dir ${exp_dir} \
     --model_path $model_path \
-    --data_scp ${data_path_array[$i]} \
+    --data_type ${data_type} \
+    --data_list ${data_list_path_array[$i]} \
+    --wavs_num ${wavs_num} \
     --store_dir ${data_name_array[$i]} \
     --batch_size ${batch_size_array[$i]} \
     --num_workers ${num_workers_array[$i]} \
-    --raw_wav ${raw_wav_array[$i]} \
     --nj ${nj_array[$i]} \
     --gpus $gpus &
 done
