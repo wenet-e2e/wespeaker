@@ -16,7 +16,7 @@ checkpoint=
 
 score_norm_method="asnorm"  # asnorm/snorm
 top_n=500
-trials="CNC-Eval-Core.lst"
+trials="CNC-Eval-Concat.lst CNC-Eval-Avg.lst"
 
 . tools/parse_options.sh || exit 1
 
