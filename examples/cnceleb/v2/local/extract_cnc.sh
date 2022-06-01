@@ -36,3 +36,11 @@ done
 wait
 
 echo "Embedding dir is (${exp_dir}/embeddings)."
+
+echo "mean vector of enroll"
+python tools/vector_mean.py \
+  --spk2utt data/eval/enroll.map \
+  --xvector_scp $exp_dir/embeddings/eval/xvector.scp \
+  --spk_xvector_ark $exp_dir/embeddings/eval/enroll_spk_xvector.ark
+
+cat $exp_dir/embeddings/eval/enroll_spk_xvector.scp >> $exp_dir/embeddings/eval/xvector.scp

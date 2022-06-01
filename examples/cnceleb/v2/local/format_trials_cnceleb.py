@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     with open(args.dst_trl_path, "w") as f:
         for item in trials:
-            enroll_path = os.path.join("eval", spk2wav_mapping[item[0]])
-            test_path = os.path.join("eval", item[1])
+            enroll_path = spk2wav_mapping[item[0]]
+            test_path = item[1]
             label = "target" if item[2] == '1' else "nontarget"
             f.write("{} {} {}\n".format(enroll_path, test_path, label))

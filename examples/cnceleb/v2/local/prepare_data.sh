@@ -87,15 +87,23 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   ./tools/utt2spk_to_spk2utt.pl data/cnceleb_train/utt2spk >data/cnceleb_train/spk2utt
 
   echo "Prepare data for testing ..."
-  find $(pwd)/${rawdata_dir}/CN-Celeb_wav/eval -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' | sort >data/eval/wav.scp
-  awk '{print $1}' data/eval/wav.scp | awk -F "[/-]" '{print $0,$3}' >data/eval/utt2spk
-  ./tools/utt2spk_to_spk2utt.pl data/eval/utt2spk >data/eval/spk2utt
+  find $(pwd)/${rawdata_dir}/CN-Celeb_wav/eval -name "*.wav" | awk -F"/" '{print $(NF-1)"/"$NF,$0}' | sort >data/eval/wav.scp
+  awk '{print $1}' data/eval/wav.scp | awk -F "[/-]" '{print $0,$2}' >data/eval/utt2spk
+
+  echo "Prepare data for enroll ..."
+  awk '{print $0}' $(pwd)/${rawdata_dir}/CN-Celeb_flac/eval/lists/enroll.map | \
+    awk -v p=$(pwd)/${rawdata_dir}/CN-Celeb_wav/data '{for(i=2;i<=NF;i++){print $i, p"/"$i}}' >>data/eval/wav.scp
+  awk '{print $1}' data/eval/enroll.scp | awk -F "/" '{print $0,$1"-enroll"}' >>data/eval/utt2spk
+  cp $(pwd)/${rawdata_dir}/CN-Celeb_flac/eval/lists/enroll.map data/eval/enroll.map
 
   echo "Prepare evalution trials ..."
   mkdir -p data/eval/trials
+  # CNC-Eval-Avg.lst
+  awk '{if($3==0)label="nontarget";else{label="target"}; print $1,$2,label}' $(pwd)/${rawdata_dir}/CN-Celeb_flac/eval/lists/trials.lst >data/eval/trials/CNC-Eval-Avg.lst
+  # CNC-Eval-Concat.lst
   python local/format_trials_cnceleb.py \
     --cnceleb_root $(pwd)/${rawdata_dir}/CN-Celeb_flac \
-    --dst_trl_path data/eval/trials/CNC-Eval-Core.lst
+    --dst_trl_path data/eval/trials/CNC-Eval-Concat.lst
 
   echo "Success !!! Now data preparation is done !!!"
 fi
