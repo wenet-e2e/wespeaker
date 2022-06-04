@@ -57,8 +57,8 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
       --data_type "${data_type}" \
       --train_data data/cnceleb_train/${data_type}.list \
       --train_label data/cnceleb_train/utt2spk \
-      --reverb_lmdb data/rirs/lmdb \
-      --noise_lmdb data/musan/lmdb \
+      --reverb_data data/rirs/lmdb \
+      --noise_data data/musan/lmdb \
       ${checkpoint:+--checkpoint $checkpoint}
 fi
 
