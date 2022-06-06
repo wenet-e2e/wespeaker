@@ -1,9 +1,10 @@
 #!/bin/bash
 # coding:utf-8
-# Author: Hongji Wang, Chengdong Liang
+# Author: Hongji Wang, Chengdong Liang, Zhengyang Chen
 
 stage=-1
 stop_stage=-1
+combine_short_audio=1
 
 . tools/parse_options.sh || exit 1
 
@@ -46,15 +47,26 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
 fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
-  echo "convert flac to wav ..."
-  python local/flac2wav.py \
-    --dataset_dir ${rawdata_dir}/CN-Celeb_flac \
-    --nj 16
+  if [ ${combine_short_audio} -eq 1 ];then
+    echo "combine short audios and convert flac to wav ..."
+    bash local/comb_cn1_cn2.sh --cnceleb1_audio_dir ${rawdata_dir}/CN-Celeb_flac/data/ \
+                                --cnceleb2_audio_dir ${rawdata_dir}/CN-Celeb2_flac/data/ \
+                                --min_duration 5 \
+                                --get_dur_nj 40 \
+                                --statistics_dir statistics \
+                                --store_data_dir ${rawdata_dir}
+    echo "convert success"
+  else
+    echo "convert flac to wav ..."
+    python local/flac2wav.py \
+        --dataset_dir ${rawdata_dir}/CN-Celeb_flac \
+        --nj 16
 
-  python local/flac2wav.py \
-    --dataset_dir ${rawdata_dir}/CN-Celeb2_flac \
-    --nj 16
-  echo "convert success"
+    python local/flac2wav.py \
+        --dataset_dir ${rawdata_dir}/CN-Celeb2_flac \
+        --nj 16
+    echo "convert success"
+  fi
 fi
 
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then

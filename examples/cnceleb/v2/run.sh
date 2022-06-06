@@ -22,7 +22,7 @@ trials="CNC-Eval-Concat.lst CNC-Eval-Avg.lst"
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "Preparing datasets ..."
-  ./local/prepare_data.sh --stage 2 --stop_stage 4
+  bash ./local/prepare_data.sh --stage 2 --stop_stage 4
 fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
