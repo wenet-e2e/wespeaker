@@ -26,7 +26,7 @@ pip install -r requirements.txt
 ## Recipes
 
 * [VoxCeleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxceleb/v2)
-* CNCeleb
+* [CNCeleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/cnceleb/v2)
 
 ## Support List:
 
