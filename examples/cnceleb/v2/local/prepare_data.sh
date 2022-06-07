@@ -68,7 +68,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
                                 --cnceleb2_audio_dir ${rawdata_dir}/CN-Celeb2_flac/data/ \
                                 --min_duration 5 \
                                 --get_dur_nj 60 \
-                                --statistics_dir statistics \
+                                --statistics_dir data/statistics \
                                 --store_data_dir ${rawdata_dir}
     echo "convert success"
   else
@@ -119,7 +119,8 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
 
   echo "Prepare data for enroll ..."
   awk '{print $0}' $(pwd)/${rawdata_dir}/CN-Celeb_flac/eval/lists/enroll.map | \
-    awk -v p=$(pwd)/${rawdata_dir}/CN-Celeb_wav/data '{for(i=2;i<=NF;i++){print $i, p"/"$i}}' >>data/eval/wav.scp
+    awk -v p=$(pwd)/${rawdata_dir}/CN-Celeb_wav/data '{for(i=2;i<=NF;i++){print $i, p"/"$i}}' >data/eval/enroll.scp
+  cat data/eval/enroll.scp >>data/eval/wav.scp
   awk '{print $1}' data/eval/enroll.scp | awk -F "/" '{print $0,$1"-enroll"}' >>data/eval/utt2spk
   cp $(pwd)/${rawdata_dir}/CN-Celeb_flac/eval/lists/enroll.map data/eval/enroll.map
 

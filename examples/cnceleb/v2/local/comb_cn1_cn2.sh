@@ -56,7 +56,7 @@ bash local/combine_utt.sh --stage 0 \
 
 # process the remaining flac data of cnceleb1 to wav data
 find $cnceleb1_audio_dir -name "*.flac" | awk -F/ '{if($(NF-1)>="id00800"){print $0}}' | sort > ${statistics_dir}/cnceleb1_eval_audio_path_list
-find $cnceleb1_audio_dir/../eval/enroll -name "*.flac" | sort > ${statistics_dir}/cnceleb1_enroll_audio_path_list
+find $cnceleb1_audio_dir/../eval -name "*.flac" | sort > ${statistics_dir}/cnceleb1_enroll_audio_path_list
 awk -F '[./]' '{print $(NF-2)"/"$(NF-1)" "$(NF-2)"/"$(NF-1)}' ${statistics_dir}/cnceleb1_eval_audio_path_list > ${statistics_dir}/cnceleb1_eval_utt2utts
 awk -F '[./]' '{print $(NF-2)"/"$(NF-1)" "$(NF-2)"/"$(NF-1)}' ${statistics_dir}/cnceleb1_enroll_audio_path_list > ${statistics_dir}/cnceleb1_enroll_utt2utts
 echo "combine audios for cnceleb1_eval"
