@@ -59,7 +59,7 @@ fi
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
   echo "Score norm ..."
   local/score_norm.sh \
-    --stage 0 --stop-stage 3 \
+    --stage 1 --stop-stage 3 \
     --score_norm_method $score_norm_method \
     --cohort_set vox2_dev \
     --top_n $top_n \
