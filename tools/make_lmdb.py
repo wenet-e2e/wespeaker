@@ -1,5 +1,3 @@
-#!/usr/bin/db python3
-
 # Copyright (c) 2022 Horizon Robotics. (authors: Binbin Zhang)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

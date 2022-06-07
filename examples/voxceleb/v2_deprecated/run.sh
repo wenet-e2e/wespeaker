@@ -1,8 +1,9 @@
 #!/bin/bash
-# coding:utf-8
-# Author: Hongji Wang
 
-. ./path.sh
+# Copyright 2022 Hongji Wang (jijijiang77@gmail.com)
+#           2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
+
+. ./path.sh || exit 1;
 
 stage=-1
 stop_stage=-1
