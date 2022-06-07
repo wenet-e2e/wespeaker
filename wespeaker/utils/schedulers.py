@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# coding=utf-8
-
 # Copyright (c) 2021 Shuai Wang (wsstriving@gmail.com)
 #               2021 Zhengyang Chen (chenzhengyang117@gmail.com)
 #               2022 Hongji Wang (jijijiang77@gmail.com)

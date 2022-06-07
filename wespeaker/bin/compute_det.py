@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# coding=utf-8
-
 # Copyright (c) 2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
 #               2022 Hongji Wang (jijijiang77@gmail.com)
 #

@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# coding=utf-8
-
 # Copyright (c) 2020 Mobvoi Inc. (authors: Binbin Zhang)
 #               2021 Hongji Wang (jijijiang77@gmail.com)
 #

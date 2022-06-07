@@ -1,5 +1,4 @@
 #!/bin/bash
-# coding:utf-8
 
 # Copyright (c) 2021 Hongji Wang (jijijiang77@gmail.com)
 #               2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)

@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# coding=utf-8
-
 # Copyright (c) 2022 Zhengyang Chen (chenzhengyang117@gmail.com)
 #               2022 Hongji Wang (jijijiang77@gmail.com)
 #
