@@ -1,9 +1,25 @@
 #!/bin/bash
 # coding:utf-8
-# Author: Hongji Wang, Chengdong Liang
+
+# Copyright (c) 2022 Hongji Wang (jijijiang77@gmail.com)
+#               2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
+#               2022 Zhengyang Chen (chenzhengyang117@gmail.com)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 stage=-1
 stop_stage=-1
+combine_short_audio=1
 
 . tools/parse_options.sh || exit 1
 
@@ -46,15 +62,26 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
 fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
-  echo "convert flac to wav ..."
-  python local/flac2wav.py \
-    --dataset_dir ${rawdata_dir}/CN-Celeb_flac \
-    --nj 16
+  if [ ${combine_short_audio} -eq 1 ];then
+    echo "combine short audios and convert flac to wav ..."
+    bash local/comb_cn1_cn2.sh --cnceleb1_audio_dir ${rawdata_dir}/CN-Celeb_flac/data/ \
+                                --cnceleb2_audio_dir ${rawdata_dir}/CN-Celeb2_flac/data/ \
+                                --min_duration 5 \
+                                --get_dur_nj 60 \
+                                --statistics_dir data/statistics \
+                                --store_data_dir ${rawdata_dir}
+    echo "convert success"
+  else
+    echo "convert flac to wav ..."
+    python local/flac2wav.py \
+        --dataset_dir ${rawdata_dir}/CN-Celeb_flac \
+        --nj 16
 
-  python local/flac2wav.py \
-    --dataset_dir ${rawdata_dir}/CN-Celeb2_flac \
-    --nj 16
-  echo "convert success"
+    python local/flac2wav.py \
+        --dataset_dir ${rawdata_dir}/CN-Celeb2_flac \
+        --nj 16
+    echo "convert success"
+  fi
 fi
 
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
@@ -92,7 +119,8 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
 
   echo "Prepare data for enroll ..."
   awk '{print $0}' $(pwd)/${rawdata_dir}/CN-Celeb_flac/eval/lists/enroll.map | \
-    awk -v p=$(pwd)/${rawdata_dir}/CN-Celeb_wav/data '{for(i=2;i<=NF;i++){print $i, p"/"$i}}' >>data/eval/wav.scp
+    awk -v p=$(pwd)/${rawdata_dir}/CN-Celeb_wav/data '{for(i=2;i<=NF;i++){print $i, p"/"$i}}' >data/eval/enroll.scp
+  cat data/eval/enroll.scp >>data/eval/wav.scp
   awk '{print $1}' data/eval/enroll.scp | awk -F "/" '{print $0,$1"-enroll"}' >>data/eval/utt2spk
   cp $(pwd)/${rawdata_dir}/CN-Celeb_flac/eval/lists/enroll.map data/eval/enroll.map
 
