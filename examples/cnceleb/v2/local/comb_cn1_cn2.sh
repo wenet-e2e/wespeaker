@@ -35,7 +35,7 @@ echo "combine audios for cnceleb2"
 bash local/combine_utt.sh --stage 0 \
                     --ori_audio_dir ${cnceleb2_audio_dir} \
                     --new_audio_dir ${store_data_dir}/CN-Celeb2_wav/data \
-                    --data_statistics_dir statistics/cnceleb2 \
+                    --data_statistics_dir ${statistics_dir}/cnceleb2 \
                     --audio_path_list ${statistics_dir}/cnceleb2_audio_path_list \
                     --min_duration ${min_duration} \
                     --get_dur_nj ${get_dur_nj}
@@ -49,7 +49,7 @@ echo "combine audios for cnceleb1_dev"
 bash local/combine_utt.sh --stage 0 \
                     --ori_audio_dir ${cnceleb1_audio_dir} \
                     --new_audio_dir ${store_data_dir}/CN-Celeb_wav/data \
-                    --data_statistics_dir statistics/cnceleb1 \
+                    --data_statistics_dir ${statistics_dir}/cnceleb1 \
                     --audio_path_list ${statistics_dir}/cnceleb1_audio_path_list \
                     --min_duration ${min_duration} \
                     --get_dur_nj ${get_dur_nj}
