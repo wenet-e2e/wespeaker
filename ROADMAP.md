@@ -16,7 +16,7 @@ This is the roadmap for wespeaker version 1.0.
     - [x] Cosine
     - [x] EER/minDCF
     - [x] AS-norm
-    - [ ] PLDA 
+    - [ ] PLDA
 - [x] UIO for effective industrial-scale dataset processing
     - [x] Online data augmentation
         -  Noise && RIR
@@ -29,4 +29,4 @@ This is the roadmap for wespeaker version 1.0.
     - Support using features from released pretrained models (hugging face)
 - [ ] Basic Speaker Diarization Recipe
     - Embedding based (more related with our speaker embedding learner toolkit)
-- [ ] Interactive Demo 
+- [ ] Interactive Demo
