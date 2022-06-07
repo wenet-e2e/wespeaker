@@ -1,4 +1,4 @@
-# Wespeaker Roadmap 
+# Wespeaker Roadmap
 ## Version 1.0 （Time: 2022.09)
 
 This is the roadmap for wespeaker version 1.0.
