@@ -1,6 +1,7 @@
 #!/bin/bash
 # coding:utf-8
-# Author: Chengdong Liang
+#
+# Copyright 2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
 
 exp_dir=
 trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"

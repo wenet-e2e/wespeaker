@@ -1,6 +1,7 @@
 #!/bin/bash
 # coding:utf-8
-# Author: Hongji Wang
+#
+# Copyright 2022 Hongji Wang (jijijiang77@gmail.com)
 
 stage=-1
 stop_stage=-1

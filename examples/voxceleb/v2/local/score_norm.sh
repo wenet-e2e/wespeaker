@@ -1,6 +1,7 @@
 #!/bin/bash
 # coding:utf-8
-# Author: Chengdong Liang
+#
+# Copyright 2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
 
 score_norm_method="asnorm"  # asnorm/snorm
 cohort_set=vox2_dev

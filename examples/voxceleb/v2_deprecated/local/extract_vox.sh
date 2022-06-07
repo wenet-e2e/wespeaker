@@ -1,6 +1,7 @@
 #!/bin/bash
 # coding:utf-8
-# Author: Hongji Wang
+#
+# Copyright 2022 Hongji Wang (jijijiang77@gmail.com)
 
 exp_dir=''
 model_path=''
