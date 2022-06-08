@@ -66,16 +66,8 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
 
   if [ ! -d ${rawdata_dir}/voxceleb2_wav ]; then
     ./local/m4a2wav.pl ${rawdata_dir}/voxceleb2_m4a dev ${rawdata_dir}/voxceleb2_wav
-    # split m4a2wav_dev.sh into sub_file, then we can use multi progresses
-    data_num=$(wc -l ${rawdata_dir}/voxceleb2_wav/dev/m4a2wav_dev.sh | awk '{print $1}')
-    nj=8 # num of jobs
-    subfile_num=$(($data_num / $nj + 1))
-    split -l ${subfile_num} -d -a 3 ${rawdata_dir}/voxceleb2_wav/dev/m4a2wav_dev.sh ${rawdata_dir}/voxceleb2_wav/dev/split_
-    for suffix in $(seq 0 $(($nj - 1))); do
-      suffix=$(printf '%03d' $suffix)
-      sh ${rawdata_dir}/voxceleb2_wav/dev/split_${suffix} &
-    done
-    wait
+    # Here we use 8 parallel jobs
+    cat ${rawdata_dir}/voxceleb2_wav/dev/m4a2wav_dev.sh | xargs -P 8 -i sh -c "{}"
   fi
 
   echo "Convert m4a2wav success !!!"
