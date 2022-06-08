@@ -69,7 +69,7 @@ def main():
 
     model = get_speaker_model(configs['model'])(**configs['model_args'])
     feat_dim = configs['feature_args'].get('feat_dim', 80)
-    
+
     load_checkpoint(model, args.checkpoint)
 
     # Export onnx cpu model
