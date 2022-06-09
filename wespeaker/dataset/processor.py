@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import io
+import kaldiio
 import json
 import logging
 import random
@@ -144,6 +145,35 @@ def parse_raw(data):
             logging.warning('Failed to read {}'.format(wav_file))
 
 
+def parse_feat(data):
+    """ Parse key/feat/spk from json line
+
+        Args:
+            data: Iterable[str], str is a json line has key/feat/spk
+
+        Returns:
+            Iterable[{key, feat, spk}]
+    """
+    for sample in data:
+        assert 'src' in sample
+        json_line = sample['src']
+        obj = json.loads(json_line)
+        assert 'key' in obj
+        assert 'feat' in obj
+        assert 'spk' in obj
+        key = obj['key']
+        feat_ark = obj['feat']
+        spk = obj['spk']
+        try:
+            feat = torch.from_numpy(kaldiio.load_mat(feat_ark))
+            example = dict(key=key,
+                           spk=spk,
+                           feat=feat)
+            yield example
+        except Exception as ex:
+            logging.warning('Failed to load {}'.format(feat_ark))
+
+
 def shuffle(data, shuffle_size=2500):
     """ Local shuffle the data
 
@@ -217,6 +247,15 @@ def speed_perturb(data, num_spks):
 
 
 def get_random_chunk(data, chunk_len):
+    """ Get random chunk
+
+        Args:
+            data: torch.Tensor (random len)
+            chunk_len: chunk length
+
+        Returns:
+            torch.Tensor (exactly chunk_len)
+    """
     data_len = len(data)
     data_shape = data.shape
     # random chunk
@@ -225,33 +264,44 @@ def get_random_chunk(data, chunk_len):
         data = data[chunk_start:chunk_start + chunk_len]
     else:
         # padding
-        chunk_shape = chunk_len if len(data_shape) == 1 else (chunk_len,
-                                                              data.shape[1])
-        data = np.resize(data, chunk_shape)  # resize will repeat copy
+        repeat_factor = chunk_len // data_len + 1
+        repeat_shape = repeat_factor if len(data_shape) == 1 else (repeat_factor, 1)
+        data = data.repeat(repeat_shape)
+        data = data[:chunk_len]
 
     return data
 
 
-def random_chunk(data, num_frms=200):
+def random_chunk(data, data_type='shard/raw/feat', num_frms=200):
     """ Random chunk the data into `num_frms` frames
 
         Args:
-            data: Iterable[{key, wav, label, sample_rate}]
+            data: Iterable[{key, wav/feat, label, sample_rate}]
             num_frms: num of frames for each training sample
 
         Returns:
-            Iterable[{key, wav, label, sample_rate}]
+            Iterable[{key, wav/feat, label, sample_rate}]
     """
     # Note(Binbin Zhang): We assume the sample rate is 16000,
     #                     frame shift 10ms, frame length 25ms
-    chunk_len = (num_frms - 1) * 160 + 400
+    if data_type == 'feat':
+        chunk_len = num_frms
+    else:
+        chunk_len = (num_frms - 1) * 160 + 400
+
     for sample in data:
         assert 'key' in sample
-        assert 'wav' in sample
 
-        wav = sample['wav'].numpy()[0]
-        wav = get_random_chunk(wav, chunk_len)
-        sample['wav'] = torch.from_numpy(wav).unsqueeze(0)
+        if data_type == 'feat':
+            assert 'feat' in sample
+            feat = sample['feat']
+            feat = get_random_chunk(feat, chunk_len)
+            sample['feat'] = feat
+        else:
+            assert 'wav' in sample
+            wav = sample['wav'][0]
+            wav = get_random_chunk(wav, chunk_len)
+            sample['wav'] = wav.unsqueeze(0)
         yield sample
 
 
@@ -345,8 +395,27 @@ def compute_fbank(data,
                           window_type='hamming',
                           htk_compat=True,
                           use_energy=False)
-        # CMN, without CVN
-        mat = mat - torch.mean(mat, dim=0)
+        yield dict(key=sample['key'], label=sample['label'], feat=mat)
+
+
+def apply_cmvn(data, norm_mean=True, norm_var=False):
+    """ Apply CMVN
+
+        Args:
+            data: Iterable[{key, feat, label}]
+
+        Returns:
+            Iterable[{key, feat, label}]
+    """
+    for sample in data:
+        assert 'key' in sample
+        assert 'feat' in sample
+        assert 'label' in sample
+        mat = sample['feat']
+        if norm_mean:
+            mat = mat - torch.mean(mat, dim=0)
+        if norm_var:
+            mat = mat / torch.sqrt(torch.var(mat, dim=0) + 1e-8)
         yield dict(key=sample['key'], label=sample['label'], feat=mat)
 
 
