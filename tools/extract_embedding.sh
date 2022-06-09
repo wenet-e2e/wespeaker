@@ -17,10 +17,10 @@
 
 exp_dir='exp/XVEC'
 model_path='avg_model.pt'
-data_type='shard/raw'
-data_list='shard.list/raw.list'
+data_type='shard'  # shard/raw/feat
+data_list='shard.list'  # shard.list/raw.list/feat.list
 wavs_num=
-store_dir='vox2_dev/vox1'
+store_dir=
 batch_size=1
 num_workers=1
 nj=4

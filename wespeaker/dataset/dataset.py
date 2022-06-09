@@ -129,19 +129,19 @@ def Dataset(data_type,
     """ Construct dataset from arguments
 
         We have two shuffle stage in the Dataset. The first is global
-        shuffle at shards tar/raw file level. The second is local shuffle
+        shuffle at shards tar/raw/feat file level. The second is local shuffle
         at training samples level.
 
         Args:
-            data_type(str): raw/shard
-            data_list_file: shard list file
+            data_type(str): shard/raw/feat
+            data_list_file: data list file
             configs: dataset configs
             spk2id_dict: spk2id dict
             reverb_lmdb_file: reverb data source lmdb file
             noise_lmdb_file: noise data source lmdb file
             whole_utt: use whole utt or random chunk
     """
-    assert data_type in ['raw', 'shard']
+    assert data_type in ['shard', 'raw', 'feat']
     lists = read_lists(data_list_file)
     shuffle = configs.get('shuffle', False)
     # Global shuffle
@@ -149,8 +149,10 @@ def Dataset(data_type,
     if data_type == 'shard':
         dataset = Processor(dataset, processor.url_opener)
         dataset = Processor(dataset, processor.tar_file_and_group)
-    else:
+    elif data_type == 'raw':
         dataset = Processor(dataset, processor.parse_raw)
+    else:
+        dataset = Processor(dataset, processor.parse_feat)
     # Local shuffle
     if shuffle:
         dataset = Processor(dataset, processor.shuffle, **configs['shuffle_args'])
@@ -158,25 +160,32 @@ def Dataset(data_type,
     # spk2id
     dataset = Processor(dataset, processor.spk_to_id, spk2id_dict)
 
-    # speed perturb
-    speed_perturb_flag = configs.get('speed_perturb', True)
-    if speed_perturb_flag:
-        dataset = Processor(dataset, processor.speed_perturb, len(spk2id_dict))
-
-    if not whole_utt:
-        # random chunk
-        num_frms = configs.get('num_frms', 200)
-        dataset = Processor(dataset, processor.random_chunk, num_frms)
-
-    # add reverb & noise
-    if reverb_lmdb_file and noise_lmdb_file:
-        reverb_data = LmdbData(reverb_lmdb_file)
-        noise_data = LmdbData(noise_lmdb_file)
-        dataset = Processor(dataset, processor.add_reverb_noise, reverb_data,
-                            noise_data, configs['aug_prob'])
-
-    # compute fbank
-    dataset = Processor(dataset, processor.compute_fbank, **configs['fbank_args'])
+    if data_type == 'feat':
+        if not whole_utt:
+            # random chunk
+            num_frms = configs.get('num_frms', 200)
+            dataset = Processor(dataset, processor.random_chunk, 'feat', num_frms)
+        # apply cmvn
+        dataset = Processor(dataset, processor.apply_cmvn)
+    else:
+        # speed perturb
+        speed_perturb_flag = configs.get('speed_perturb', True)
+        if speed_perturb_flag:
+            dataset = Processor(dataset, processor.speed_perturb, len(spk2id_dict))
+        if not whole_utt:
+            # random chunk
+            num_frms = configs.get('num_frms', 200)
+            dataset = Processor(dataset, processor.random_chunk, data_type, num_frms)
+        # add reverb & noise
+        if reverb_lmdb_file and noise_lmdb_file:
+            reverb_data = LmdbData(reverb_lmdb_file)
+            noise_data = LmdbData(noise_lmdb_file)
+            dataset = Processor(dataset, processor.add_reverb_noise, reverb_data,
+                                noise_data, configs['aug_prob'])
+        # compute fbank
+        dataset = Processor(dataset, processor.compute_fbank, **configs['fbank_args'])
+        # apply cmvn
+        dataset = Processor(dataset, processor.apply_cmvn)
 
     # spec augmentation
     spec_aug_flag = configs.get('spec_aug', True)
