@@ -95,21 +95,17 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   find $(pwd)/${rawdata_dir}/RIRS_NOISES/simulated_rirs -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' >data/rirs/wav.scp || exit 1;
 
   echo "Prepare train data including CN-Celeb_wav/dev and CN-Celeb2_wav ..."
-  mkdir -p data/train
+  [ -f data/cnceleb_train/wav.scp ] && rm data/cnceleb_train/wav.scp
   for spk in `cat ${rawdata_dir}/CN-Celeb_flac/dev/dev.lst`; do
-    if [ ! -d data/train/$spk ]; then
-      ln -s $(pwd)/${rawdata_dir}/CN-Celeb_wav/data/${spk} data/train/${spk}
-    fi
+    find $(pwd)/${rawdata_dir}/CN-Celeb_wav/data/${spk} -name "*.wav" | \
+      awk -F"/" '{print $(NF-1)"/"$NF,$0}' | sort >>data/cnceleb_train/wav.scp
   done
 
   for spk in `cat ${rawdata_dir}/CN-Celeb2_flac/spk.lst`; do
-    if [ ! -d data/train/$spk ]; then
-      ln -s $(pwd)/${rawdata_dir}/CN-Celeb2_wav/data/${spk} data/train/${spk}
-    fi
+    find $(pwd)/${rawdata_dir}/CN-Celeb2_wav/data/${spk} -name "*.wav" | \
+      awk -F"/" '{print $(NF-1)"/"$NF,$0}' | sort >>data/cnceleb_train/wav.scp
   done
-  echo "Prepare data for training ..."
-  python local/find_wav.py --data_dir data/train --extension wav |\
-     awk -F"/" '{print $(NF-1)"/"$NF,$0}' | sort >data/cnceleb_train/wav.scp
+
   awk '{print $1}' data/cnceleb_train/wav.scp | awk -F "/" '{print $0,$1}' >data/cnceleb_train/utt2spk
   ./tools/utt2spk_to_spk2utt.pl data/cnceleb_train/utt2spk >data/cnceleb_train/spk2utt
 
