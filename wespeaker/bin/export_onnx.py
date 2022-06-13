@@ -1,4 +1,4 @@
-# Copyright (c) 2022, NVIDIA CORPORATION.  
+# Copyright (c) 2022, NVIDIA CORPORATION.
 #                     Shuai Wang (wsstriving@gmail.com)
 # All rights reserved.
 # Licensed under the Apache License, Version 2.0 (the "License");
