@@ -16,7 +16,7 @@ num_avg=10
 checkpoint=
 
 score_norm_method="asnorm"  # asnorm/snorm
-top_n=500
+top_n=300
 trials="CNC-Eval-Concat.lst CNC-Eval-Avg.lst"
 
 . tools/parse_options.sh || exit 1
