@@ -64,8 +64,8 @@ def main():
 
     model = Model(model, mean_vec)
     model.eval()
-    feat_dim = configs['feature_args'].get('feat_dim', 80)
-    num_frms = configs['feature_args'].get('num_frms', 200)
+    feat_dim = configs['model_args'].get('feat_dim', 80)
+    num_frms = configs['dataset_args'].get('num_frms', 200)
 
     dummy_input = torch.ones(1, num_frms, feat_dim)
     torch.onnx.export(
