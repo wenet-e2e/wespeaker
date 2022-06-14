@@ -1,5 +1,8 @@
 # WeSpeaker
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Python-Version](https://img.shields.io/badge/Python-3.8%7C3.9-brightgreen)](https://github.com/wenet-e2e/wespeaker)
+
 [**Roadmap**](ROADMAP.md)
 | [**Awesome Papers**](speaker_recognition_papers.md)
 | [**Runtime (x86_gpu)**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/server/x86_gpu)
@@ -54,7 +57,7 @@ pip install -r requirements.txt
 * Online Augmentation
     - [x] Noise && RIR
     - [x] Speed Perturb
-    - [x] Specaug
+    - [x] SpecAug
 * Literature
     - [x] [Awesome Speaker Papers](https://github.com/wenet-e2e/wespeaker/blob/master/speaker_recognition_papers.md)
 
