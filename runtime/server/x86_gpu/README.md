@@ -1,5 +1,5 @@
 # Introduction
-In this project, we use models trained in [wespeaker](https://github.com/wenet-e2e/wespeaker) as an example to show how to convert speaker model to tensorrt and deploy them on [Triton Inference Server](https://github.com/triton-inference-server/server.git).
+In this project, we use models trained in [wespeaker](https://github.com/wenet-e2e/wespeaker) as an example to show how to convert speaker model to tensorrt and deploy them on [Triton Inference Server](https://github.com/triton-inference-server/server.git). If you only have CPUs, instead of using GPUs to deploy Tensorrt model, you may deploy the exported onnx model on Triton Inference Server as well.
 
 ## Step 0. Train a model
 Please follow wespeaker examples to train a model. After training, you should get several checkpoints under your `exp/xxx/models/` folder. We take [voxceleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxceleb/v2) as an example.
@@ -11,12 +11,15 @@ We'll first export our model to onnx and then convert our onnx model to tensorrt
 cd wespeaker/examples/voxceleb/v2
 . ./path.sh
 exp_dir=exp/resnet
-python3 wespeaker/bin/export_onnx_gpu.py --config=${exp_dir}/config.yaml --checkpoint=${exp_dir}/models/avg_model.pt --output_model=${exp_dir}/models/avg_model.onnx
+python3 wespeaker/bin/export_onnx.py --config=${exp_dir}/config.yaml --checkpoint=${exp_dir}/models/avg_model.pt --output_model=${exp_dir}/models/avg_model.onnx
 
 # If you want to minus the mean vector in the onnx model, you may simply add the --mean_vec to the .npy mean vector file.
-python3 wespeaker/bin/export_onnx_gpu.py --config=${exp_dir}/config.yaml --checkpoint=exp/resnet/models/avg_model.pt --output_model=exp/resnet/models/avg_model.onnx --mean_vec=${exp_dir}/embeddings/vox2_dev/mean_vec.npy
+python3 wespeaker/bin/export_onnx.py --config=${exp_dir}/config.yaml --checkpoint=exp/resnet/models/avg_model.pt --output_model=exp/resnet/models/avg_model.onnx --mean_vec=${exp_dir}/embeddings/vox2_dev/mean_vec.npy
 ```
 
+If you only want to deploy the onnx model on CPU or GPU, you may skip the Tensorrt part and go to [the section](#construct-model-repo) to construct your model repository.
+
+### Export to Tensorrt Engine
 Now let's convert our onnx model to tensorrt engine. We will deploy our model on Triton 22.03 therefore we here will use tensorrt 22.03 docker as an example to show how to convert the model. Please move your onnx model to the target platform/GPU you will deploy.
 
 ```
@@ -51,9 +54,17 @@ Then you may find `198` is the actual number of frames for audio of 2 seconds lo
 
 That's it！We build an engine that can accept 2.02 to 30.02 seconds long audio. If your application can accept fixed audio segments, we suggest you to set the `minShapes`, `optShapes` and `maxShapes` to the same shape.
 
-Now edit the config file under `model_repo/speaker_model/config.pbtxt` and replace `default_model_filename:xxx` with the name of your engine (e.g., `b1_b128_s3000_fp16.trt`) and put the engine under `model_repo/speaker_model/1/`.
+### Construct Model Repo
+
+Now edit the config file under `model_repo/speaker_model/config.pbtxt` and replace `default_model_filename:xxx` with the name of your engine (e.g., `b1_b128_s3000_fp16.trt`) or onnx model (e.g., `avg_model.onnx`) and put the engine or model under `model_repo/speaker_model/1/`.
 
 And if you use other model settings or different model from ours (resnet34), for example, ecapa model, the embedding dim of which is 192, therefore, you should edit the `model_repo/speaker_model/config.pbtxt` and `model_repo/speaker/config.pbtxt` and set embedding dim to 192.
+
+If your model is onnx model, you should also edit `backend: "tensorrt"` to `backend: "onnxruntime"` in `model_repo/speaker_model/config.pbtxt`.
+
+If you want to deploy model on CPUs, you should edit `config.pbtxt` under `speaker` and `speaker_model` and replace `kind: KIND_GPU` to `kind: KIND_CPU`.
+
+Notice Tensorrt engine can only run on GPUs.
 
 ## Step 2. Build server and start server
 
