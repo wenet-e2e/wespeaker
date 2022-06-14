@@ -56,15 +56,17 @@ def main():
     args = get_args()
     session = ort.InferenceSession(args.onnx_path)
     wav_path = args.wav_path
-    feats = compute_fbank(wav_path).numpy()
+    feats = compute_fbank(wav_path)
+    # add batch dimension
+    feats = feats.unsqueeze(0).numpy()
 
-    embedding = session.run(
+    embeddings = session.run(
         output_names=['embs'],
         input_feed={
-            'feats': feats[None, :]
+            'feats': feats
         }
-    )[1]
-    print(embedding.shape)
+    )
+    print(embeddings[0].shape)
 
 
 if __name__ == '__main__':

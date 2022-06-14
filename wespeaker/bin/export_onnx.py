@@ -29,7 +29,6 @@ def get_args():
     parser = argparse.ArgumentParser(description='export your script model')
     parser.add_argument('--config', required=True, help='config file')
     parser.add_argument('--checkpoint', required=True, help='checkpoint model')
-    parser.add_argument('--type', required=True, help='cpu|cuda')
     parser.add_argument('--output_model', required=True, help='output file')
     parser.add_argument('--mean_vec', required=False, default=None, help='mean vector')
     args = parser.parse_args()
@@ -43,15 +42,13 @@ def main():
 
     model = get_speaker_model(configs['model'])(**configs['model_args'])
     load_checkpoint(model, args.checkpoint)
-    device = torch.device(args.type)
-    model.to(device).eval()
+    model.eval()
 
     if args.mean_vec:
         mean_vec = torch.tensor(np.load(args.mean_vec), dtype=torch.float32)
     else:
         embed_dim = configs["model_args"]["embed_dim"]
         mean_vec = torch.zeros(embed_dim, dtype=torch.float32)
-    mean_vec = mean_vec.cuda() if args.type == 'cuda' else mean_vec
 
     class Model(nn.Module):
         def __init__(self, model, mean_vec=None):
@@ -71,7 +68,6 @@ def main():
     num_frms = configs['feature_args'].get('num_frms', 200)
 
     dummy_input = torch.ones(1, num_frms, feat_dim)
-    dummy_input = dummy_input.cuda() if args.type == 'cuda' else dummy_input
     torch.onnx.export(
         model, dummy_input,
         args.output_model,
