@@ -11,9 +11,9 @@ log_batch_interval: 100 # log every 100 batchs
 
 dataloader_args:
   batch_size: 128
-  num_workers: 8
+  num_workers: 16
   pin_memory: False
-  prefetch_factor: 4
+  prefetch_factor: 8
   drop_last: True
 
 dataset_args:
