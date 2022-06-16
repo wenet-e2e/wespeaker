@@ -91,11 +91,10 @@ class FeatList_LableDict_Dataset(Dataset):
                                       num_mel_bins=self.feat_dim,
                                       frame_shift=10,
                                       frame_length=25,
-                                      energy_floor=0.0,
+                                      dither=1.0,
+                                      sample_frequency=16000,
                                       window_type='hamming',
-                                      htk_compat=True,
-                                      use_energy=False,
-                                      dither=1)
+                                      use_energy=False)
             feat = feat_tensor.detach().numpy()
         else:
             # load feat

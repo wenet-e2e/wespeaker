@@ -390,10 +390,8 @@ def compute_fbank(data,
                           frame_length=frame_length,
                           frame_shift=frame_shift,
                           dither=dither,
-                          energy_floor=0.0,
                           sample_frequency=sample_rate,
                           window_type='hamming',
-                          htk_compat=True,
                           use_energy=False)
         yield dict(key=sample['key'], label=sample['label'], feat=mat)
 

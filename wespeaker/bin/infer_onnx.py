@@ -42,10 +42,8 @@ def compute_fbank(wav_path,
                       frame_length=frame_length,
                       frame_shift=frame_shift,
                       dither=dither,
-                      energy_floor=0.0,
                       sample_frequency=sample_rate,
                       window_type='hamming',
-                      htk_compat=True,
                       use_energy=False)
     # CMN, without CVN
     mat = mat - torch.mean(mat, dim=0)
