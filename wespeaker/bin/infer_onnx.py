@@ -22,7 +22,7 @@ import torchaudio.compliance.kaldi as kaldi
 def get_args():
     parser = argparse.ArgumentParser(description='infer example using onnx')
     parser.add_argument('--onnx_path', required=True, help='onnx path')
-    parser.add_argument('--wav_path', required=True, help='checkpoint model')
+    parser.add_argument('--wav_path', required=True, help='wav path')
     args = parser.parse_args()
     return args
 
@@ -52,11 +52,15 @@ def compute_fbank(wav_path,
 
 def main():
     args = get_args()
-    session = ort.InferenceSession(args.onnx_path)
+
+    so = ort.SessionOptions()
+    so.inter_op_num_threads = 1
+    so.intra_op_num_threads = 1
+    session = ort.InferenceSession(args.onnx_path, sess_options=so)
+
     wav_path = args.wav_path
     feats = compute_fbank(wav_path)
-    # add batch dimension
-    feats = feats.unsqueeze(0).numpy()
+    feats = feats.unsqueeze(0).numpy()  # add batch dimension
 
     embeddings = session.run(
         output_names=['embs'],
