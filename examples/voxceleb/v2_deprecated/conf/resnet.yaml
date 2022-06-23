@@ -24,9 +24,9 @@ dataset_args:
 
 dataloader_args:
   batch_size: 128
-  num_workers: 8
+  num_workers: 16
   pin_memory: False
-  prefetch_factor: 4
+  prefetch_factor: 8
   drop_last: True
 
 model: ResNet34 # ResNet18, ResNet34, ResNet50, ResNet101, ResNet152
