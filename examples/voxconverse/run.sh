@@ -63,7 +63,7 @@ while read -r utt wav_path; do
     echo "\$(python3 diar/clusterer.py --onnx-model avg_model.onnx --wav-scp <(echo ${utt} ${wav_path}) --segments data/dev/${sad_type}_sad > ${label_dir}/${utt}.labels)"
 done < data/dev/wav.scp > data/dev/embedding_extraction_tasks.sh
 
-# RUN embedding extraction tasks
+# Run embedding extraction tasks
 num_procs=72
 cat data/dev/embedding_extraction_tasks.sh | xargs -P ${num_procs} -i bash -c "{}"
 
