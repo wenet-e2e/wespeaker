@@ -1,9 +1,9 @@
 ## Results
 
-* dataset: voxconverse dev consists of 216 utterances
-* speaker model: resnet model trained on VoxCeleb2 (avg_model.onnx)
-* speaker activity detection: oracle (from annoataion) or system (from 'silero' vad)
-* clustering method: spectral clustering
+* Dataset: voxconverse dev consists of 216 utterances
+* Speaker model: resnet model trained on VoxCeleb2 (avg_model.onnx)
+* Speaker activity detection: oracle (from annoataion) or system (from 'silero' vad)
+* Clustering method: spectral clustering
 * Metric: DER = MISS + FALSE ALARM + SPEAKER CONFUSION (%)
 
 | system | MISS | FA | SC | DER |
