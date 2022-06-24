@@ -23,7 +23,7 @@ git clone https://github.com/joonson/voxconverse voxconverse_gt
 git clone https://github.com/snakers4/silero-vad
 
 # github size limit
-cat avg_model.onnx.part1 avg_model.onnx.part2 > avg_model.onnx 
+cat avg_model.onnx.part1 avg_model.onnx.part2 > avg_model.onnx
 
 # Download and extract dev audio
 mkdir -p data/dev
