@@ -14,7 +14,6 @@
 
 import sys
 import torch
-import torchaudio
 
 def silero_vad(wav_scp, min_duration):
     USE_ONNX = True
@@ -36,12 +35,14 @@ def silero_vad(wav_scp, min_duration):
     for line in open(wav_scp, 'r'):
         utt, wav_path = line.strip().split()
         wav = read_audio(wav_path, sampling_rate=SAMPLING_RATE)
-        speech_timestamps = get_speech_timestamps(wav, model, sampling_rate=SAMPLING_RATE)
+        speech_timestamps = get_speech_timestamps(
+            wav, model, sampling_rate=SAMPLING_RATE)
         for item in speech_timestamps:
             begin = item['start'] / SAMPLING_RATE
             end = item['end'] / SAMPLING_RATE
             if end - begin >= min_duration:
-                print("{}-{:08d}-{:08d} {} {:.3f} {:.3f}".format(utt, int(begin * 1000), int(end * 1000), utt, begin, end))
+                print("{}-{:08d}-{:08d} {} {:.3f} {:.3f}".format(
+                    utt, int(begin * 1000), int(end * 1000), utt, begin, end))
 
 if __name__ == '__main__':
     torch.set_num_threads(1)
