@@ -54,7 +54,8 @@ def merge_segments(utt_to_segments, min_duration):
     for utt, segments in utt_to_merged_segments.items():
         for (begin, end) in segments:
             if end - begin >= min_duration:
-                print(segments_line_spec.format(utt, int(begin * 1000), int(end * 1000), utt, begin, end))
+                print(segments_line_spec.format(
+                    utt, int(begin * 1000), int(end * 1000), utt, begin, end))
 
 
 if __name__ == '__main__':
