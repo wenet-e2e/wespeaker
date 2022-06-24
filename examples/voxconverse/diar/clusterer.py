@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import argparse
-import pickle
 from collections import OrderedDict
 # import concurrent.futures
 
 import numpy as np
-import scipy.linalg, scipy.cluster
+import scipy.linalg
+import scipy.cluster
 
 import onnxruntime as ort
 
@@ -50,7 +49,8 @@ def read_segments(segments):
     return utt_to_segments
 
 
-def compute_fbank(wav_data, num_mel_bins=80, frame_length=25, frame_shift=10, dither=0.00001, sample_frequency=16000):
+def compute_fbank(wav_data, num_mel_bins=80, frame_length=25,
+                  frame_shift=10, dither=0.00001, sample_frequency=16000):
     feats = kaldi.fbank(wav_data,
                         num_mel_bins=num_mel_bins,
                         frame_length=frame_length,
@@ -95,13 +95,15 @@ def compute_feats(wav_scp, utt_to_segments):
     return segment_to_feats
 
 
-def compute_embeddings(onnx_model, segment_to_feats, window_frames=150, period_frames=75):
+def compute_embeddings(onnx_model, segment_to_feats, 
+                       window_frames=150, period_frames=75):
 
     # Initialize ONNX session
     opts = ort.SessionOptions()
     opts.inter_op_num_threads = 1
     opts.intra_op_num_threads = 1
-    session = ort.InferenceSession(onnx_model, sess_options=opts, providers=["CPUExecutionProvider"])
+    session = ort.InferenceSession(onnx_model, sess_options=opts,
+                                   providers=["CPUExecutionProvider"])
 
     # Extract subsegment-level embeddings
     subsegment_to_embeddings = OrderedDict()
@@ -119,8 +121,8 @@ def compute_embeddings(onnx_model, segment_to_feats, window_frames=150, period_f
 
         # Extract sliding-window embeddings for long segments
         else:
-            for subsegment_begin in range(0, feats_frames - window_frames + period_frames,
-                                          period_frames):
+            limit = feats_frames - window_frames + period_frames,
+            for subsegment_begin in range(0, limit, period_frames):
                 subsegment_end = subsegment_begin + window_frames
                 if subsegment_end >= feats_frames:
                     subsegment_end = feats_frames + 2
@@ -130,7 +132,8 @@ def compute_embeddings(onnx_model, segment_to_feats, window_frames=150, period_f
                 embedding = session.run(
                     output_names=['embed_b'],
                     input_feed={'x': subseg_feats[None, :]})[0].squeeze()
-                subseg = segment + "-{:08d}-{:08d}".format(subsegment_begin, subsegment_end)
+                subseg = segment + "-{:08d}-{:08d}".format( \
+                    subsegment_begin, subsegment_end)
                 subsegment_to_embeddings[subseg] = embedding
 
     return subsegment_to_embeddings
@@ -147,10 +150,11 @@ def groupby_utt(subsegment_to_embeddings):
         else:
             utt_to_embeddings[utt].append(embedding)
             utt_to_subsegments[utt].append(subsegment)
-    return list(utt_to_subsegments.values()), list(utt_to_embeddings.values())
+    return list(utt_to_subsegments.values()), 
+    list(utt_to_embeddings.values())
 
 
-def cluster(embeddings, p=0.05, num_spks=None, min_num_spks=1, max_num_spks=10):
+def cluster(embeddings, p=.05, num_spks=None, min_num_spks=1, max_num_spks=10):
 
     def cosine_similarity(M):
         M = M / np.linalg.norm(M, axis=1, keepdims=True)
@@ -173,7 +177,8 @@ def cluster(embeddings, p=0.05, num_spks=None, min_num_spks=1, max_num_spks=10):
 
     def spectral(M, num_spks, min_num_spks, max_num_spks):
         eig_values, eig_vectors = scipy.linalg.eigh(M)
-        num_spks = num_spks if num_spks is not None else np.argmax(np.diff(eig_values[:max_num_spks])) + 1
+        num_spks = num_spks if num_spks is not None \
+            else np.argmax(np.diff(eig_values[:max_num_spks])) + 1
         num_spks = max(num_spks, min_num_spks)
         return eig_vectors[:, :num_spks]
 
@@ -189,7 +194,8 @@ def cluster(embeddings, p=0.05, num_spks=None, min_num_spks=1, max_num_spks=10):
     # Compute Laplacian
     laplacian_matrix = laplacian(pruned_similarity_matrix)
     # Compute spectral embeddings
-    spectral_embeddings = spectral(laplacian_matrix, num_spks, min_num_spks, max_num_spks)
+    spectral_embeddings = spectral(laplacian_matrix, num_spks, \
+         min_num_spks, max_num_spks)
     # Assign class labels
     labels = kmeans(spectral_embeddings)
 
@@ -201,10 +207,12 @@ def main():
     # Capable of processing multiple utterances, not just one utterance
     utt_to_segments = read_segments(args.segments)
     segment_to_feats = compute_feats(args.wav_scp, utt_to_segments)
-    subsegment_to_embeddings = compute_embeddings(args.onnx_model, segment_to_feats)
+    subsegment_to_embeddings = compute_embeddings(args.onnx_model, \
+        segment_to_feats)
     subsegments_list, embeddings_list = groupby_utt(subsegment_to_embeddings)
-    for subsegments, labels in zip(subsegments_list, [cluster(e) for e in embeddings_list]):
-        [print(s,l) for (s, l) in zip(subsegments, labels)]
+    for subsegments, labels in zip(subsegments_list, \
+        [cluster(e) for e in embeddings_list]):
+        [print(s, l) for (s, l) in zip(subsegments, labels)]
 
 if __name__ == '__main__':
     main()
