@@ -95,7 +95,7 @@ def compute_feats(wav_scp, utt_to_segments):
     return segment_to_feats
 
 
-def compute_embeddings(onnx_model, segment_to_feats, 
+def compute_embeddings(onnx_model, segment_to_feats,
                        window_frames=150, period_frames=75):
 
     # Initialize ONNX session
@@ -132,7 +132,7 @@ def compute_embeddings(onnx_model, segment_to_feats,
                 embedding = session.run(
                     output_names=['embed_b'],
                     input_feed={'x': subseg_feats[None, :]})[0].squeeze()
-                subseg = segment + "-{:08d}-{:08d}".format( \
+                subseg = segment + "-{:08d}-{:08d}".format(
                     subsegment_begin, subsegment_end)
                 subsegment_to_embeddings[subseg] = embedding
 
@@ -150,8 +150,7 @@ def groupby_utt(subsegment_to_embeddings):
         else:
             utt_to_embeddings[utt].append(embedding)
             utt_to_subsegments[utt].append(subsegment)
-    return list(utt_to_subsegments.values()), 
-    list(utt_to_embeddings.values())
+    return list(utt_to_subsegments.values()), list(utt_to_embeddings.values())
 
 
 def cluster(embeddings, p=.05, num_spks=None, min_num_spks=1, max_num_spks=10):
@@ -168,7 +167,7 @@ def cluster(embeddings, p=.05, num_spks=None, min_num_spks=1, max_num_spks=10):
             low_indexes, high_indexes = indexes[0:n], indexes[n:m]
             M[i, low_indexes] = 0.0
             M[i, high_indexes] = 1.0
-        return 0.5 *(M + M.T)
+        return 0.5 * (M + M.T)
 
     def laplacian(M):
         M[np.diag_indices(M.shape[0])] = 0.0
@@ -194,8 +193,8 @@ def cluster(embeddings, p=.05, num_spks=None, min_num_spks=1, max_num_spks=10):
     # Compute Laplacian
     laplacian_matrix = laplacian(pruned_similarity_matrix)
     # Compute spectral embeddings
-    spectral_embeddings = spectral(laplacian_matrix, num_spks, \
-         min_num_spks, max_num_spks)
+    spectral_embeddings = spectral(laplacian_matrix, num_spks,
+                                   min_num_spks, max_num_spks)
     # Assign class labels
     labels = kmeans(spectral_embeddings)
 
@@ -207,11 +206,11 @@ def main():
     # Capable of processing multiple utterances, not just one utterance
     utt_to_segments = read_segments(args.segments)
     segment_to_feats = compute_feats(args.wav_scp, utt_to_segments)
-    subsegment_to_embeddings = compute_embeddings(args.onnx_model, \
-        segment_to_feats)
+    subsegment_to_embeddings = compute_embeddings(args.onnx_model,
+                                                  segment_to_feats)
     subsegments_list, embeddings_list = groupby_utt(subsegment_to_embeddings)
-    for subsegments, labels in zip(subsegments_list, \
-        [cluster(e) for e in embeddings_list]):
+    for subsegments, labels in zip(subsegments_list,
+                                   [cluster(e) for e in embeddings_list]):
         [print(s, l) for (s, l) in zip(subsegments, labels)]
 
 if __name__ == '__main__':
