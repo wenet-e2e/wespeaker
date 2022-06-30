@@ -13,8 +13,18 @@
 # limitations under the License.
 
 
-import sys
+import argparse
 from collections import OrderedDict
+
+
+def get_args():
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument('--rttm', required=True, help='reference rttm')
+    parser.add_argument('--min-duration', required=True,
+                        type=float, help='min duration')
+    args = parser.parse_args()
+
+    return args
 
 
 def read_ref_rttm(rttm):
@@ -50,16 +60,24 @@ def merge_segments(utt_to_segments, min_duration):
                 else:
                     utt_to_merged_segments[utt].append((begin, end))
                     begin, end = b, e
-            utt_to_merged_segments[utt].append((begin, end))
+
+            if end - begin >= min_duration:
+                utt_to_merged_segments[utt].append((begin, end))
+
+    return utt_to_merged_segments
+
+def main():
+    args = get_args()
+
+    utt_to_segments = read_ref_rttm(args.rttm)
+    utt_to_merged_segments = merge_segments(utt_to_segments, args.min_duration)
 
     segments_line_spec = "{}-{:08d}-{:08d} {} {:.3f} {:.3f}"
     for utt, segments in utt_to_merged_segments.items():
         for (begin, end) in segments:
-            if end - begin >= min_duration:
-                print(segments_line_spec.format(
-                    utt, int(begin * 1000), int(end * 1000), utt, begin, end))
+            print(segments_line_spec.format(
+                utt, int(begin * 1000), int(end * 1000), utt, begin, end))
 
 
 if __name__ == '__main__':
-    utt_to_segments = read_ref_rttm(sys.argv[1])
-    merge_segments(utt_to_segments, float(sys.argv[2]))
+    main()

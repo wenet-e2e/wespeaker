@@ -14,25 +14,25 @@
 
 
 import os
-import sys
-import importlib.util
 import functools
 import concurrent.futures
+import argparse
 
 import torch
 
-try:
-    from utils_vad import get_speech_timestamps, read_audio, init_jit_model
-except Exception:
-    def module_from_file(module_name, file_path):
-        spec = importlib.util.spec_from_file_location(module_name, file_path)
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[module_name] = module
-        spec.loader.exec_module(module)
-        return module
 
-    utils_vad = module_from_file("utils_vad", "./silero-vad/utils_vad.py")
-    from utils_vad import get_speech_timestamps, read_audio, init_jit_model
+def get_args():
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument('--repo-or-dir', required=True,
+                        help='VAD model repo/dir')
+    parser.add_argument('--model', required=True,
+                        help="entrypoint defined in the repo/dir's hubconf.py")
+    parser.add_argument('--scp', required=True, help='wav scp')
+    parser.add_argument('--min-duration', required=True,
+                        type=float, help='min duration')
+    args = parser.parse_args()
+
+    return args
 
 
 def read_scp(scp):
@@ -40,12 +40,23 @@ def read_scp(scp):
     for line in open(scp, 'r'):
         utt, wav = line.strip().split()
         utt_wav_pair.append((utt, wav))
+
     return utt_wav_pair
 
 
-def silero_vad(utt_wav_pair, min_duration,
-               sampling_rate=16000, threshold=0.4):
-    model = init_jit_model('./silero-vad/files/silero_vad.jit')
+def silero_vad(utt_wav_pair, repo_or_dir, model, min_duration,
+               sampling_rate=16000, threshold=0.36):
+    model, utils = torch.hub.load(repo_or_dir=repo_or_dir,
+                                  model=model,
+                                  force_reload=False,
+                                  onnx=False,
+                                  skip_validation=True,
+                                  source='local')
+    (get_speech_timestamps,
+     save_audio,
+     read_audio,
+     VADIterator,
+     collect_chunks) = utils
 
     utt, wav = utt_wav_pair
 
@@ -61,7 +72,21 @@ def silero_vad(utt_wav_pair, min_duration,
         if end - begin >= min_duration:
             vad_result += "{}-{:08d}-{:08d} {} {:.3f} {:.3f}\n".format(
                 utt, int(begin * 1000), int(end * 1000), utt, begin, end)
+
     return vad_result
+
+
+def main():
+    args = get_args()
+
+    vad = functools.partial(silero_vad,
+                            repo_or_dir=args.repo_or_dir,
+                            model=args.model,
+                            min_duration=args.min_duration)
+    utt_wav_pair_list = read_scp(args.scp)
+
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        print(''.join(executor.map(vad, utt_wav_pair_list)), end='')
 
 
 if __name__ == '__main__':
@@ -72,10 +97,4 @@ if __name__ == '__main__':
     os.environ["NUMEXPR_NUM_THREADS"] = "1"
     torch.set_num_threads(1)
 
-    scp = sys.argv[1]
-    min_duration = float(sys.argv[2])
-
-    vad = functools.partial(silero_vad, min_duration=min_duration)
-    utt_wav_pair_list = read_scp(scp)
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        print(''.join(executor.map(vad, utt_wav_pair_list)), end='')
+    main()

@@ -35,9 +35,9 @@ def get_args():
     parser.add_argument('--scp', required=True, help='wav scp')
     parser.add_argument('--segments', required=True, help='vad segments')
     parser.add_argument('--source', required=True,
-                        help='checkpoint source: directory or repo')
+                        help='onnx model')
     parser.add_argument('--device', default='cuda',
-                        help='inference device type: cpu, cuda')
+                        help='inference device type: cpu or cuda')
     parser.add_argument('--batch-size', type=int, default=96,
                         help='batch size for embedding extraction')
     args = parser.parse_args()
@@ -120,7 +120,7 @@ def compute_embeddings(scp, segments, source, device,
 
         feats = []
         for wav in wavs:
-            wav = wav.unsqueeze(0) * sample_frequency
+            wav = wav.unsqueeze(0) * (1 << 15)
             feat = kaldi.fbank(wav,
                                num_mel_bins=num_mel_bins,
                                frame_length=frame_length,

@@ -2,7 +2,7 @@
 
 * Dataset: voxconverse_dev that consists of 216 utterances
 * Speaker model: ResNet34 model pretrained by wespeaker
-* Speaker activity detection: oracle SAD (from ground truth annotation) or system SAD (VAD model pretrained by silero, https://github.com/snakers4/silero-vad)
+* Speaker activity detection model: oracle SAD (from ground truth annotation) or system SAD (VAD model pretrained by silero, https://github.com/snakers4/silero-vad)
 * Clustering method: spectral clustering
 * Metric: DER = MISS + FALSE ALARM + SPEAKER CONFUSION (%)
 

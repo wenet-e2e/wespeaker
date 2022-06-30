@@ -14,60 +14,101 @@
 # limitations under the License.
 
 
-# Prerequisite [1-4]
-# [1] SCTK: evaluation toolkit
-git clone https://github.com/usnistgov/SCTK
+stage=1
+stop_stage=100
+sad_type="system"
 
-# [2] voxconverse: ground truth annotation
-git clone https://github.com/joonson/voxconverse voxconverse_gt
+. ../../tools/parse_options.sh
 
-# [3] silero-vad: pretrained vad model from silero
-git clone https://github.com/snakers4/silero-vad
+# Prerequisite
+if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
+    mkdir -p external_tools
 
-# [4] voxceleb_resnet34.onnx: pretrained speaker model from wespeaker
-wget https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34.onnx
+    # [1] Download evaluation toolkit
+    wget -c https://github.com/usnistgov/SCTK/archive/refs/tags/v2.4.12.zip -O external_tools/SCTK-v2.4.12.zip
+    unzip -o external_tools/SCTK-v2.4.12.zip -d external_tools
+
+    # [2] Download voice activity detection model pretrained by Silero Team
+    wget -c https://github.com/snakers4/silero-vad/archive/refs/tags/v3.1.zip -O external_tools/silero-vad-v3.1.zip
+    unzip -o external_tools/silero-vad-v3.1.zip -d external_tools
+
+    # [3] Download ResNet34 speaker model pretrained by WeSpeaker Team
+    mkdir -p pretrained_models
+
+    wget -c https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34.onnx -O pretrained_models/voxceleb_resnet34.onnx
+fi
 
 
-# ONNX runtime
-pip3 install onnxruntime-gpu=1.11.1 threadpoolctl==3.1.0 scipy==1.8.1 torch torchaudio
+# Download VoxConverse dev audios and the corresponding annotations
+if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
+    mkdir -p data
 
+    # Download annotations for dev and test sets
+    wget -c https://github.com/joonson/voxconverse/archive/refs/heads/master.zip -O data/voxconverse_master.zip
+    unzip -o data/voxconverse_master.zip -d data
 
-# Download and extract dev audio
-mkdir -p data/dev
-wget -c https://mm.kaist.ac.kr/datasets/voxconverse/data/voxconverse_dev_wav.zip
-unzip voxconverse_dev_wav.zip -d data/dev
+    # Download dev audios
+    mkdir -p data/dev
+    wget -c https://mm.kaist.ac.kr/datasets/voxconverse/data/voxconverse_dev_wav.zip -O data/voxconverse_dev_wav.zip
+    unzip -o data/voxconverse_dev_wav.zip -d data/dev
 
-
-# Create wav.scp
+    # Create wav.scp for dev audios
 ls `pwd`/data/dev/audio/*.wav | awk -F/ '{print substr($NF, 1, length($NF)-4), $0}' > data/dev/wav.scp
 
-
-# Set VAD min duration
-min_duration=0.255
-
-# Oracle SAD: handling overlapping or too short regions in ground truth RTTM
-while read -r utt wav_path; do
-    python3 sad/make_oracle_sad.py voxconverse_gt/dev/${utt}.rttm $min_duration
-done < data/dev/wav.scp > data/dev/oracle_sad
-
-# System SAD: applying 'silero' VAD
-python3 sad/make_system_sad.py data/dev/wav.scp $min_duration > data/dev/system_sad
+    # Test audios
+    # mkdir -p data/test
+    # wget -c https://mm.kaist.ac.kr/datasets/voxconverse/data/voxconverse_test_wav.zip -O data/voxconverse_test_wav.zip
+    # unzip -o data/voxconverse_test_wav.zip -d data/test
+fi
 
 
-# Two 'sad_type' values: "system" or "oracle"
-sad_type="oracle"
+# Voice activity detection
+if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
+    # Set VAD min duration
+    min_duration=0.255
 
-# Diarization: applying spectral clustering algorithm (need a CUDA enabled GPU)
-python3 diar/clusterer.py \
-    --scp data/dev/wav.scp \
-    --segments data/dev/${sad_type}_sad \
-    --source voxceleb_resnet34.onnx \
-    --device cuda > data/dev/${sad_type}_sad_labels
+    if [[ "x${sad_type}" == "xoracle" ]]; then
+        # Oracle SAD: handling overlapping or too short regions in ground truth RTTM
+        while read -r utt wav_path; do
+            python3 sad/make_oracle_sad.py \
+                    --rttm data/voxconverse-master/dev/${utt}.rttm \
+                    --min-duration $min_duration
+        done < data/dev/wav.scp > data/dev/oracle_sad
+    fi
+
+    if [[ "x${sad_type}" == "xsystem" ]]; then
+       # System SAD: applying 'silero' VAD
+       python3 sad/make_system_sad.py \
+               --repo-or-dir external_tools/silero-vad-3.1 \
+               --model silero_vad \
+               --scp data/dev/wav.scp \
+               --min-duration $min_duration > data/dev/system_sad
+    fi
+fi
+
+
+# Applying spectral clustering algorithm (need a CUDA enabled GPU)
+if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
+    python3 diar/clusterer.py \
+            --scp data/dev/wav.scp \
+            --segments data/dev/${sad_type}_sad \
+            --source pretrained_models/voxceleb_resnet34.onnx \
+            --device cuda > data/dev/${sad_type}_sad_labels
+fi
 
 
 # Convert labels to RTTMs
-python3 diar/make_rttm.py data/dev/${sad_type}_sad_labels > data/dev/${sad_type}_sad_rttm
+if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
+    python3 diar/make_rttm.py \
+            --labels data/dev/${sad_type}_sad_labels \
+            --channel 1 > data/dev/${sad_type}_sad_rttm
+fi
 
 
-# Evaluation
-perl SCTK/src/md-eval/md-eval.pl -c 0.25 -r <(cat voxconverse_gt/dev/*.rttm) -s data/dev/${sad_type}_sad_rttm
+# Evaluate the result
+if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
+    perl external_tools/SCTK-2.4.12/src/md-eval/md-eval.pl \
+         -c 0.25 \
+         -r <(cat data/voxconverse-master/dev/*.rttm) \
+         -s data/dev/${sad_type}_sad_rttm
+fi
