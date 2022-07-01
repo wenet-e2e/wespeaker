@@ -79,8 +79,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
     if [[ "x${sad_type}" == "xsystem" ]]; then
        # System SAD: applying 'silero' VAD
        python3 sad/make_system_sad.py \
-               --repo-or-dir external_tools/silero-vad-3.1 \
-               --model silero_vad \
+               --repo-path external_tools/silero-vad-3.1 \
                --scp data/dev/wav.scp \
                --min-duration $min_duration > data/dev/system_sad
     fi

@@ -14,19 +14,19 @@
 
 
 import os
+import sys
 import functools
 import concurrent.futures
 import argparse
+import importlib
 
 import torch
 
 
 def get_args():
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument('--repo-or-dir', required=True,
-                        help='VAD model repo/dir')
-    parser.add_argument('--model', required=True,
-                        help="entrypoint defined in the repo/dir's hubconf.py")
+    parser.add_argument('--repo-path', required=True,
+                        help='VAD model repo path')
     parser.add_argument('--scp', required=True, help='wav scp')
     parser.add_argument('--min-duration', required=True,
                         type=float, help='min duration')
@@ -44,24 +44,25 @@ def read_scp(scp):
     return utt_wav_pair
 
 
-def silero_vad(utt_wav_pair, repo_or_dir, model, min_duration,
+def silero_vad(utt_wav_pair, repo_path, min_duration,
                sampling_rate=16000, threshold=0.36):
-    model, utils = torch.hub.load(repo_or_dir=repo_or_dir,
-                                  model=model,
-                                  force_reload=False,
-                                  onnx=False,
-                                  skip_validation=True,
-                                  source='local')
-    (get_speech_timestamps,
-     save_audio,
-     read_audio,
-     VADIterator,
-     collect_chunks) = utils
+
+    def module_from_file(module_name, file_path):
+        spec = importlib.util.spec_from_file_location(module_name, file_path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
+        return module
+
+    utils_vad = module_from_file("utils_vad",
+                                 os.path.join(repo_path, "utils_vad.py"))
+    model = utils_vad.init_jit_model(
+        os.path.join(repo_path, 'files/silero_vad.jit'))
 
     utt, wav = utt_wav_pair
 
-    wav = read_audio(wav, sampling_rate=sampling_rate)
-    speech_timestamps = get_speech_timestamps(
+    wav = utils_vad.read_audio(wav, sampling_rate=sampling_rate)
+    speech_timestamps = utils_vad.get_speech_timestamps(
         wav, model, sampling_rate=sampling_rate,
         threshold=threshold)
 
@@ -80,8 +81,7 @@ def main():
     args = get_args()
 
     vad = functools.partial(silero_vad,
-                            repo_or_dir=args.repo_or_dir,
-                            model=args.model,
+                            repo_path=args.repo_path,
                             min_duration=args.min_duration)
     utt_wav_pair_list = read_scp(args.scp)
 
