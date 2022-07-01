@@ -1,5 +1,5 @@
 ## Results
-
+* We suggest to run this recipe on a gpu-available machine, with onnxruntime-gpu supported.
 * Dataset: voxconverse_dev that consists of 216 utterances
 * Speaker model: ResNet34 model pretrained by wespeaker
 * Speaker activity detection model: oracle SAD (from ground truth annotation) or system SAD (VAD model pretrained by silero, https://github.com/snakers4/silero-vad)
