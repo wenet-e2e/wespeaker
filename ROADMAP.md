@@ -27,6 +27,6 @@ This is the roadmap for wespeaker version 1.0.
 - [ ] Pretrained model as feature extractor
     - Training or finetuning big models such as WavLM might be too costly for current stage
     - Support using features from released pretrained models (hugging face)
-- [ ] Basic Speaker Diarization Recipe
+- [x] Basic Speaker Diarization Recipe
     - Embedding based (more related with our speaker embedding learner toolkit)
 - [ ] Interactive Demo
