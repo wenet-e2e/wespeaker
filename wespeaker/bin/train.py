@@ -156,7 +156,9 @@ def train(config='conf/config.yaml', **kwargs):
     # scheduler
     configs['scheduler_args']['num_epochs'] = configs['num_epochs']
     configs['scheduler_args']['epoch_iter'] = loader_size
-    configs['scheduler_args']['process_num'] = world_size
+    # here, we consider the batch_size 64 as the base, the learning rate will be
+    # adjusted according to the batchsize and world_size used in different setup
+    configs['scheduler_args']['scale_ratio'] = 1.0 * world_size * configs['dataloader_args']['batch_size'] / 64
     scheduler = getattr(schedulers, configs['scheduler'])(
         optimizer, **configs['scheduler_args'])
     if rank == 0:

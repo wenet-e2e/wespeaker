@@ -23,6 +23,8 @@ trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
 stage=-1
 stop_stage=-1
 
+data=data
+
 . tools/parse_options.sh
 . path.sh
 
@@ -30,7 +32,7 @@ stop_stage=-1
 if [ $stage -le 1 ] && [ $stop_stage -ge 1 ]; then
   echo "compute mean xvector"
   python tools/vector_mean.py \
-    --spk2utt data/${cohort_set}/spk2utt \
+    --spk2utt ${data}/${cohort_set}/spk2utt \
     --xvector_scp $exp_dir/embeddings/${cohort_set}/xvector.scp \
     --spk_xvector_ark $exp_dir/embeddings/${cohort_set}/spk_xvector.ark
 fi

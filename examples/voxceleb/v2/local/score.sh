@@ -20,13 +20,15 @@ trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
 stage=-1
 stop_stage=-1
 
+data=data
+
 . tools/parse_options.sh
 . path.sh
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "apply cosine scoring ..."
   mkdir -p ${exp_dir}/scores
-  trials_dir=data/vox1/trials
+  trials_dir=${data}/vox1/trials
   for x in $trials; do
     echo $x
     python wespeaker/bin/score.py \
