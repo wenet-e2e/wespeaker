@@ -21,13 +21,14 @@ model_path=''
 nj=4
 gpus="[0,1]"
 data_type="shard/raw"  # shard/raw
+data=data
 
 . tools/parse_options.sh
 set -e
 
 data_name_array=("cnceleb_train" "eval")
-data_list_path_array=("data/cnceleb_train/${data_type}.list" "data/eval/${data_type}.list")
-data_scp_path_array=("data/cnceleb_train/wav.scp" "data/eval/wav.scp")
+data_list_path_array=("${data}/cnceleb_train/${data_type}.list" "${data}/eval/${data_type}.list")
+data_scp_path_array=("${data}/cnceleb_train/wav.scp" "${data}/eval/wav.scp")
 nj_array=($nj $nj)
 batch_size_array=(16 1) # batch_size of test set must be 1 !!!
 num_workers_array=(4 1)
@@ -53,7 +54,7 @@ echo "Embedding dir is (${exp_dir}/embeddings)."
 
 echo "mean vector of enroll"
 python tools/vector_mean.py \
-  --spk2utt data/eval/enroll.map \
+  --spk2utt ${data}/eval/enroll.map \
   --xvector_scp $exp_dir/embeddings/eval/xvector.scp \
   --spk_xvector_ark $exp_dir/embeddings/eval/enroll_spk_xvector.ark
 

@@ -1,16 +1,16 @@
 ### train configuraton
 
-exp_dir: exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
+exp_dir: "exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch165"
 gpus: "[0,1]"
-num_avg: 10
+num_avg: 1
 
 seed: 42
-num_epochs: 150
+num_epochs: 165
 save_epoch_interval: 5 # save model every 5 epochs
 log_batch_interval: 100 # log every 100 batchs
 
 dataloader_args:
-  batch_size: 128
+  batch_size: 64
   num_workers: 16
   pin_memory: False
   prefetch_factor: 8
@@ -41,9 +41,10 @@ model_init: null
 model_args:
   feat_dim: 80
   embed_dim: 256
-  pooling_func: 'TSTP'
+  pooling_func: "TSTP"
+  two_emb_layer: False
 projection_args:
-  project_type: 'arc_margin' # add_margin, arc_margin, sphere, softmax
+  project_type: "arc_margin" # add_margin, arc_margin, sphere, softmax
   scale: 32.0
   easy_margin: False
 
@@ -51,13 +52,13 @@ margin_scheduler: MarginScheduler
 margin_update:
   initial_margin: 0.0
   final_margin: 0.2
-  increase_start_epoch: 20
-  fix_start_epoch: 40
+  increase_start_epoch: 19
+  fix_start_epoch: 19
   update_margin: True
-  increase_type: 'exp'  # exp, linear
+  increase_type: "exp" # exp, linear
 
 loss: CrossEntropyLoss
-loss_args: { }
+loss_args: {}
 
 optimizer: SGD
 optimizer_args:
@@ -70,3 +71,4 @@ scheduler_args:
   initial_lr: 0.1
   final_lr: 0.00005
   warm_up_epoch: 6
+  warm_from_zero: True

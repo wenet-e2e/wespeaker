@@ -18,6 +18,7 @@ import math
 
 
 class MarginScheduler:
+
     def __init__(self,
                  model,
                  epoch_iter,
@@ -97,6 +98,7 @@ class BaseClass:
     '''
     Base Class for learning rate scheduler
     '''
+
     def __init__(self,
                  optimizer,
                  num_epochs,
@@ -104,25 +106,30 @@ class BaseClass:
                  initial_lr,
                  final_lr,
                  warm_up_epoch=6,
-                 process_num=1):
+                 scale_ratio=1,
+                 warm_from_zero=False):
         '''
         warm_up_epoch: the first warm_up_epoch is the multiprocess warm-up stage
-        process_num: multiplied to the current lr in the multiprocess training
+        scale_ratio: multiplied to the current lr in the multiprocess training
         process
         '''
         self.optimizer = optimizer
         self.max_iter = num_epochs * epoch_iter
         self.initial_lr = initial_lr
         self.final_lr = final_lr
-        self.process_num = process_num
+        self.scale_ratio = scale_ratio
         self.current_iter = 0
         self.warm_up_iter = warm_up_epoch * epoch_iter
+        self.warm_from_zero = warm_from_zero
 
     def get_multi_process_coeff(self):
-        lr_coeff = 1.0 * self.process_num
-        if self.current_iter < self.warm_up_iter and self.process_num > 1:
-            lr_coeff = float(self.current_iter) * (self.process_num -
-                                                   1) / self.warm_up_iter + 1.0
+        lr_coeff = 1.0 * self.scale_ratio
+        if self.current_iter < self.warm_up_iter:
+            if self.warm_from_zero:
+                lr_coeff = self.scale_ratio * self.current_iter / self.warm_up_iter
+            elif self.scale_ratio > 1:
+                lr_coeff = float(self.current_iter) * (
+                    self.scale_ratio - 1) / self.warm_up_iter + 1.0
 
         return lr_coeff
 
@@ -158,6 +165,7 @@ class BaseClass:
 
 
 class ExponentialDecrease(BaseClass):
+
     def __init__(self,
                  optimizer,
                  num_epochs,
@@ -165,9 +173,10 @@ class ExponentialDecrease(BaseClass):
                  initial_lr,
                  final_lr,
                  warm_up_epoch=6,
-                 process_num=1):
+                 scale_ratio=1,
+                 warm_from_zero=False):
         super().__init__(optimizer, num_epochs, epoch_iter, initial_lr,
-                         final_lr, warm_up_epoch, process_num)
+                         final_lr, warm_up_epoch, scale_ratio, warm_from_zero)
 
     def get_current_lr(self):
         lr_coeff = self.get_multi_process_coeff()
@@ -181,6 +190,7 @@ class TriAngular2(BaseClass):
     '''
     The implementation of https://arxiv.org/pdf/1506.01186.pdf
     '''
+
     def __init__(self,
                  optimizer,
                  num_epochs,
@@ -188,11 +198,11 @@ class TriAngular2(BaseClass):
                  initial_lr,
                  final_lr,
                  warm_up_epoch=6,
-                 process_num=1,
+                 scale_ratio=1,
                  cycle_step=2,
                  reduce_lr_diff_ratio=0.5):
         super().__init__(optimizer, num_epochs, epoch_iter, initial_lr,
-                         final_lr, warm_up_epoch, process_num)
+                         final_lr, warm_up_epoch, scale_ratio)
 
         self.reduce_lr_diff_ratio = reduce_lr_diff_ratio
         self.cycle_iter = cycle_step * epoch_iter
@@ -244,17 +254,17 @@ if __name__ == '__main__':
     initial_lr = 0.6
     final_lr = 0.1
     warm_up_epoch = 2
-    process_num = 4
+    scale_ratio = 4
     scheduler = ExponentialDecrease(optimizer, num_epochs, epoch_iter,
                                     initial_lr, final_lr, warm_up_epoch,
-                                    process_num)
+                                    scale_ratio)
     # scheduler = TriAngular2(optimizer,
     #                         num_epochs,
     #                         epoch_iter,
     #                         initial_lr,
     #                         final_lr,
     #                         warm_up_epoch,
-    #                         process_num,
+    #                         scale_ratio,
     #                         cycle_step=2,
     #                         reduce_lr_diff_ratio=0.5)
 

@@ -19,6 +19,7 @@ cohort_set=cnceleb_train
 top_n=100
 exp_dir=
 trials="CNC-Eval-Core.lst"
+data=data
 
 stage=-1
 stop_stage=-1
@@ -30,7 +31,7 @@ stop_stage=-1
 if [ $stage -le 1 ] && [ $stop_stage -ge 1 ]; then
   echo "compute mean xvector"
   python tools/vector_mean.py \
-    --spk2utt data/${cohort_set}/spk2utt \
+    --spk2utt ${data}/${cohort_set}/spk2utt \
     --xvector_scp $exp_dir/embeddings/${cohort_set}/xvector.scp \
     --spk_xvector_ark $exp_dir/embeddings/${cohort_set}/spk_xvector.ark
 fi

@@ -9,21 +9,23 @@ stage=-1
 stop_stage=-1
 
 config=conf/resnet.yaml
-exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
+exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch165
 data_type="shard"  # shard/raw
 gpus="[0,1]"
-num_avg=10
+num_avg=1
 checkpoint=
 
 score_norm_method="asnorm"  # asnorm/snorm
 top_n=300
 trials="CNC-Eval-Concat.lst CNC-Eval-Avg.lst"
 
+data=data
+
 . tools/parse_options.sh || exit 1
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "Preparing datasets ..."
-  ./local/prepare_data.sh --stage 2 --stop_stage 4
+  ./local/prepare_data.sh --data ${data} --stage 2 --stop_stage 4
 fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
@@ -34,17 +36,17 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
           --num_threads 16 \
           --prefix shards \
           --shuffle \
-          data/$dset/wav.scp data/$dset/utt2spk \
-          data/$dset/shards data/$dset/shard.list
+          ${data}/$dset/wav.scp ${data}/$dset/utt2spk \
+          ${data}/$dset/shards ${data}/$dset/shard.list
     else
-      python tools/make_raw_list.py data/$dset/wav.scp \
-          data/$dset/utt2spk data/$dset/raw.list
+      python tools/make_raw_list.py ${data}/$dset/wav.scp \
+          ${data}/$dset/utt2spk ${data}/$dset/raw.list
     fi
   done
   # Convert all musan data to LMDB
-  python tools/make_lmdb.py data/musan/wav.scp data/musan/lmdb
+  python tools/make_lmdb.py ${data}/musan/wav.scp ${data}/musan/lmdb
   # Convert all rirs data to LMDB
-  python tools/make_lmdb.py data/rirs/wav.scp data/rirs/lmdb
+  python tools/make_lmdb.py ${data}/rirs/wav.scp ${data}/rirs/lmdb
 fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
@@ -56,10 +58,10 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
       --gpus $gpus \
       --num_avg ${num_avg} \
       --data_type "${data_type}" \
-      --train_data data/cnceleb_train/${data_type}.list \
-      --train_label data/cnceleb_train/utt2spk \
-      --reverb_data data/rirs/lmdb \
-      --noise_data data/musan/lmdb \
+      --train_data ${data}/cnceleb_train/${data_type}.list \
+      --train_label ${data}/cnceleb_train/utt2spk \
+      --reverb_data ${data}/rirs/lmdb \
+      --noise_data ${data}/musan/lmdb \
       ${checkpoint:+--checkpoint $checkpoint}
 fi
 
@@ -74,7 +76,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   echo "Extract embeddings ..."
   local/extract_cnc.sh \
     --exp_dir $exp_dir --model_path $avg_model \
-    --nj 4 --gpus $gpus --data_type $data_type
+    --nj 16 --gpus $gpus --data_type $data_type --data ${data}
 fi
 
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
@@ -82,6 +84,7 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
   local/score.sh \
     --stage 1 --stop-stage 2 \
     --exp_dir $exp_dir \
+    --data ${data} \
     --trials "$trials"
 fi
 
@@ -93,6 +96,7 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
     --cohort_set cnceleb_train \
     --top_n $top_n \
     --exp_dir $exp_dir \
+    --data ${data} \
     --trials "$trials"
 fi
 

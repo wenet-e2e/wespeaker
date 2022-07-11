@@ -16,6 +16,7 @@
 
 exp_dir=
 trials="CNC-Eval-Core.lst"
+data=data
 
 stage=-1
 stop_stage=-1
@@ -26,7 +27,7 @@ stop_stage=-1
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "apply cosine scoring ..."
   mkdir -p ${exp_dir}/scores
-  trials_dir=data/eval/trials
+  trials_dir=${data}/eval/trials
   for x in $trials; do
     echo $x
     python wespeaker/bin/score.py \

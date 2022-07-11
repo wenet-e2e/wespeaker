@@ -33,6 +33,7 @@ from wespeaker.utils.executor import run_epoch
 from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
 from wespeaker.dataset.dataset import Dataset
 
+
 def train(config='conf/config.yaml', **kwargs):
     """Trains a model on the given features and spk labels.
 
@@ -83,16 +84,13 @@ def train(config='conf/config.yaml', **kwargs):
             len(train_utt_spk_list), len(spk2id_dict)))
 
     # dataset and dataloader
-    train_dataset = Dataset(
-        configs['data_type'],
-        configs['train_data'],
-        configs['dataset_args'],
-        spk2id_dict,
-        reverb_lmdb_file=configs.get('reverb_data', None),
-        noise_lmdb_file=configs.get('noise_data', None)
-    )
-    train_dataloader = DataLoader(train_dataset,
-                                  **configs['dataloader_args'])
+    train_dataset = Dataset(configs['data_type'],
+                            configs['train_data'],
+                            configs['dataset_args'],
+                            spk2id_dict,
+                            reverb_lmdb_file=configs.get('reverb_data', None),
+                            noise_lmdb_file=configs.get('noise_data', None))
+    train_dataloader = DataLoader(train_dataset, **configs['dataloader_args'])
     batch_size = configs['dataloader_args']['batch_size']
     loader_size = len(train_utt_spk_list) // world_size // batch_size
     if rank == 0:
@@ -109,9 +107,11 @@ def train(config='conf/config.yaml', **kwargs):
     else:
         logger.info('Train model from scratch...')
     # projection layer
-    configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
+    configs['projection_args']['embed_dim'] = configs['model_args'][
+        'embed_dim']
     configs['projection_args']['num_class'] = len(spk2id_dict)
-    if configs['data_type'] != 'feat' and configs['dataset_args']['speed_perturb']:
+    if configs['data_type'] != 'feat' and configs['dataset_args'][
+            'speed_perturb']:
         # diff speed is regarded as diff spk
         configs['projection_args']['num_class'] *= 3
     projection = get_projection(configs['projection_args'])
@@ -147,8 +147,9 @@ def train(config='conf/config.yaml', **kwargs):
         logger.info("loss criterion is: " + configs['loss'])
 
     configs['optimizer_args']['lr'] = configs['scheduler_args']['initial_lr']
-    optimizer = getattr(torch.optim, configs['optimizer'])(
-        ddp_model.parameters(), **configs['optimizer_args'])
+    optimizer = getattr(torch.optim,
+                        configs['optimizer'])(ddp_model.parameters(),
+                                              **configs['optimizer_args'])
     if rank == 0:
         logger.info("<== Optimizer ==>")
         logger.info("optimizer is: " + configs['optimizer'])
@@ -156,9 +157,13 @@ def train(config='conf/config.yaml', **kwargs):
     # scheduler
     configs['scheduler_args']['num_epochs'] = configs['num_epochs']
     configs['scheduler_args']['epoch_iter'] = loader_size
-    configs['scheduler_args']['process_num'] = world_size
-    scheduler = getattr(schedulers, configs['scheduler'])(
-        optimizer, **configs['scheduler_args'])
+    # here, we consider the batch_size 64 as the base, the learning rate will be
+    # adjusted according to the batchsize and world_size used in different setup
+    configs['scheduler_args']['scale_ratio'] = 1.0 * world_size * configs[
+        'dataloader_args']['batch_size'] / 64
+    scheduler = getattr(schedulers,
+                        configs['scheduler'])(optimizer,
+                                              **configs['scheduler_args'])
     if rank == 0:
         logger.info("<== Scheduler ==>")
         logger.info("scheduler is: " + configs['scheduler'])
@@ -206,8 +211,8 @@ def train(config='conf/config.yaml', **kwargs):
             if epoch % configs['save_epoch_interval'] == 0 or epoch >= configs[
                     'num_epochs'] - configs['num_avg']:
                 save_checkpoint(
-                    model,
-                    os.path.join(model_dir, 'model_{}.pt'.format(epoch)))
+                    model, os.path.join(model_dir,
+                                        'model_{}.pt'.format(epoch)))
 
     if rank == 0:
         os.symlink('model_{}.pt'.format(configs['num_epochs']),
