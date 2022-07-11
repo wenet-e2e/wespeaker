@@ -58,8 +58,8 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
       --gpus $gpus \
       --num_avg ${num_avg} \
       --data_type "${data_type}" \
-      --train_data ${data}/cnceleb_train_spk_balance/${data_type}.list \
-      --train_label ${data}/cnceleb_train_spk_balance/utt2spk \
+      --train_data ${data}/cnceleb_train/${data_type}.list \
+      --train_label ${data}/cnceleb_train/utt2spk \
       --reverb_data ${data}/rirs/lmdb \
       --noise_data ${data}/musan/lmdb \
       ${checkpoint:+--checkpoint $checkpoint}
