@@ -4,7 +4,7 @@
 * test_trials: CNC-Eval-Core.lst
 * 🔥 UPDATE: We update this recipe according to the setups in the winning system of CNSRC 2022, and get obvious performance improvement compared with the old recipe. Check the [commit](https://github.com/wenet-e2e/wespeaker/pull/63/commits/b08804987b3bbb26f4963cedf634058474c743dd) for details.
     * LR scheduler warmup from 0
-    * Remove one embedding layer 
+    * Remove one embedding layer
 
 | Model                      | Params   | EER (%)   | minDCF (p=0.01) |
 | :------------------------- | :------: | :-------: | :-------------: |
