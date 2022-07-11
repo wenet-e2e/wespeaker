@@ -18,6 +18,7 @@ import math
 
 
 class MarginScheduler:
+
     def __init__(self,
                  model,
                  epoch_iter,
@@ -97,6 +98,7 @@ class BaseClass:
     '''
     Base Class for learning rate scheduler
     '''
+
     def __init__(self,
                  optimizer,
                  num_epochs,
@@ -126,7 +128,8 @@ class BaseClass:
             if self.warm_from_zero:
                 lr_coeff = 1.0 * self.scale_ratio * self.current_iter / self.warm_up_iter
             elif self.scale_ratio > 1:
-                lr_coeff = float(self.current_iter) * (self.scale_ratio - 1) / self.warm_up_iter + 1.0
+                lr_coeff = float(self.current_iter) * (
+                    self.scale_ratio - 1) / self.warm_up_iter + 1.0
 
         return lr_coeff
 
@@ -162,6 +165,7 @@ class BaseClass:
 
 
 class ExponentialDecrease(BaseClass):
+
     def __init__(self,
                  optimizer,
                  num_epochs,
@@ -186,6 +190,7 @@ class TriAngular2(BaseClass):
     '''
     The implementation of https://arxiv.org/pdf/1506.01186.pdf
     '''
+
     def __init__(self,
                  optimizer,
                  num_epochs,
