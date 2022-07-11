@@ -126,7 +126,7 @@ class BaseClass:
         lr_coeff = 1.0 * self.scale_ratio
         if self.current_iter < self.warm_up_iter:
             if self.warm_from_zero:
-                lr_coeff = 1.0 * self.scale_ratio * self.current_iter / self.warm_up_iter
+                lr_coeff = self.scale_ratio * self.current_iter / self.warm_up_iter
             elif self.scale_ratio > 1:
                 lr_coeff = float(self.current_iter) * (
                     self.scale_ratio - 1) / self.warm_up_iter + 1.0
