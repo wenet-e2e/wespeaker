@@ -16,11 +16,10 @@
 
 exp_dir=
 trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
+data=data
 
 stage=-1
 stop_stage=-1
-
-data=data
 
 . tools/parse_options.sh
 . path.sh

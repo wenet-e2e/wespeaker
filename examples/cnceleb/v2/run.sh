@@ -3,29 +3,29 @@
 # Copyright 2022 Hongji Wang (jijijiang77@gmail.com)
 #           2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
 
-. ./path.sh
+. ./path.sh || exit 1;
 
 stage=-1
 stop_stage=-1
 
+data=data
+data_type="shard"  # shard/raw
+
+gpus="[0,1]"
 config=conf/resnet.yaml
 exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch165
-data_type="shard"  # shard/raw
-gpus="[0,1]"
 num_avg=1
 checkpoint=
 
+trials="CNC-Eval-Concat.lst CNC-Eval-Avg.lst"
 score_norm_method="asnorm"  # asnorm/snorm
 top_n=300
-trials="CNC-Eval-Concat.lst CNC-Eval-Avg.lst"
-
-data=data
 
 . tools/parse_options.sh || exit 1
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "Preparing datasets ..."
-  ./local/prepare_data.sh --data ${data} --stage 2 --stop_stage 4
+  ./local/prepare_data.sh --stage 2 --stop_stage 4 --data ${data}
 fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
@@ -83,8 +83,8 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
   echo "Score ..."
   local/score.sh \
     --stage 1 --stop-stage 2 \
-    --exp_dir $exp_dir \
     --data ${data} \
+    --exp_dir $exp_dir \
     --trials "$trials"
 fi
 
@@ -95,8 +95,8 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
     --score_norm_method $score_norm_method \
     --cohort_set cnceleb_train \
     --top_n $top_n \
-    --exp_dir $exp_dir \
     --data ${data} \
+    --exp_dir $exp_dir \
     --trials "$trials"
 fi
 

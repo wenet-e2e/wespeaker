@@ -52,8 +52,8 @@ margin_scheduler: MarginScheduler
 margin_update:
   initial_margin: 0.0
   final_margin: 0.2
-  increase_start_epoch: 19
-  fix_start_epoch: 19
+  increase_start_epoch: 20
+  fix_start_epoch: 20
   update_margin: True
   increase_type: "exp" # exp, linear
 

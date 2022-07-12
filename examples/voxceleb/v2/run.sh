@@ -8,18 +8,18 @@
 stage=-1
 stop_stage=-1
 
+data=data
+data_type="shard"  # shard/raw
+
+gpus="[0,1]"
 config=conf/resnet.yaml
 exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
-data_type="shard"  # shard/raw
-gpus="[0,1]"
 num_avg=10
 checkpoint=
 
+trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
 score_norm_method="asnorm"  # asnorm/snorm
 top_n=300
-trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
-
-data=data
 
 . tools/parse_options.sh || exit 1
 
@@ -83,9 +83,9 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
   echo "Score ..."
   local/score.sh \
     --stage 1 --stop-stage 2 \
+    --data ${data} \
     --exp_dir $exp_dir \
-    --trials "$trials" \
-    --data ${data}
+    --trials "$trials"
 fi
 
 if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
@@ -95,9 +95,9 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
     --score_norm_method $score_norm_method \
     --cohort_set vox2_dev \
     --top_n $top_n \
+    --data ${data} \
     --exp_dir $exp_dir \
-    --trials "$trials" \
-    --data ${data}
+    --trials "$trials"
 fi
 
 if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
