@@ -272,23 +272,16 @@ def get_random_chunk(data, chunk_len):
     return data
 
 
-def random_chunk(data, data_type='shard/raw/feat', num_frms=200):
-    """ Random chunk the data into `num_frms` frames
+def random_chunk(data, chunk_len, data_type='shard/raw/feat'):
+    """ Random chunk the data into chunk_len
 
         Args:
             data: Iterable[{key, wav/feat, label, sample_rate}]
-            num_frms: num of frames for each training sample
+            chunk_len: chunk length for each sample
 
         Returns:
             Iterable[{key, wav/feat, label, sample_rate}]
     """
-    # Note(Binbin Zhang): We assume the sample rate is 16000,
-    #                     frame shift 10ms, frame length 25ms
-    if data_type == 'feat':
-        chunk_len = num_frms
-    else:
-        chunk_len = (num_frms - 1) * 160 + 400
-
     for sample in data:
         assert 'key' in sample
 
@@ -320,9 +313,9 @@ def add_reverb_noise(data, reverb_source, noise_source, aug_prob):
         assert 'wav' in sample
         assert 'key' in sample
         if aug_prob > random.random():
-            augtype = random.randint(1, 2)
-            if augtype == 1:
-                # add reverb
+            aug_type = random.randint(1, 2)
+            if aug_type == 1:
+                # add reverberation
                 audio = sample['wav'].numpy()[0]
                 audio_len = audio.shape[0]
 
@@ -332,8 +325,8 @@ def add_reverb_noise(data, reverb_source, noise_source, aug_prob):
                 rir_audio = rir_audio / np.sqrt(np.sum(rir_audio**2))
                 out_audio = signal.convolve(audio, rir_audio,
                                             mode='full')[:audio_len]
-            elif augtype == 2:
-                # add noise
+            else:
+                # add additive noise
                 audio = sample['wav'].numpy()[0]
                 audio_len = audio.shape[0]
                 audio_db = 10 * np.log10(np.mean(audio**2) + 1e-4)

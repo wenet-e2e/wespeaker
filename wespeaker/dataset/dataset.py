@@ -163,10 +163,8 @@ def Dataset(data_type,
     if data_type == 'feat':
         if not whole_utt:
             # random chunk
-            num_frms = configs.get('num_frms', 200)
-            dataset = Processor(dataset, processor.random_chunk, 'feat', num_frms)
-        # apply cmvn
-        dataset = Processor(dataset, processor.apply_cmvn)
+            chunk_len = num_frms = configs.get('num_frms', 200)
+            dataset = Processor(dataset, processor.random_chunk, chunk_len, 'feat')
     else:
         # speed perturb
         speed_perturb_flag = configs.get('speed_perturb', True)
@@ -175,7 +173,10 @@ def Dataset(data_type,
         if not whole_utt:
             # random chunk
             num_frms = configs.get('num_frms', 200)
-            dataset = Processor(dataset, processor.random_chunk, data_type, num_frms)
+            # Note: We assume the sample rate is 16000,
+            #       frame shift 10ms, frame length 25ms
+            chunk_len = (num_frms - 1) * 160 + 400
+            dataset = Processor(dataset, processor.random_chunk, chunk_len, data_type)
         # add reverb & noise
         if reverb_lmdb_file and noise_lmdb_file:
             reverb_data = LmdbData(reverb_lmdb_file)
@@ -184,8 +185,9 @@ def Dataset(data_type,
                                 noise_data, configs['aug_prob'])
         # compute fbank
         dataset = Processor(dataset, processor.compute_fbank, **configs['fbank_args'])
-        # apply cmvn
-        dataset = Processor(dataset, processor.apply_cmvn)
+
+    # apply cmvn
+    dataset = Processor(dataset, processor.apply_cmvn)
 
     # spec augmentation
     spec_aug_flag = configs.get('spec_aug', True)
