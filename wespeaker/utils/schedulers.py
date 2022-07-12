@@ -128,7 +128,8 @@ class BaseClass:
             if self.warm_from_zero:
                 lr_coeff = self.scale_ratio * self.current_iter / self.warm_up_iter
             elif self.scale_ratio > 1:
-                lr_coeff = (self.scale_ratio - 1) * self.current_iter / self.warm_up_iter + 1.0
+                lr_coeff = (self.scale_ratio - 1) *
+                            self.current_iter / self.warm_up_iter + 1.0
 
         return lr_coeff
 
