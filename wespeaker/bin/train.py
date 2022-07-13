@@ -107,11 +107,9 @@ def train(config='conf/config.yaml', **kwargs):
     else:
         logger.info('Train model from scratch...')
     # projection layer
-    configs['projection_args']['embed_dim'] = configs['model_args'][
-        'embed_dim']
+    configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
     configs['projection_args']['num_class'] = len(spk2id_dict)
-    if configs['data_type'] != 'feat' and configs['dataset_args'][
-            'speed_perturb']:
+    if configs['data_type'] != 'feat' and configs['dataset_args']['speed_perturb']:
         # diff speed is regarded as diff spk
         configs['projection_args']['num_class'] *= 3
     projection = get_projection(configs['projection_args'])

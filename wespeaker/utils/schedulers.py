@@ -35,8 +35,8 @@ class MarginScheduler:
         after fix_start_epoch, the margin is fixed as final_margin.
         '''
         self.model = model
-        self.increase_start_iter = increase_start_epoch * epoch_iter
-        self.fix_start_iter = fix_start_epoch * epoch_iter
+        self.increase_start_iter = (increase_start_epoch - 1) * epoch_iter
+        self.fix_start_iter = (fix_start_epoch - 1) * epoch_iter
         self.initial_margin = initial_margin
         self.final_margin = final_margin
         self.increase_type = increase_type
@@ -106,7 +106,7 @@ class BaseClass:
                  initial_lr,
                  final_lr,
                  warm_up_epoch=6,
-                 scale_ratio=1,
+                 scale_ratio=1.0,
                  warm_from_zero=False):
         '''
         warm_up_epoch: the first warm_up_epoch is the multiprocess warm-up stage
@@ -128,8 +128,8 @@ class BaseClass:
             if self.warm_from_zero:
                 lr_coeff = self.scale_ratio * self.current_iter / self.warm_up_iter
             elif self.scale_ratio > 1:
-                lr_coeff = float(self.current_iter) * (
-                    self.scale_ratio - 1) / self.warm_up_iter + 1.0
+                lr_coeff = (self.scale_ratio -
+                            1) * self.current_iter / self.warm_up_iter + 1.0
 
         return lr_coeff
 
@@ -173,7 +173,7 @@ class ExponentialDecrease(BaseClass):
                  initial_lr,
                  final_lr,
                  warm_up_epoch=6,
-                 scale_ratio=1,
+                 scale_ratio=1.0,
                  warm_from_zero=False):
         super().__init__(optimizer, num_epochs, epoch_iter, initial_lr,
                          final_lr, warm_up_epoch, scale_ratio, warm_from_zero)
@@ -198,7 +198,7 @@ class TriAngular2(BaseClass):
                  initial_lr,
                  final_lr,
                  warm_up_epoch=6,
-                 scale_ratio=1,
+                 scale_ratio=1.0,
                  cycle_step=2,
                  reduce_lr_diff_ratio=0.5):
         super().__init__(optimizer, num_epochs, epoch_iter, initial_lr,
