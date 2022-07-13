@@ -22,7 +22,7 @@ score_norm_method="asnorm"  # asnorm/snorm
 top_n=300
 trials="CNC-Eval-Concat.lst CNC-Eval-Avg.lst"
 
-# setup for large margin finetuning
+# setup for large margin fine-tuning
 do_lm=0
 lm_config=conf/resnet_lm.yaml
 lm_stage=3
@@ -59,7 +59,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
 fi
 
 # stage 3 to stage 7, model training and inference
-bash local/train_infer.sh --stage ${stage} \
+bash local/train_eval.sh --stage ${stage} \
                 --stop_stage ${stop_stage} \
                 --data ${data} \
                 --data_type ${data_type} \
@@ -73,9 +73,9 @@ bash local/train_infer.sh --stage ${stage} \
                 --trials ${trials}
 
 
-# ================== Large margin finetuning ==================
+# ================== Large margin fine-tuning ==================
 # for reference: https://arxiv.org/abs/2206.11699
-# It shoule be noted that the large margin finetuning
+# It shoule be noted that the large margin fine-tuning
 # is optional. It often be used in speaker verification
 # challenge to further improve performance. This training
 # proces will take longer segment as input and will take
@@ -92,7 +92,7 @@ mkdir -p ${lm_model_dir}
 cp $exp_dir/models/avg_model.pt ${lm_model_dir}/model_0.pt
 
 # stage 3 to stage 7, model training and inference
-bash local/train_infer.sh --stage ${lm_stage} \
+bash local/train_eval.sh --stage ${lm_stage} \
                 --stop_stage ${lm_stop_stage} \
                 --data ${data} \
                 --data_type ${data_type} \
