@@ -13,7 +13,7 @@ data=data
 data_type="shard"  # shard/raw
 
 config=conf/resnet.yaml
-exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch165
+exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
 gpus="[0,1]"
 num_avg=10
 checkpoint=
@@ -27,7 +27,7 @@ do_lm=0
 lm_config=conf/resnet_lm.yaml
 lm_stage=3
 lm_stop_stage=7
-lm_exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch165_LM
+lm_exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150_LM
 lm_num_avg=1
 
 . tools/parse_options.sh || exit 1
@@ -78,7 +78,7 @@ bash local/train_infer.sh --stage ${stage} \
 # It shoule be noted that the large margin finetuning
 # is optional. It often be used in speaker verification
 # challenge to further improve performance. This training
-# proces will take longer segment as input and will take 
+# proces will take longer segment as input and will take
 # up more gpu memory.
 
 
