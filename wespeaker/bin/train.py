@@ -112,6 +112,8 @@ def train(config='conf/config.yaml', **kwargs):
     if configs['data_type'] != 'feat' and configs['dataset_args']['speed_perturb']:
         # diff speed is regarded as diff spk
         configs['projection_args']['num_class'] *= 3
+        if 'do_LM' in configs and configs['do_LM']:
+            configs['dataset_args']['speed_perturb'] = False
     projection = get_projection(configs['projection_args'])
     model.add_module("projection", projection)
     if rank == 0:

@@ -1,4 +1,5 @@
 # Copyright (c) 2021 Shuai Wang (wsstriving@gmail.com)
+#               2022 Zhengyang Chen (chenzhengyang117@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -224,6 +225,22 @@ def ResNet101(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
 
 def ResNet152(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
     return ResNet(Bottleneck, [3, 8, 36, 3],
+                  feat_dim=feat_dim,
+                  embed_dim=embed_dim,
+                  pooling_func=pooling_func,
+                  two_emb_layer=two_emb_layer)
+
+
+def ResNet221(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
+    return ResNet(Bottleneck, [6, 16, 48, 3],
+                  feat_dim=feat_dim,
+                  embed_dim=embed_dim,
+                  pooling_func=pooling_func,
+                  two_emb_layer=two_emb_layer)
+
+
+def ResNet293(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
+    return ResNet(Bottleneck, [10, 20, 64, 3],
                   feat_dim=feat_dim,
                   embed_dim=embed_dim,
                   pooling_func=pooling_func,
