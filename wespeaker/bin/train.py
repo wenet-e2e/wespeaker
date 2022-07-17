@@ -104,15 +104,16 @@ def train(config='conf/config.yaml', **kwargs):
     if configs['model_init'] is not None:
         logger.info('Load initial model from {}'.format(configs['model_init']))
         load_checkpoint(model, configs['model_init'])
-    else:
-        logger.info('Train model from scratch...')
+    elif checkpoint is None:
+        logger.info('Train model from scratch ...')
     # projection layer
     configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
     configs['projection_args']['num_class'] = len(spk2id_dict)
     if configs['data_type'] != 'feat' and configs['dataset_args']['speed_perturb']:
         # diff speed is regarded as diff spk
         configs['projection_args']['num_class'] *= 3
-        if 'do_LM' in configs and configs['do_LM']:
+        if configs.get('do_lm', False):
+            logger.info('No speed perturb while doing large margin fine-tuning')
             configs['dataset_args']['speed_perturb'] = False
     projection = get_projection(configs['projection_args'])
     model.add_module("projection", projection)
@@ -131,7 +132,7 @@ def train(config='conf/config.yaml', **kwargs):
         load_checkpoint(model, checkpoint)
         start_epoch = int(re.findall(r"(?<=model_)\d*(?=.pt)",
                                      checkpoint)[0]) + 1
-        logger.info('checkpoint: {}'.format(checkpoint))
+        logger.info('Load checkpoint: {}'.format(checkpoint))
     else:
         start_epoch = 1
     logger.info('start_epoch: {}'.format(start_epoch))

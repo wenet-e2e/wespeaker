@@ -2,6 +2,7 @@
 
 # Copyright 2012  Johns Hopkins University (Author: Daniel Povey);
 #                 Arnab Ghoshal, Karel Vesely
+#           2022  Hongji Wang (jijijiang77@gmail.com)
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,17 +25,17 @@
 # $help_message variable (if defined).
 
 ###
-### The --config file options have lower priority to command line
+### The --conf file options have lower priority to command line
 ### options, so we need to import them first...
 ###
 
-# Now import all the configs specified by command-line, in left-to-right order
+# Now import all the confs specified by command-line, in left-to-right order
 for ((argpos = 1; argpos < $#; argpos++)); do
-  if [ "${!argpos}" == "--config" ]; then
+  if [ "${!argpos}" == "--conf" ]; then
     argpos_plus1=$((argpos + 1))
-    config=${!argpos_plus1}
-    [ ! -r $config ] && echo "$0: missing config '$config'" && exit 1
-    . $config # source the config file.
+    conf=${!argpos_plus1}
+    [ ! -r $conf ] && echo "$0: missing conf '$conf'" && exit 1
+    . $conf # source the conf file.
   fi
 done
 

@@ -21,7 +21,10 @@ trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
 score_norm_method="asnorm"  # asnorm/snorm
 top_n=300
 
-. tools/parse_options.sh || exit 1
+# setup for large margin fine-tuning
+lm_config=conf/resnet_lm.yaml
+
+. tools/parse_options.sh || exit 1;
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "Prepare datasets ..."
@@ -106,4 +109,22 @@ if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
     --config $exp_dir/config.yaml \
     --checkpoint $exp_dir/models/avg_model.pt \
     --output_file $exp_dir/models/final.zip
+fi
+
+if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
+  echo "Large margin fine-tuning ..."
+  lm_exp_dir=${exp_dir}-LM
+  mkdir -p ${lm_exp_dir}/models
+  cp ${exp_dir}/models/avg_model.pt ${lm_exp_dir}/models/model_0.pt
+  bash run.sh --stage 3 --stop_stage 7 \
+      --data ${data} \
+      --data_type ${data_type} \
+      --gpus $gpus \
+      --config ${lm_config} \
+      --exp_dir ${lm_exp_dir} \
+      --num_avg 1 \
+      --checkpoint ${lm_exp_dir}/models/model_0.pt \
+      --trials "$trials" \
+      --score_norm_method ${score_norm_method} \
+      --top_n ${top_n}
 fi
