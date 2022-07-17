@@ -1,7 +1,9 @@
 #!/bin/bash
 # split the wav scp, calculate duration and merge
+
 nj=4
-. tools/parse_options.sh || exit 1;
+
+. tools/parse_options.sh || exit 1
 
 inscp=$1
 outscp=$2

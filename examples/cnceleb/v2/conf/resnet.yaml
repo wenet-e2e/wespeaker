@@ -1,8 +1,8 @@
 ### train configuraton
 
-exp_dir: "exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch165"
+exp_dir: exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
 gpus: "[0,1]"
-num_avg: 1
+num_avg: 10
 
 seed: 42
 num_epochs: 150
