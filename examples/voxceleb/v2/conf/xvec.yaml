@@ -57,7 +57,7 @@ margin_update:
   increase_type: 'exp'  # exp, linear
 
 loss: CrossEntropyLoss
-loss_args: { }
+loss_args: {}
 
 optimizer: SGD
 optimizer_args:

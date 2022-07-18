@@ -3,7 +3,7 @@
 # Copyright 2022 Hongji Wang (jijijiang77@gmail.com)
 #           2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
 
-. ./path.sh || exit 1;
+. ./path.sh || exit 1
 
 stage=-1
 stop_stage=-1
@@ -11,15 +11,18 @@ stop_stage=-1
 data=data
 data_type="shard"  # shard/raw
 
-gpus="[0,1]"
 config=conf/resnet.yaml
 exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
+gpus="[0,1]"
 num_avg=10
 checkpoint=
 
 trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
 score_norm_method="asnorm"  # asnorm/snorm
 top_n=300
+
+# setup for large margin fine-tuning
+lm_config=conf/resnet_lm.yaml
 
 . tools/parse_options.sh || exit 1
 
@@ -106,4 +109,23 @@ if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
     --config $exp_dir/config.yaml \
     --checkpoint $exp_dir/models/avg_model.pt \
     --output_file $exp_dir/models/final.zip
+fi
+
+if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
+  echo "Large margin fine-tuning ..."
+  lm_exp_dir=${exp_dir}-LM
+  mkdir -p ${lm_exp_dir}/models
+  # Use the pre-trained average model to initialize the LM training
+  cp ${exp_dir}/models/avg_model.pt ${lm_exp_dir}/models/model_0.pt
+  bash run.sh --stage 3 --stop_stage 7 \
+      --data ${data} \
+      --data_type ${data_type} \
+      --config ${lm_config} \
+      --exp_dir ${lm_exp_dir} \
+      --gpus $gpus \
+      --num_avg 1 \
+      --checkpoint ${lm_exp_dir}/models/model_0.pt \
+      --trials "$trials" \
+      --score_norm_method ${score_norm_method} \
+      --top_n ${top_n}
 fi
