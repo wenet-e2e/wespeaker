@@ -189,12 +189,13 @@ class ECAPA_TDNN(nn.Module):
                                    scale=8)
 
         cat_channels = channels * 3
-        self.conv = nn.Conv1d(cat_channels, cat_channels, kernel_size=1)
+        out_channels = 512 * 3
+        self.conv = nn.Conv1d(cat_channels, out_channels, kernel_size=1)
         self.n_stats = 1 if pooling_func == 'TAP' or pooling_func == "TSDP" else 2
         self.pool = getattr(pooling_layers, pooling_func)(
-            in_dim=cat_channels, global_context_att=global_context_att)
-        self.bn = nn.BatchNorm1d(cat_channels * self.n_stats)
-        self.linear = nn.Linear(cat_channels * self.n_stats, embed_dim)
+            in_dim=out_channels, global_context_att=global_context_att)
+        self.bn = nn.BatchNorm1d(out_channels * self.n_stats)
+        self.linear = nn.Linear(out_channels * self.n_stats, embed_dim)
 
     def forward(self, x):
         x = x.permute(0, 2, 1)  # (B,T,F) -> (B,F,T)
