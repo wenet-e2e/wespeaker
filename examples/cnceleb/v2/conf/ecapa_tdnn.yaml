@@ -41,9 +41,9 @@ model_init: null
 model_args:
   feat_dim: 80
   embed_dim: 192
-  pooling_func: 'ASTP'
+  pooling_func: "ASTP"
 projection_args:
-  project_type: 'arc_margin' # add_margin, arc_margin, sphere, softmax
+  project_type: "arc_margin" # add_margin, arc_margin, sphere, softmax
   scale: 32.0
   easy_margin: False
 
@@ -54,7 +54,7 @@ margin_update:
   increase_start_epoch: 20
   fix_start_epoch: 40
   update_margin: True
-  increase_type: 'exp'  # exp, linear
+  increase_type: "exp" # exp, linear
 
 loss: CrossEntropyLoss
 loss_args: {}
@@ -70,3 +70,4 @@ scheduler_args:
   initial_lr: 0.1
   final_lr: 0.00005
   warm_up_epoch: 6
+  warm_from_zero: True
