@@ -1,6 +1,6 @@
-# Pretrained Models in Wespeaker 
+# Pretrained Models in Wespeaker
 
-Except speaker related tasks, speaker embeddings can be utilized for many related tasks which requires speaker modeling, such as
+Besides speaker related tasks, speaker embeddings can be utilized for many related tasks which requires speaker modeling, such as
 
 - voice conversion
 - text-to-speech
@@ -35,7 +35,7 @@ You can easily adapt `infer_onnx.py` to your application, a speaker diarization 
 
 ## Model List
 
-| Datasets  | Languages     |  Checkpoint (pt) | Runtime Model (onnx)     | 
+| Datasets  | Languages     |  Checkpoint (pt) | Runtime Model (onnx)     |
 |---    |---    |---   |---   |
-| [VoxCeleb](../examples/voxceleb/v2/README.md)   | EN    | [ResNet34_LM](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34_LM.pt)| [ResNet34_LM](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34_LM.onnx )  | 
+| [VoxCeleb](../examples/voxceleb/v2/README.md)   | EN    | [ResNet34_LM](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34_LM.pt)| [ResNet34_LM](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34_LM.onnx )  |
 | [CNCeleb](../examples/cnceleb/v2/README.md)   | CN    | [ResNet34_LM](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/cnceleb_resnet34_LM.pt )  | [ResNet34_LM](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/cnceleb_resnet34_LM.onnx ) |

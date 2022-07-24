@@ -267,11 +267,13 @@ def main():
                                                        args.batch_size)
     print('Embedding extraction finished')
     print('Start Clustering')
-
-    with concurrent.futures.ProcessPoolExecutor() as executor, open(args.output, 'w') as f:
-        for (subsegs, labels) in zip(subsegs_list,
+    
+    with open(args.output, 'w') as f:
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            for (subsegs, labels) in zip(subsegs_list,
                                      executor.map(cluster, embeddings_list)):
-            [print(subseg, label, file=f) for (subseg, label) in zip(subsegs, labels)]
+                [print(subseg, label, file=f) for 
+                                    (subseg, label) in zip(subsegs, labels)]
 
 
 if __name__ == '__main__':
