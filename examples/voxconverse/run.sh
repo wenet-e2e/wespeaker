@@ -35,7 +35,7 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     # [3] Download ResNet34 speaker model pretrained by WeSpeaker Team
     mkdir -p pretrained_models
 
-    wget -c https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34.onnx -O pretrained_models/voxceleb_resnet34.onnx
+    wget -c https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34_LM.onnx -O pretrained_models/voxceleb_resnet34_LM.onnx
 fi
 
 
@@ -91,8 +91,9 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
     python3 diar/clusterer.py \
             --scp data/dev/wav.scp \
             --segments data/dev/${sad_type}_sad \
-            --source pretrained_models/voxceleb_resnet34.onnx \
-            --device cuda > data/dev/${sad_type}_sad_labels
+            --source pretrained_models/voxceleb_resnet34_LM.onnx \
+            --device cuda \
+            --output data/dev/${sad_type}_sad_labels
 fi
 
 
