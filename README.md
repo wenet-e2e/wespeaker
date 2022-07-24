@@ -4,8 +4,9 @@
 [![Python-Version](https://img.shields.io/badge/Python-3.8%7C3.9-brightgreen)](https://github.com/wenet-e2e/wespeaker)
 
 [**Roadmap**](ROADMAP.md)
-| [**Awesome Papers**](speaker_recognition_papers.md)
+| [**Awesome Papers**](docs/speaker_recognition_papers.md)
 | [**Runtime (x86_gpu)**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/server/x86_gpu)
+| [**Pretrained Models**](docs/pretrained.md)
 
 
 WeSpeaker mainly focuses on speaker embedding learning, with application to the speaker verification task. We support
@@ -29,7 +30,7 @@ pip install -r requirements.txt
 ## Recipes
 
 * [VoxCeleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxceleb/v2): Speaker Verification recipe on the [VoxCeleb dataset](https://www.robots.ox.ac.uk/~vgg/data/voxceleb/)
-    * 🔥 UPDATE 2022.7.19: We apply the same setups as below, and obtain SOTA performance considering the open-source systems
+    * 🔥 UPDATE 2022.7.19: We apply the same setups as the CNCeleb recipe, and obtain SOTA performance considering the open-source systems
 * [CNCeleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/cnceleb/v2): Speaker Verification recipe on the [CnCeleb dataset](http://cnceleb.org/)
     * 🔥 UPDATE 2022.7.12: We are migrating the winner system of CNSRC 2022 [report](https://aishell-cnsrc.oss-cn-hangzhou.aliyuncs.com/T082.pdf) [slides](https://aishell-cnsrc.oss-cn-hangzhou.aliyuncs.com/T082-ZhengyangChen.pdf)
     * 🔥 EER/mindcf reduction from 8.426%/0.487 to **6.492%/0.354** after large margin fine-tuning and AS-Norm

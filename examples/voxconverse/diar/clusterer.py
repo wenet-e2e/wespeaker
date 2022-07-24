@@ -16,10 +16,11 @@
 import os
 import argparse
 from collections import OrderedDict
-import concurrent.futures
+import concurrent.futures as cf
 
 import numpy as np
 import scipy.linalg
+from tqdm import tqdm
 
 from sklearn.cluster._kmeans import k_means
 
@@ -34,6 +35,7 @@ def get_args():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('--scp', required=True, help='wav scp')
     parser.add_argument('--segments', required=True, help='vad segments')
+    parser.add_argument('--output', required=True, help='output label file')
     parser.add_argument('--source', required=True,
                         help='onnx model')
     parser.add_argument('--device', default='cuda',
@@ -160,8 +162,8 @@ def compute_embeddings(scp, segments, source, device,
         for i in range(0, wavs.size(0), batch_size):
             batch_wavs = wavs[i: i + batch_size, :]
             batch_feats = compute_fbank(batch_wavs)
-            batch_embs = session.run(input_feed={'x': batch_feats.numpy()},
-                                     output_names=['embed_b'])[0].squeeze()
+            batch_embs = session.run(input_feed={'feats': batch_feats.numpy()},
+                                     output_names=['embs'])[0].squeeze()
 
             embeddings.append(batch_embs)
         embeddings = np.vstack(embeddings)
@@ -180,7 +182,7 @@ def compute_embeddings(scp, segments, source, device,
     # encoder = init_encoder(source, device)
     session = init_session(source, device)
 
-    for utt in utt_to_wav.keys():
+    for utt in tqdm(utt_to_wav.keys()):
         # Per utterance processing
         wav = utt_to_wav[utt]
         segments = utt_to_segments[utt]
@@ -257,16 +259,19 @@ def cluster(embeddings, p=.05, num_spks=None, min_num_spks=1, max_num_spks=10):
 def main():
     args = get_args()
 
+    print('Segmenting and extracting speaker embeddings')
     subsegs_list, embeddings_list = compute_embeddings(args.scp,
                                                        args.segments,
                                                        args.source,
                                                        args.device,
                                                        args.batch_size)
+    print('Embedding extraction finished')
+    print('Start Clustering')
 
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with cf.ProcessPoolExecutor() as executor, open(args.output, 'w') as f:
         for (subsegs, labels) in zip(subsegs_list,
                                      executor.map(cluster, embeddings_list)):
-            [print(subseg, label) for (subseg, label) in zip(subsegs, labels)]
+            [print(subseg, label, file=f) for (subseg, label) in zip(subsegs, labels)]
 
 
 if __name__ == '__main__':
