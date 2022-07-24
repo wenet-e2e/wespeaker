@@ -16,7 +16,7 @@
 import os
 import argparse
 from collections import OrderedDict
-import concurrent.futures
+import concurrent.futures as cf
 
 import numpy as np
 import scipy.linalg
@@ -267,13 +267,11 @@ def main():
                                                        args.batch_size)
     print('Embedding extraction finished')
     print('Start Clustering')
-    
-    with open(args.output, 'w') as f:
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            for (subsegs, labels) in zip(subsegs_list,
+
+    with cf.ProcessPoolExecutor() as executor, open(args.output, 'w') as f:
+        for (subsegs, labels) in zip(subsegs_list,
                                      executor.map(cluster, embeddings_list)):
-                [print(subseg, label, file=f) for 
-                                    (subseg, label) in zip(subsegs, labels)]
+            [print(subseg, label, file=f) for (subseg, label) in zip(subsegs, labels)]
 
 
 if __name__ == '__main__':
