@@ -31,9 +31,10 @@ pip install -r requirements.txt
 
 * [VoxCeleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxceleb/v2): Speaker Verification recipe on the [VoxCeleb dataset](https://www.robots.ox.ac.uk/~vgg/data/voxceleb/)
     * 🔥 UPDATE 2022.7.19: We apply the same setups as the CNCeleb recipe, and obtain SOTA performance considering the open-source systems
+    * 🔥 EER/minDCF on vox1-O-clean test set are **0.723%/0.069** (ResNet34) and **0.728%/0.099** (ECAPA_TDNN_GLOB_c1024), after LM fine-tuning and AS-Norm
 * [CNCeleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/cnceleb/v2): Speaker Verification recipe on the [CnCeleb dataset](http://cnceleb.org/)
     * 🔥 UPDATE 2022.7.12: We are migrating the winner system of CNSRC 2022 [report](https://aishell-cnsrc.oss-cn-hangzhou.aliyuncs.com/T082.pdf) [slides](https://aishell-cnsrc.oss-cn-hangzhou.aliyuncs.com/T082-ZhengyangChen.pdf)
-    * 🔥 EER/mindcf reduction from 8.426%/0.487 to **6.492%/0.354** after large margin fine-tuning and AS-Norm
+    * 🔥 EER/minDCF reduction from 8.426%/0.487 to **6.492%/0.354** after large margin fine-tuning and AS-Norm
 * [VoxConverse](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxconverse): 🔥 UPDATE 2022.7.2:  Diarization recipe on the [VoxConverse dataset](https://www.robots.ox.ac.uk/~vgg/data/voxconverse/)
 
 ## Support List:
