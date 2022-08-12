@@ -15,7 +15,7 @@
 # limitations under the License.
 
 exp_dir=
-trials="CNC-Eval-Core.lst"
+trials="CNC-Eval-Concat.lst CNC-Eval-Avg.lst"
 data=data
 
 stage=-1
