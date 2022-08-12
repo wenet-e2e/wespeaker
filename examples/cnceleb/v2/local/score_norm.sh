@@ -18,7 +18,7 @@ score_norm_method="asnorm"  # asnorm/snorm
 cohort_set=cnceleb_train
 top_n=100
 exp_dir=
-trials="CNC-Eval-Core.lst"
+trials="CNC-Eval-Concat.lst CNC-Eval-Avg.lst"
 data=data
 
 stage=-1
