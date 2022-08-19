@@ -14,8 +14,8 @@
 # limitations under the License.
 
 
-stage=1
-stop_stage=100
+stage=-1
+stop_stage=-1
 sad_type="system"
 
 . ../../tools/parse_options.sh
@@ -53,7 +53,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     unzip -o data/voxconverse_dev_wav.zip -d data/dev
 
     # Create wav.scp for dev audios
-ls `pwd`/data/dev/audio/*.wav | awk -F/ '{print substr($NF, 1, length($NF)-4), $0}' > data/dev/wav.scp
+    ls `pwd`/data/dev/audio/*.wav | awk -F/ '{print substr($NF, 1, length($NF)-4), $0}' > data/dev/wav.scp
 
     # Test audios
     # mkdir -p data/test
