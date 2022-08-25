@@ -128,16 +128,12 @@ def compute_embeddings(scp, segments, source, device,
                                frame_length=frame_length,
                                frame_shift=frame_shift,
                                dither=dither,
-                               energy_floor=0.0,
                                sample_frequency=sample_frequency,
                                window_type='hamming',
-                               htk_compat=True,
                                use_energy=False)
+            feat = feat - torch.mean(feat, dim=0)  # CMN
             feats.append(feat)
         feats = torch.stack(feats)
-
-        # Apply mean normalization
-        feats = feats - torch.mean(feats, dim=0)
 
         return feats
 

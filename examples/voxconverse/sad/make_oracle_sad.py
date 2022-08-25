@@ -58,7 +58,8 @@ def merge_segments(utt_to_segments, min_duration):
                 if b <= end:
                     end = max(end, e)
                 else:
-                    utt_to_merged_segments[utt].append((begin, end))
+                    if end - begin >= min_duration:
+                        utt_to_merged_segments[utt].append((begin, end))
                     begin, end = b, e
 
             if end - begin >= min_duration:
