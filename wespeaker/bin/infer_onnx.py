@@ -31,7 +31,7 @@ def compute_fbank(wav_path,
                   num_mel_bins=80,
                   frame_length=25,
                   frame_shift=10,
-                  dither=1.0):
+                  dither=0.0):
     """ Extract fbank, simlilar to the one in wespeaker.dataset.processor,
         While integrating the wave reading and CMN.
     """
