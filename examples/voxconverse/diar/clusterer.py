@@ -118,7 +118,7 @@ def compute_embeddings(scp, segments, source, device,
         return subsegs, subseg_signals
 
     def compute_fbank(wavs, num_mel_bins=80, frame_length=25,
-                      frame_shift=10, dither=1.0, sample_frequency=16000):
+                      frame_shift=10, dither=0.0, sample_frequency=16000):
 
         feats = []
         for wav in wavs:
