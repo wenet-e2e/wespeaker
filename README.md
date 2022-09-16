@@ -7,6 +7,7 @@
 | [**Awesome Papers**](docs/speaker_recognition_papers.md)
 | [**Runtime (x86_gpu)**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/server/x86_gpu)
 | [**Pretrained Models**](docs/pretrained.md)
+| [**Huggingface Demo**](https://huggingface.co/spaces/wenet/wespeaker_demo)
 
 
 WeSpeaker mainly focuses on speaker embedding learning, with application to the speaker verification task. We support
