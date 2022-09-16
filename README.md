@@ -7,6 +7,7 @@
 | [**Awesome Papers**](docs/speaker_recognition_papers.md)
 | [**Runtime (x86_gpu)**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/server/x86_gpu)
 | [**Pretrained Models**](docs/pretrained.md)
+| [**Huggingface Demo**](https://huggingface.co/spaces/wenet/wespeaker_demo)
 
 
 WeSpeaker mainly focuses on speaker embedding learning, with application to the speaker verification task. We support
@@ -36,9 +37,6 @@ pip install -r requirements.txt
     * 🔥 UPDATE 2022.7.12: We are migrating the winner system of CNSRC 2022 [report](https://aishell-cnsrc.oss-cn-hangzhou.aliyuncs.com/T082.pdf) [slides](https://aishell-cnsrc.oss-cn-hangzhou.aliyuncs.com/T082-ZhengyangChen.pdf)
     * 🔥 EER/minDCF reduction from 8.426%/0.487 to **6.492%/0.354** after large margin fine-tuning and AS-Norm
 * [VoxConverse](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxconverse): 🔥 UPDATE 2022.7.2:  Diarization recipe on the [VoxConverse dataset](https://www.robots.ox.ac.uk/~vgg/data/voxconverse/)
-
-## Demo
-* 🤗 UPDATE 2022.9.16: We have depolyed an interesting speaker verification demo on [HuggingFace](https://huggingface.co/spaces/wenet/wespeaker_demo). You can have a try!
 
 ## Support List:
 
