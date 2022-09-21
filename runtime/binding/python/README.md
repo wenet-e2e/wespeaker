@@ -37,6 +37,10 @@ You can also specify the following parameter in `wespeaker.Inference`
 - `lang` (str): `chs` for [cnceleb_model](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/cnceleb/cnceleb_resnet34_LM.onnx). `en` for [voxceleb model](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34_LM.onnx).
 - `inter_op_num_threads` and `intra_op_num_threads` (int): the number of threads during the model runing. For details, please see: https://onnxruntime.ai/docs/
 
+The parameters of `extract_embedding_wav`
+- `wav_path` (str): the path of wav
+- `resample_rate` (int): resampling rate. Default: 16000
+
 ### Extract embedding from wav.scp
 
 ``` python
@@ -46,6 +50,12 @@ wav_scp = sys.argv[1]
 inference = wespeaker.Inference(lang='chs')
 inference.extract_embedding(wav_scp, 'embed.ark')
 ```
+
+The parameters of `extract_embedding`
+- `wav_path` (str): the path of wav
+- `embed_ark` (str): the path of `$ouput`.ark
+- `resample_rate` (int): resampling rate. Default: 16000
+
 
 ## Build on Your Local Machine
 
