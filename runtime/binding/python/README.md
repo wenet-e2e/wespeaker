@@ -2,10 +2,10 @@
 
 This is a python binding of Wespeaker.
 
-Wespeaker is a production first and production ready end-to-end speaker verification toolkit.
+Wespeaker is a production first and production ready end-to-end speaker recognition toolkit.
 
 
-1. Two models are available: [voxceleb model](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34_LM.onnx), [cnceleb_model](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/cnceleb/cnceleb_resnet34_LM.onnx)
+1. Two onnx models are available: [voxceleb model](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34_LM.onnx), [cnceleb_model](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/cnceleb/cnceleb_resnet34_LM.onnx)
 2. Extract embedding from wav file or wav.scp.
 3. Support using `kaldiio` to save embedding.
 
@@ -19,7 +19,7 @@ pip3 install wespeakerruntime
 
 ## Usage
 
-### extract embedding from wav file
+### Extract embedding from wav file
 
 ``` python
 import sys
@@ -30,7 +30,14 @@ ans = inference.extract_embedding_wav(wav_file)
 print(ans)
 ```
 
-### extract embedding from wav.scp
+You can also specify the following parameter in `wespeaker.Inference`
+
+- `onnx_path` (str, optional): is the path of `onnx model`.
+  - Default: onnx model will be downloaded from the server.
+- `lang` (str): `chs` for [cnceleb_model](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/cnceleb/cnceleb_resnet34_LM.onnx). `en` for [voxceleb model](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34_LM.onnx).
+- `inter_op_num_threads` and `intra_op_num_threads` (int): the number of threads during the model runing. For details, please see: https://onnxruntime.ai/docs/
+
+### Extract embedding from wav.scp
 
 ``` python
 import sys
