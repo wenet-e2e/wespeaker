@@ -101,6 +101,9 @@ def train(config='conf/config.yaml', **kwargs):
     # model
     logger.info("<== Model ==>")
     model = get_speaker_model(configs['model'])(**configs['model_args'])
+    num_params = sum(param.numel() for param in model.parameters())
+    if rank == 0:
+        logger.info('speaker_model size: {}'.format(num_params))
     if configs['model_init'] is not None:
         logger.info('Load initial model from {}'.format(configs['model_init']))
         load_checkpoint(model, configs['model_init'])
