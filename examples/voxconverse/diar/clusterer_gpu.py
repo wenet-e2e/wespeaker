@@ -118,7 +118,7 @@ def main():
 
 
 if __name__ == '__main__':
-    # You can use the test_time() function 
+    # You can use the test_time() function
     # to calculate the GPU vs CPU clustering speed
     os.environ["OMP_NUM_THREADS"] = "1"
     os.environ["OPENBLAS_NUM_THREADS"] = "1"
