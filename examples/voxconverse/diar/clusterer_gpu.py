@@ -16,7 +16,7 @@ import cupy as cp
 from cuml.cluster import KMeans as cuKM
 import numpy as np
 from timeit import default_timer as timer
-from clusterer import get_args, compute_embeddings, cluster
+from clusterer import get_args, compute_embeddings
 import scipy
 import torch
 
@@ -83,7 +83,7 @@ def test_time():
         for _ in range(count):
             l = cluster_gpu(x)
         return l
-    
+
     for c in [1, 10, 100, 1000, 10000]:
         print(c)
         data = cp.asarray(a)
@@ -113,13 +113,13 @@ def main():
     with open(args.output, 'w') as f:
         for i in embeddings_list:
             labels_list.append(cluster_gpu(cp.asarray(i)))
-        for (subsegs, labels) in zip(subsegs_list,labels_list):
+        for (subsegs, labels) in zip(subsegs_list, labels_list):
             [print(subseg, label, file=f) for (subseg, label) in zip(subsegs, labels)]
 
 
 if __name__ == '__main__':
-    # You can use the following function to calculate the GPU vs CPU clustering speed
-    #test_time()
+    # You can use the test_time() function 
+    # to calculate the GPU vs CPU clustering speed
     os.environ["OMP_NUM_THREADS"] = "1"
     os.environ["OPENBLAS_NUM_THREADS"] = "1"
     os.environ["MKL_NUM_THREADS"] = "1"
@@ -129,4 +129,3 @@ if __name__ == '__main__':
     scipy.random.seed(1)
 
     main()
-
