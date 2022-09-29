@@ -47,7 +47,7 @@ def cluster_gpu(embeddings, p=.01, num_spks=None, min_num_spks=1, max_num_spks=2
     def spectral(M, num_spks, min_num_spks, max_num_spks):
         eig_values, eig_vectors = cp.linalg.eigh(M)
         num_spks = num_spks if num_spks is not None \
-            else cp.argmax(cp.diff(eig_values[:max_num_spks+1])) + 1
+            else cp.argmax(cp.diff(eig_values[:max_num_spks + 1])) + 1
         num_spks = max(num_spks, min_num_spks)
         return eig_vectors[:, :num_spks]
 

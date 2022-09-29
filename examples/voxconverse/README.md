@@ -24,5 +24,5 @@
 * You can use diar/clusterer\_gpu.py to run GPU Clustering
 * We use [cupy](https://cupy.dev/) and [cuML](https://docs.rapids.ai/api/cuml/stable/api.html#k-means-clustering) to accelarate the clustering speed
 * You have to install the above toolkits before inference
-* Similar performances can be obtained from our experiments but can achieved ~3X speech up
+* Similar performances can be obtained from our experiments but with ~3X speech up
 * Try the test function in diar/clusterer\_gpu.py to have more details

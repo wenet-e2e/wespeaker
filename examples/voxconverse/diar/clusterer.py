@@ -226,7 +226,7 @@ def cluster(embeddings, p=.01, num_spks=None, min_num_spks=1, max_num_spks=20):
     def spectral(M, num_spks, min_num_spks, max_num_spks):
         eig_values, eig_vectors = scipy.linalg.eigh(M)
         num_spks = num_spks if num_spks is not None \
-            else np.argmax(np.diff(eig_values[:max_num_spks+1])) + 1
+            else np.argmax(np.diff(eig_values[:max_num_spks + 1])) + 1
         num_spks = max(num_spks, min_num_spks)
         return eig_vectors[:, :num_spks]
 
