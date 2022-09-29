@@ -199,7 +199,7 @@ def compute_embeddings(scp, segments, source, device,
     return subsegs_list, embeddings_list
 
 
-def cluster(embeddings, p=.05, num_spks=None, min_num_spks=1, max_num_spks=10):
+def cluster(embeddings, p=.01, num_spks=None, min_num_spks=1, max_num_spks=20):
     # Define utility functions
     def cosine_similarity(M):
         M = M / np.linalg.norm(M, axis=1, keepdims=True)
@@ -207,7 +207,10 @@ def cluster(embeddings, p=.05, num_spks=None, min_num_spks=1, max_num_spks=10):
 
     def prune(M, p):
         m = M.shape[0]
-        n = int((1.0 - p) * m)
+        if m < 1000:
+            n = max(m - 10, 2)
+        else:
+            n = int((1.0 - p) * m)
         for i in range(m):
             indexes = np.argsort(M[i, :])
             low_indexes, high_indexes = indexes[0:n], indexes[n:m]
@@ -223,7 +226,7 @@ def cluster(embeddings, p=.05, num_spks=None, min_num_spks=1, max_num_spks=10):
     def spectral(M, num_spks, min_num_spks, max_num_spks):
         eig_values, eig_vectors = scipy.linalg.eigh(M)
         num_spks = num_spks if num_spks is not None \
-            else np.argmax(np.diff(eig_values[:max_num_spks])) + 1
+            else np.argmax(np.diff(eig_values[:max_num_spks + 1])) + 1
         num_spks = max(num_spks, min_num_spks)
         return eig_vectors[:, :num_spks]
 
