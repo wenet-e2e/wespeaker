@@ -66,7 +66,7 @@ pip install -r requirements.txt
     - [x] Speed Perturb
     - [x] SpecAug
 * Literature
-    - [x] [Awesome Speaker Papers](https://github.com/wenet-e2e/wespeaker/blob/master/speaker_recognition_papers.md)
+    - [x] [Awesome Speaker Papers](docs/speaker_recognition_papers.md)
 
 ## Discussion
 

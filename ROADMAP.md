@@ -7,11 +7,10 @@ This is the roadmap for wespeaker version 1.0.
 - [x] Standard dataset support
     - [x] VoxCeleb
     - [x] CnCeleb
-- [ ] SOTA models support
+- [x] SOTA models support
     - [x] x-vector (tdnn based, milestone deep speaker embedding)
     - [x] r-vector (resnet based, winner of voxsrc 2019)
     - [x] ecapa-tdnn (variant of tdnn, winner of voxsrc 2020)
-    - [ ] conformer (MFA-Conformer: Multi-scale Feature Aggregation Conformer for Automatic Speaker Verification)
 - [x] Back-end Support
     - [x] Cosine
     - [x] EER/minDCF
@@ -29,4 +28,4 @@ This is the roadmap for wespeaker version 1.0.
     - Support using features from released pretrained models (hugging face)
 - [x] Basic Speaker Diarization Recipe
     - Embedding based (more related with our speaker embedding learner toolkit)
-- [ ] Interactive Demo
+- [x] Interactive Demo
