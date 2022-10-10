@@ -178,11 +178,11 @@ def shuffle(data, shuffle_size=2500):
     """ Local shuffle the data
 
         Args:
-            data: Iterable[{key, wav, spk, sample_rate}]
+            data: Iterable[{key, wav/feat, spk}]
             shuffle_size: buffer size for shuffle
 
         Returns:
-            Iterable[{key, wav, spk, sample_rate}]
+            Iterable[{key, wav/feat, spk}]
     """
     buf = []
     for sample in data:
@@ -202,11 +202,11 @@ def spk_to_id(data, spk2id):
     """ Parse spk id
 
         Args:
-            data: Iterable[{key, wav, spk, sample_rate}]
+            data: Iterable[{key, wav/feat, spk}]
             spk2id: Dict[str, int]
 
         Returns:
-            Iterable[{key, wav, label, sample_rate}]
+            Iterable[{key, wav/feat, label}]
     """
     for sample in data:
         assert 'spk' in sample
@@ -215,6 +215,27 @@ def spk_to_id(data, spk2id):
         else:
             label = -1
         sample['label'] = label
+        yield sample
+
+
+def resample(data, resample_rate=16000):
+    """ Resample data.
+        Inplace operation.
+        Args:
+            data: Iterable[{key, wav, label, sample_rate}]
+            resample_rate: target resample rate
+        Returns:
+            Iterable[{key, wav, label, sample_rate}]
+    """
+    for sample in data:
+        assert 'sample_rate' in sample
+        assert 'wav' in sample
+        sample_rate = sample['sample_rate']
+        waveform = sample['wav']
+        if sample_rate != resample_rate:
+            sample['sample_rate'] = resample_rate
+            sample['wav'] = torchaudio.transforms.Resample(
+                orig_freq=sample_rate, new_freq=resample_rate)(waveform)
         yield sample
 
 
@@ -276,11 +297,11 @@ def random_chunk(data, chunk_len, data_type='shard/raw/feat'):
     """ Random chunk the data into chunk_len
 
         Args:
-            data: Iterable[{key, wav/feat, label, sample_rate}]
+            data: Iterable[{key, wav/feat, label}]
             chunk_len: chunk length for each sample
 
         Returns:
-            Iterable[{key, wav/feat, label, sample_rate}]
+            Iterable[{key, wav/feat, label}]
     """
     for sample in data:
         assert 'key' in sample
@@ -367,7 +388,7 @@ def compute_fbank(data,
             data: Iterable[{key, wav, label, sample_rate}]
 
         Returns:
-            Iterable[{key, feat, label}]
+            Iterable[{key, feat, label, sample_rate}]
     """
     for sample in data:
         assert 'sample_rate' in sample
