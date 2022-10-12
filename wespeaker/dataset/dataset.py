@@ -187,7 +187,7 @@ def Dataset(data_type,
             reverb_data = LmdbData(reverb_lmdb_file)
             noise_data = LmdbData(noise_lmdb_file)
             dataset = Processor(dataset, processor.add_reverb_noise, reverb_data,
-                                noise_data, configs.get('aug_prob', 0.6))
+                                noise_data, resample_rate, configs.get('aug_prob', 0.6))
         # compute fbank
         dataset = Processor(dataset, processor.compute_fbank, **configs['fbank_args'])
 

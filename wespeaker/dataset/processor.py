@@ -319,13 +319,19 @@ def random_chunk(data, chunk_len, data_type='shard/raw/feat'):
         yield sample
 
 
-def add_reverb_noise(data, reverb_source, noise_source, aug_prob):
+def add_reverb_noise(data,
+                     reverb_source,
+                     noise_source,
+                     resample_rate=16000,
+                     aug_prob=0.6):
     """ Add reverb & noise aug
 
         Args:
             data: Iterable[{key, wav, label, sample_rate}]
             reverb_source: reverb LMDB data source
             noise_source: noise LMDB data source
+            resample_rate: resample rate for reverb/noise data
+            aug_prob: aug probability
 
         Returns:
             Iterable[{key, wav, label, sample_rate}]
@@ -341,8 +347,12 @@ def add_reverb_noise(data, reverb_source, noise_source, aug_prob):
                 audio_len = audio.shape[0]
 
                 _, rir_data = reverb_source.random_one()
-                _, rir_audio = wavfile.read(io.BytesIO(rir_data))
+                rir_sr, rir_audio = wavfile.read(io.BytesIO(rir_data))
                 rir_audio = rir_audio.astype(np.float32)
+                if rir_sr != resample_rate:
+                    rir_audio = signal.resample(
+                        rir_audio,
+                        int(len(rir_audio) / rir_sr * resample_rate))
                 rir_audio = rir_audio / np.sqrt(np.sum(rir_audio**2))
                 out_audio = signal.convolve(audio, rir_audio,
                                             mode='full')[:audio_len]
@@ -361,9 +371,17 @@ def add_reverb_noise(data, reverb_source, noise_source, aug_prob):
                     snr_range = [5, 15]
                 else:
                     snr_range = [0, 15]
-                _, noise_audio = wavfile.read(io.BytesIO(noise_data))
+                noise_sr, noise_audio = wavfile.read(io.BytesIO(noise_data))
                 noise_audio = noise_audio.astype(np.float32) / (1 << 15)
-                noise_audio = get_random_chunk(noise_audio, audio_len)
+                if noise_sr != resample_rate:
+                    # Since the noise audio could be very long, it must be
+                    # chunked first before resampled (to save time)
+                    noise_audio = get_random_chunk(
+                        noise_audio,
+                        int(audio_len / resample_rate * noise_sr))
+                    noise_audio = signal.resample(noise_audio, audio_len)
+                else:
+                    noise_audio = get_random_chunk(noise_audio, audio_len)
                 noise_snr = random.uniform(snr_range[0], snr_range[1])
                 noise_db = 10 * np.log10(np.mean(noise_audio**2) + 1e-4)
                 noise_audio = np.sqrt(10**(
