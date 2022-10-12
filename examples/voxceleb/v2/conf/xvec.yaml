@@ -20,6 +20,7 @@ dataset_args:
   shuffle: True
   shuffle_args:
     shuffle_size: 2500
+  resample_rate: 16000
   speed_perturb: True
   num_frms: 200
   aug_prob: 0.6 # prob to add reverb & noise aug per sample
