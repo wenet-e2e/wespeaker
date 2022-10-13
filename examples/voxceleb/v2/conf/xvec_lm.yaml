@@ -5,7 +5,7 @@
 #   In this fine-tuning stage, large margin and longer segment will
 #   be used.
 
-exp_dir: exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150-LM
+exp_dir: exp/XVEC-TSTP-emb512-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150-LM
 gpus: "[0,1]"
 num_avg: 1
 do_lm: True
@@ -43,12 +43,12 @@ dataset_args:
     max_f: 8
     prob: 0.6
 
-model: ECAPA_TDNN_GLOB_c512 # ECAPA_TDNN_GLOB_c512, ECAPA_TDNN_GLOB_c1024
+model: XVEC
 model_init: null
 model_args:
   feat_dim: 80
-  embed_dim: 192
-  pooling_func: 'ASTP'
+  embed_dim: 512
+  pooling_func: 'TSTP'
 projection_args:
   project_type: 'arc_margin' # add_margin, arc_margin, sphere, softmax
   scale: 32.0
