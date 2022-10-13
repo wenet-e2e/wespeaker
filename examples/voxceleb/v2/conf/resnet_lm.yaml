@@ -1,9 +1,9 @@
 ### Large margin fine-tuning configuration
-##
-##   The large margin fine-tuning operation is often used in speaker
-##   verification challenge system to further improve the performance.
-##   In this fine-tuning stage, large margin and longer segment will
-##   be used.
+#
+#   The large margin fine-tuning operation is often used in speaker
+#   verification challenge system to further improve the performance.
+#   In this fine-tuning stage, large margin and longer segment will
+#   be used.
 
 exp_dir: exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150-LM
 gpus: "[0,1]"
