@@ -22,16 +22,25 @@ if __name__ == '__main__':
     more variants will be added in next release.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--type', type=str, default='2cov', help='which type of plda to use')
-    parser.add_argument('--scp_path', type=str, help='the  plda training embedding.scp file')
+    parser.add_argument('--type',
+                        type=str,
+                        default='2cov',
+                        help='which type of plda to use')
+    parser.add_argument('--scp_path',
+                        type=str,
+                        help='the  plda training embedding.scp file')
     parser.add_argument('--utt2spk', type=str, help='utt2spk file')
-    parser.add_argument('--indim', type=int, help='the dimension of input embeddings')
+    parser.add_argument('--indim',
+                        type=int,
+                        help='the dimension of input embeddings')
     parser.add_argument('--exp_dir', type=str)
     parser.add_argument('--iter', type=int, default=5)
     args = parser.parse_args()
 
     if args.type == '2cov':
-        plda = TwoCovPLDA(scp_file=args.scp_path, utt2spk_file=args.utt2spk, embed_dim=args.indim)
+        plda = TwoCovPLDA(scp_file=args.scp_path,
+                          utt2spk_file=args.utt2spk,
+                          embed_dim=args.indim)
         plda.train(args.iter)
         model_path = os.path.join(args.exp_dir, '2cov.plda')
         plda.save_model(model_path)

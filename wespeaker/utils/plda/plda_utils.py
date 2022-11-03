@@ -44,7 +44,8 @@ def read_label_file(label_file):
 
 def norm_embeddings(embeddings):
     if len(embeddings.shape) == 2:
-        return (embeddings.transpose() / np.linalg.norm(embeddings, axis=1)).transpose()
+        return (embeddings.transpose() /
+                np.linalg.norm(embeddings, axis=1)).transpose()
     elif len(embeddings.shape) == 1:
         return embeddings / np.linalg.norm(embeddings)
 

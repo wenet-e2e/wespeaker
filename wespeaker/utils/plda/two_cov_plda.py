@@ -22,26 +22,28 @@ from wespeaker.utils.plda.plda_utils import read_vec_scp_file
 
 
 class TwoCovPLDA:
+
     def __init__(self, scp_file=None, utt2spk_file=None, embed_dim=256):
         if scp_file is not None:
-            self.embeddings, self.embeddings_dict = get_data_for_plda(scp_file, utt2spk_file)
+            self.embeddings, self.embeddings_dict = \
+                get_data_for_plda(scp_file, utt2spk_file)
 
             self.embeddings = norm_embeddings(self.embeddings)
             self.N = len(self.embeddings)
             self.mu = self.embeddings.mean(0)
-            self.S = np.zeros([embed_dim, embed_dim])  # Global 2nd order moment defined in B.3
-            self.B = np.zeros([embed_dim, embed_dim])  # Between-class covariance 256*256
-            self.W = np.zeros([embed_dim, embed_dim])  # Within-class covariance 256*256
+            self.S = np.zeros([embed_dim, embed_dim])
+            self.B = np.zeros([embed_dim, embed_dim])
+            self.W = np.zeros([embed_dim, embed_dim])
 
             for key, mat in self.embeddings_dict.items():
                 # iterate over the i-th speaker
                 mat = np.vstack(mat)
                 mat = norm_embeddings(mat)
                 self.embeddings_dict[key] = mat
-                mui = mat.mean(0)  # 256
-                Si = mat.T.dot(mat)  # 256 *256
-                self.S += Si  # 256*256
-                self.W += (mat - mui).T.dot(mat - mui)  # 256*256
+                mui = mat.mean(0)
+                Si = mat.T.dot(mat)
+                self.S += Si
+                self.W += (mat - mui).T.dot(mat - mui)
                 self.B += np.outer(mui, mui)
 
             self.W /= self.N
@@ -68,30 +70,33 @@ class TwoCovPLDA:
                 embeddings = mat.T
                 # E-step
                 ni = len(mat)
-                Li = inv(self.B + ni * self.W)  # 256*256, inverse(B.4)
-                Fi = embeddings.sum(1)  # 1st order moment for speaker i, equation B.2, size of (256,)
-                gamma = self.B.dot(self.mu) + self.W.dot(Fi)  # equation B.7, size of (256,)
-                Ey = Li.dot(gamma)  # 256
-                Eyy = np.outer(Ey, Ey) + Li  # 256*256
+                Li = inv(self.B + ni * self.W)
+                Fi = embeddings.sum(1)
+                gamma = self.B.dot(self.mu) + self.W.dot(Fi)
+                Ey = Li.dot(gamma)
+                Eyy = np.outer(Ey, Ey) + Li
 
                 # M-step
-                T = T + np.outer(Ey, Fi)  # 256*256
-                R = R + ni * Eyy  # 256*256
-                Y = Y + ni * Ey  # 256*256
+                T = T + np.outer(Ey, Fi)
+                R = R + ni * Eyy
+                Y = Y + ni * Ey
 
             # Update the parameters
-            self.mu = Y / self.N  # 256
-            self.B = (R - (np.outer(self.mu, Y) + np.outer(Y, self.mu))) / self.N + np.outer(self.mu, self.mu)
+            self.mu = Y / self.N
+            self.B = (R - (np.outer(self.mu, Y) + np.outer(Y, self.mu))) / \
+                self.N + np.outer(self.mu, self.mu)
             self.B = inv(self.B)
             self.W = inv((self.S - (T + T.T) + R) / self.N)
 
-    def eval_sv(self, enroll_scp, enroll_utt2spk, test_scp, trials, score_file):
+    def eval_sv(self, enroll_scp, enroll_utt2spk, test_scp, trials,
+                score_file):
         """
         Implementations follows 
         Analysis of I-vector Length Normalization in Speaker Recognition Systems
         This function is designed for SV task
         """
-        _, enroll_embeddings_dict = get_data_for_plda(enroll_scp, enroll_utt2spk)
+        _, enroll_embeddings_dict = get_data_for_plda(enroll_scp,
+                                                      enroll_utt2spk)
         test_embeddings_dict = read_vec_scp_file(test_scp)
 
         Stot = inv(self.W) + inv(self.B)
@@ -120,25 +125,30 @@ class TwoCovPLDA:
             with open(trials, 'r') as read_trials:
                 for line in tqdm(read_trials):
                     tokens = line.strip().split()
-                    score = testspks[tokens[1]] + enrollspks[tokens[0]] + 2.0 * test_embeddings_dict[tokens[1]].T.dot(
+                    score = testspks[tokens[1]] + enrollspks[tokens[0]] + \
+                        2.0 * test_embeddings_dict[tokens[1]].T.dot(
                         enroll_embeddings_dict[tokens[0]])
                     segs = line.strip().split()
-                    output_line = ('{} {} {:.5f} {}\n'.format(segs[0], segs[1], score, segs[2]))
+                    output_line = ('{} {} {:.5f} {}\n'.format(
+                        segs[0], segs[1], score, segs[2]))
                     write_score.write(output_line)
 
     def save_model(self, output_file_name):
         # assert self.validate(), "Error: wrong PLDA model format"
         print("saving the trained plda to {}".format(output_file_name))
         with h5py.File(output_file_name, "w") as f:
-            f.create_dataset("mu", data=self.mu,
+            f.create_dataset("mu",
+                             data=self.mu,
                              maxshape=(None),
                              compression="gzip",
                              fletcher32=True)
-            f.create_dataset("B", data=self.B,
+            f.create_dataset("B",
+                             data=self.B,
                              maxshape=(None, None),
                              compression="gzip",
                              fletcher32=True)
-            f.create_dataset("W", data=self.W,
+            f.create_dataset("W",
+                             data=self.W,
                              maxshape=(None, None),
                              compression="gzip",
                              fletcher32=True)

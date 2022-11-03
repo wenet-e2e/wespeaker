@@ -18,7 +18,10 @@ from wespeaker.utils.plda.two_cov_plda import TwoCovPLDA
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--type', type=str, default='2cov', help='which type of plda to use')
+    parser.add_argument('--type',
+                        type=str,
+                        default='2cov',
+                        help='which type of plda to use')
     parser.add_argument('--enroll_scp_path', type=str)
     parser.add_argument('--test_scp_path', type=str)
     parser.add_argument('--utt2spk', type=str)
@@ -28,6 +31,8 @@ if __name__ == '__main__':
 
     if args.type == '2cov':
         model_path = os.path.join(args.exp_dir, '2cov.plda')
-        score_path = os.path.join(args.exp_dir, 'scores', os.path.basename(args.trial) + '.pldascore')
+        score_path = os.path.join(args.exp_dir, 'scores',
+                                  os.path.basename(args.trial) + '.pldascore')
         plda = TwoCovPLDA.load_model(model_path)
-        plda.eval_sv(args.enroll_scp_path, args.utt2spk, args.test_scp_path, args.trial, score_path)
+        plda.eval_sv(args.enroll_scp_path, args.utt2spk, args.test_scp_path,
+                     args.trial, score_path)
