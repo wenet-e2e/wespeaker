@@ -10,7 +10,7 @@
 |                  |       | √ | 1.835 | 1.822 | 3.110 |
 | ECAPA_TDNN_GLOB_c512-ASTP-emb192 | 6.19M | × | 1.149 | 1.248 | 2.313 |
 |                                  |       | √ | 1.026 | 1.154 | 2.089 |
-| ResNet34-TSTP-emb256 | 6.70M | × | 0.941 | 1.114 | 2.026 |
+| ResNet34-TSTP-emb256 | 6.63M | × | 0.941 | 1.114 | 2.026 |
 |                      |       | √ | 0.899 | 1.064 | 1.856 |
 
 <br/>
@@ -33,4 +33,28 @@
 | ResNet34-TSTP-emb256 | 6.63M | × | × | 0.867 | 1.049 | 1.959 |
 |                      |       | × | √ | 0.787 | 0.964 | 1.726 |
 |                      |       | √ | × | 0.797 | 0.937 | 1.695 |
-|                      |       | √ | √ | **0.723** | **0.867** | **1.532** |
+|                      |       | √ | √ | 0.723 | 0.867 | 1.532 |
+| ResNet221-TSTP-emb256 | 23.86M | × | × | 0.569 | 0.774 | 1.464 |
+|                      |       | × | √ | 0.479 | 0.707 | 1.290 |
+|                      |       | √ | × | 0.580 | 0.729 | 1.351 |
+|                      |       | √ | √ | 0.505 | 0.676 | 1.213 |
+| ResNet293-TSTP-emb256 | 28.69M | × | × | 0.595 | 0.756 | 1.433 |
+|                      |       | × | √ | 0.537 | 0.701 | 1.276 |
+|                      |       | √ | × | 0.532 | 0.707 | 1.311 |
+|                      |       | √ | √ | **0.447** | **0.657** | **1.183** |
+
+
+## PLDA results
+If you are interested in the PLDA scoring (which is inferior to the simple cosine scoring under the margin based setting), simply run:
+
+```bash
+local/score_plda.sh --stage 1 --stop-stage 3 --exp_dir exp_name
+```
+Note that you need to prepare an additional utt2utt file in the vox1 data directory since each speaker is enrolled with only one utterance.
+
+The results on ResNet293 (large margin, no asnorm) are:
+
+|Scoring method| vox1-O-clean | vox1-E-clean | vox1-H-clean |
+| :---:|:------------:|:------------:|:------------:|
+|cosine| 0.532 | 0.707 | 1.311 |
+|plda | 0.744 | 0.794 | 1.374|

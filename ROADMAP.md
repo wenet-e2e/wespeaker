@@ -15,7 +15,7 @@ This is the roadmap for wespeaker version 1.0.
     - [x] Cosine
     - [x] EER/minDCF
     - [x] AS-norm
-    - [ ] PLDA
+    - [x] PLDA
 - [x] UIO for effective industrial-scale dataset processing
     - [x] Online data augmentation
         -  Noise && RIR
@@ -23,9 +23,9 @@ This is the roadmap for wespeaker version 1.0.
         -  Specaug
 - [x] ONNX support
 - [x] Triton Server support (GPU)
-- [ ] Pretrained model as feature extractor
+- [ ] ~~
     - Training or finetuning big models such as WavLM might be too costly for current stage
-    - Support using features from released pretrained models (hugging face)
 - [x] Basic Speaker Diarization Recipe
     - Embedding based (more related with our speaker embedding learner toolkit)
 - [x] Interactive Demo
+    - Support using features from released pretrained models (hugging face)

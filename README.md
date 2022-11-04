@@ -6,6 +6,7 @@
 [**Roadmap**](ROADMAP.md)
 | [**Awesome Papers**](docs/speaker_recognition_papers.md)
 | [**Runtime (x86_gpu)**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/server/x86_gpu)
+| [**Python binding**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/binding/python)
 | [**Pretrained Models**](docs/pretrained.md)
 | [**Huggingface Demo**](https://huggingface.co/spaces/wenet/wespeaker_demo)
 
@@ -28,12 +29,19 @@ conda install pytorch=1.10.1 torchaudio=0.10.1 cudatoolkit=11.3 -c pytorch -c co
 pip install -r requirements.txt
 ```
 
+* If you just want to use the pretrained model, try the [python binding](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/binding/python)!
+```shell
+pip3 install wespeakerruntime
+```
 ## Recipes
 
 * [VoxCeleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxceleb/v2): Speaker Verification recipe on the [VoxCeleb dataset](https://www.robots.ox.ac.uk/~vgg/data/voxceleb/)
+    * 🔥 We support a two-convariance based PLDA, although the performance is still inferior to cosine, check it out!
+    * 🔥 UPDATE 2022.10.31: We support deep r-vector up to the 293-layer version! Achiving **0.447%/0.043** EER/mindcf on vox1-O-clean test set
     * 🔥 UPDATE 2022.7.19: We apply the same setups as the CNCeleb recipe, and obtain SOTA performance considering the open-source systems
     * 🔥 EER/minDCF on vox1-O-clean test set are **0.723%/0.069** (ResNet34) and **0.728%/0.099** (ECAPA_TDNN_GLOB_c1024), after LM fine-tuning and AS-Norm
 * [CNCeleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/cnceleb/v2): Speaker Verification recipe on the [CnCeleb dataset](http://cnceleb.org/)
+    * 🔥 UPDATE 2022.10.31: 221-layer ResNet achieves **5.655%/0.330**  EER/minDCF
     * 🔥 UPDATE 2022.7.12: We are migrating the winner system of CNSRC 2022 [report](https://aishell-cnsrc.oss-cn-hangzhou.aliyuncs.com/T082.pdf) [slides](https://aishell-cnsrc.oss-cn-hangzhou.aliyuncs.com/T082-ZhengyangChen.pdf)
     * 🔥 EER/minDCF reduction from 8.426%/0.487 to **6.492%/0.354** after large margin fine-tuning and AS-Norm
 * [VoxConverse](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxconverse): 🔥 UPDATE 2022.7.2:  Diarization recipe on the [VoxConverse dataset](https://www.robots.ox.ac.uk/~vgg/data/voxconverse/)
@@ -56,7 +64,7 @@ pip install -r requirements.txt
     - [x] [Arc_Margin (AAM-Softmax)](https://arxiv.org/pdf/1801.07698v1.pdf)
 * Scoring
     - [x] Cosine
-    - [ ] PLDA
+    - [x] PLDA
     - [x] Score Normalization (AS-Norm)
 * Metric
     - [x] EER
@@ -75,6 +83,16 @@ We also created a WeChat group for better discussion and quicker response. Pleas
 | <img src="https://github.com/wenet-e2e/wenet-contributors/blob/main/wenet_official.jpeg" width="250px"> | <img src="https://github.com/wenet-e2e/wenet-contributors/blob/main/wespeaker/wangshuai.jpg" width="250px"> |
 | ---- | ---- |
 
+## Citations
+If you find wespeaker useful, please cite it as
+```bibtex
+@article{wang2022wespeaker,
+  title={Wespeaker: A Research and Production oriented Speaker Embedding Learning Toolkit},
+  author={Wang, Hongji and Liang, Chengdong and Wang, Shuai and Chen, Zhengyang and Zhang, Binbin and Xiang, Xu and Deng, Yanlei and Qian, Yanmin},
+  journal={arXiv preprint arXiv:2210.17016},
+  year={2022}
+}
+```
 ## Looking for contributors
 
 If you are interested to contribute, feel free to contact @wsstriving or @robin1001
