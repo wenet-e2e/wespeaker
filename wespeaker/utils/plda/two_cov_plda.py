@@ -55,7 +55,7 @@ class TwoCovPLDA:
     def train(self, num_iters):
         """
         Implementation following paper
-        Unifying Probabilistic Linear Discriminant Analysis 
+        Unifying Probabilistic Linear Discriminant Analysis
         Variants in Biometric Authentication
         """
         embed_dim = self.embed_dim
@@ -91,7 +91,7 @@ class TwoCovPLDA:
     def eval_sv(self, enroll_scp, enroll_utt2spk, test_scp, trials,
                 score_file):
         """
-        Implementations follows 
+        Implementations follows
         Analysis of I-vector Length Normalization in Speaker Recognition Systems
         This function is designed for SV task
         """

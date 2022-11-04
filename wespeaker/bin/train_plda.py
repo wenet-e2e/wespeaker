@@ -18,7 +18,7 @@ from wespeaker.utils.plda.two_cov_plda import TwoCovPLDA
 
 if __name__ == '__main__':
     """
-    Currently, we only support the two-cov version, 
+    Currently, we only support the two-cov version,
     more variants will be added in next release.
     """
     parser = argparse.ArgumentParser()
