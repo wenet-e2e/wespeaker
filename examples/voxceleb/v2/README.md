@@ -44,7 +44,7 @@
 |                      |       | √ | √ | 0.447 | 0.657 | 1.183 |
 
 
-## PLDA results 
+## PLDA results
 If you are interested in the PLDA scoring (which is inferior to the simple cosine scoring under the margin based setting), simply run:
 
 ```bash
@@ -56,5 +56,5 @@ The results on ResNet293 (large margin, no asnorm) are:
 
 |Scoring method| vox1-O-clean | vox1-E-clean | vox1-H-clean |
 | :---:|:------------:|:------------:|:------------:|
-|cosine| 0.532 |	0.707 |	1.311 |
-|plda |0.744 |0.794 | 1.374|
+|cosine| 0.532 | 0.707 | 1.311 |
+|plda | 0.744 | 0.794 | 1.374|

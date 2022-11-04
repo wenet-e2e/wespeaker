@@ -15,7 +15,7 @@ This is the roadmap for wespeaker version 1.0.
     - [x] Cosine
     - [x] EER/minDCF
     - [x] AS-norm
-    - [ ] PLDA
+    - [x] PLDA
 - [x] UIO for effective industrial-scale dataset processing
     - [x] Online data augmentation
         -  Noise && RIR
