@@ -47,7 +47,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
       --exp_dir ${exp_dir} \
       --enroll_scp_path ${exp_dir}/embeddings/vox1/xvector.scp \
       --test_scp_path ${exp_dir}/embeddings/vox1/xvector.scp \
-      --utt2spk ${data}/vox1/utt2utt \
+      --utt2spk <(cat ${data}/vox1/utt2spk | awk '{print $1, $1}') \
       --trial ${trials_dir}/${x}
   done
 fi
