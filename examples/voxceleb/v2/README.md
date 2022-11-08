@@ -50,7 +50,6 @@ If you are interested in the PLDA scoring (which is inferior to the simple cosin
 ```bash
 local/score_plda.sh --stage 1 --stop-stage 3 --exp_dir exp_name
 ```
-Note that you need to prepare an additional utt2utt file in the vox1 data directory since each speaker is enrolled with only one utterance.
 
 The results on ResNet293 (large margin, no asnorm) are:
 

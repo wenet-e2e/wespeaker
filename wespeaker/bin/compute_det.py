@@ -40,7 +40,7 @@ def compute_det(scores_file, det_file):
 
 def main(*scores_files):
     for scores_file in scores_files:
-        det_file = scores_file[:-6] + ".det.png"
+        det_file = scores_file + ".det.png"
         compute_det(scores_file, det_file)
 
 
