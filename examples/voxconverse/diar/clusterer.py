@@ -181,13 +181,16 @@ def compute_embeddings(scp, segments, source, device,
     for utt in tqdm(utt_to_wav.keys()):
         # Per utterance processing
         wav = utt_to_wav[utt]
+
+        if utt not in utt_to_segments:
+            continue
         segments = utt_to_segments[utt]
 
         # Extract wav data using sliding window with overlap for each utterance
         utt_subsegs, utt_subseg_signals = subsegment(wav, segments,
                                                      window_fs, period_fs)
         # Convert a list of Tensor to a Tensor
-        utt_subseg_signals = torch.stack(utt_subseg_signals).squeeze()
+        utt_subseg_signals = torch.stack(utt_subseg_signals).squeeze(-1)
 
         # Extract embeddings for each subsegment-level wav data
         utt_embeddings = extract_embeddings(utt_subseg_signals, batch_size)

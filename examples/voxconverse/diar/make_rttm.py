@@ -51,6 +51,7 @@ def merge_segments(utt_to_subseg_labels):
             continue
 
         (begin, end, label) = subseg_to_labels[0]
+        e = end  # when there is only one subseg, we assign end to e
         for (b, e, la) in subseg_to_labels[1:]:
             if b <= end and la == label:
                 end = e
