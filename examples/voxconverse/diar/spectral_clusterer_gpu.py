@@ -12,11 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+
 import cupy as cp
 from cuml.cluster import KMeans as cuKM
 import numpy as np
 from timeit import default_timer as timer
-from clusterer import get_args, compute_embeddings
+from spectral_cluster import get_args, read_emb
+from wespeaker.utils.utils import validate_path
 import scipy
 import torch
 
@@ -102,14 +109,10 @@ def test_time():
 
 def main():
     args = get_args()
-    print('Segmenting and extracting speaker embeddings')
-    subsegs_list, embeddings_list = compute_embeddings(args.scp,
-                                                       args.segments,
-                                                       args.source,
-                                                       args.device,
-                                                       args.batch_size)
-    print('Embedding extraction finished')
     print('Start GPU Clustering')
+
+    subsegs_list, embeddings_list = read_emb(args.scp)
+    validate_path(args.output)
 
     # Use the following part to do GPU Clustering
     labels_list = []
@@ -123,12 +126,6 @@ def main():
 if __name__ == '__main__':
     # You can use the test_time() function
     # to calculate the GPU vs CPU clustering speed
-    os.environ["OMP_NUM_THREADS"] = "1"
-    os.environ["OPENBLAS_NUM_THREADS"] = "1"
-    os.environ["MKL_NUM_THREADS"] = "1"
-    os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
-    os.environ["NUMEXPR_NUM_THREADS"] = "1"
     torch.set_num_threads(1)
     scipy.random.seed(1)
-
     main()

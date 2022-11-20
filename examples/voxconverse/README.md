@@ -10,8 +10,8 @@
 
 | system | MISS | FA | SC | DER |
 |:---|:---:|:---:|:---:|:---:
-| This repo (with oracle SAD) | 2.3 | 0.0 | 1.9 | 4.2 |
-| This repo (with system SAD) | 4.4 | 0.6 | 2.1 | 7.1 |
+| This repo (with oracle SAD) | 2.3 | 0.0 | 1.9 | 4.4 |
+| This repo (with system SAD) | 4.4 | 0.6 | 2.1 | 7.0 |
 | [1] DIHARD 2019 baseline | 11.1 | 1.4 | 11.3 | 23.8 |
 | [1] DIHARD 2019 baseline w/ SE | 9.3 | 1.3 | 9.7 | 20.2 |
 | [1] (SyncNet ASD only) | 2.2 | 4.1 | 4.0 | 10.4 |
@@ -21,7 +21,7 @@
 [1] Spot the conversation: speaker diarisation in the wild, https://arxiv.org/pdf/2007.01216.pdf
 
 ## Update 09/2022 : GPU Clustering
-* You can use diar/clusterer\_gpu.py to run GPU Clustering
+* You can use diar/spectral\_clusterer\_gpu.py to run GPU Clustering
 * We use [cupy](https://cupy.dev/) and [cuML](https://docs.rapids.ai/api/cuml/stable/api.html#k-means-clustering) to accelarate the clustering speed
 * You have to install the above toolkits before inference
 * Similar performances can be obtained from our experiments but with ~3X speech up
