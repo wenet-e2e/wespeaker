@@ -46,8 +46,6 @@ def get_args():
 
 def main():
     args = get_args()
-    checkpoints = []
-    val_scores = []
 
     path_list = glob.glob('{}/[!avg][!final]*.pt'.format(args.src_path))
     path_list = sorted(
