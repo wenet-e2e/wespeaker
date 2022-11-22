@@ -16,6 +16,7 @@ config=conf/resnet.yaml
 exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
 gpus="[0,1]"
 num_avg=10
+repvgg_convert="false"
 checkpoint=
 
 trials="CNC-Eval-Concat.lst CNC-Eval-Avg.lst"
@@ -77,10 +78,20 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
     --src_path $exp_dir/models \
     --num ${num_avg}
 
+  model_path=$avg_model
+  if [ $repvgg_convert == "true" ]; then
+    echo "convert repvgg model ..."
+    python wespeaker/models/convert_repvgg.py \
+      --config $exp_dir/config.yaml \
+      --load $avg_model \
+      --save $exp_dir/models/covert_model.pt
+    model_path=$exp_dir/models/covert_model.pt
+  fi
+
   echo "Extract embeddings ..."
   local/extract_cnc.sh \
-    --exp_dir $exp_dir --model_path $avg_model \
-    --nj 16 --gpus $gpus --data_type $data_type --data ${data}
+    --exp_dir $exp_dir --model_path $model_path \
+    --nj 4 --gpus $gpus --data_type $data_type --data ${data}
 fi
 
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
