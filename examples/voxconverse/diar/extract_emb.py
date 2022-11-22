@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 import argparse
 from collections import OrderedDict
@@ -38,7 +37,8 @@ def init_session(source, device):
     opts = ort.SessionOptions()
     opts.inter_op_num_threads = 1
     opts.intra_op_num_threads = 1
-    session = ort.InferenceSession(source, sess_options=opts,
+    session = ort.InferenceSession(source,
+                                   sess_options=opts,
                                    providers=providers)
     return session
 
@@ -74,7 +74,8 @@ def subsegment(fbank, seg_id, window_fs, period_fs, frame_shift):
         for subseg_begin in range(0, max_subseg_begin, period_fs):
             subseg_end = min(subseg_begin + window_fs, seg_length)
             subseg = seg_id + "-{:08d}-{:08d}".format(subseg_begin, subseg_end)
-            subseg_fbank = np.resize(fbank[subseg_begin: subseg_end], (window_fs, feat_dim))
+            subseg_fbank = np.resize(fbank[subseg_begin:subseg_end],
+                                     (window_fs, feat_dim))
 
             subsegs.append(subseg)
             subseg_fbanks.append(subseg_fbank)
@@ -85,11 +86,12 @@ def subsegment(fbank, seg_id, window_fs, period_fs, frame_shift):
 def extract_embeddings(fbanks, batch_size, session, subseg_cmn):
     fbanks_array = np.stack(fbanks)
     if subseg_cmn:
-        fbanks_array = fbanks_array - np.mean(fbanks_array, axis=1, keepdims=True)
+        fbanks_array = fbanks_array - np.mean(
+            fbanks_array, axis=1, keepdims=True)
 
     embeddings = []
     for i in tqdm(range(0, fbanks_array.shape[0], batch_size)):
-        batch_feats = fbanks_array[i: i + batch_size]
+        batch_feats = fbanks_array[i:i + batch_size]
         batch_embs = session.run(input_feed={'feats': batch_feats},
                                  output_names=['embs'])[0].squeeze()
 
@@ -98,27 +100,42 @@ def extract_embeddings(fbanks, batch_size, session, subseg_cmn):
 
     return embeddings
 
+
 def get_args():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('--scp', required=True, help='wav scp')
-    parser.add_argument('--ark-path', required=True, help='path to store embedding ark')
-    parser.add_argument('--source', required=True,
-                        help='onnx model')
-    parser.add_argument('--device', default='cuda',
+    parser.add_argument('--ark-path',
+                        required=True,
+                        help='path to store embedding ark')
+    parser.add_argument('--source', required=True, help='onnx model')
+    parser.add_argument('--device',
+                        default='cuda',
                         help='inference device type: cpu or cuda')
-    parser.add_argument('--batch-size', type=int, default=96,
+    parser.add_argument('--batch-size',
+                        type=int,
+                        default=96,
                         help='batch size for embedding extraction')
-    parser.add_argument('--frame-shift', type=int, default=10,
+    parser.add_argument('--frame-shift',
+                        type=int,
+                        default=10,
                         help='frame shift in fbank extraction (ms)')
-    parser.add_argument('--window-secs', type=float, default=1.50,
+    parser.add_argument('--window-secs',
+                        type=float,
+                        default=1.50,
                         help='the window seconds in embedding extraction')
-    parser.add_argument('--period-secs', type=float, default=0.75,
+    parser.add_argument('--period-secs',
+                        type=float,
+                        default=0.75,
                         help='the shift seconds in embedding extraction')
-    parser.add_argument('--subseg-cmn', type=lambda x: x.lower() == 'true', default=True,
-                        help='doing cmn before sub segmentation or before sub segmentation')
+    parser.add_argument(
+        '--subseg-cmn',
+        type=lambda x: x.lower() == 'true',
+        default=True,
+        help='doing cmn before sub segmentation or before sub segmentation')
     args = parser.parse_args()
 
     return args
+
 
 def main():
     args = get_args()
@@ -132,10 +149,13 @@ def main():
 
     subsegs, subseg_fbanks = [], []
     for seg_id, fbank in fbank_dict.items():
-        tmp_subsegs, tmp_subseg_fbanks = subsegment(fbank, seg_id, window_fs, period_fs, args.frame_shift)
+        tmp_subsegs, tmp_subseg_fbanks = subsegment(fbank, seg_id, window_fs,
+                                                    period_fs,
+                                                    args.frame_shift)
         subsegs.extend(tmp_subsegs)
         subseg_fbanks.extend(tmp_subseg_fbanks)
-    embeddings = extract_embeddings(subseg_fbanks, args.batch_size, session, args.subseg_cmn)
+    embeddings = extract_embeddings(subseg_fbanks, args.batch_size, session,
+                                    args.subseg_cmn)
 
     validate_path(args.ark_path)
     emb_ark = os.path.abspath(args.ark_path)

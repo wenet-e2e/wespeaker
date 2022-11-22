@@ -13,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 import argparse
 from collections import OrderedDict
 import kaldiio
 
-import numpy as np
 from tqdm import tqdm
 
 import torch
@@ -62,13 +60,18 @@ def get_speech_segments(utt_to_wav, utt_to_segments):
 
         for seg, begin, end in segments:
             speech_segments_id.append(seg)
-            speech_segments.append(signal[int(begin * sr): int(end * sr)])
+            speech_segments.append(signal[int(begin * sr):int(end * sr)])
 
     return speech_segments_id, speech_segments
 
 
-def compute_fbank(wav, num_mel_bins=80, frame_length=25,
-                  frame_shift=10, dither=0.0, sample_frequency=16000, subseg_cmn=True):
+def compute_fbank(wav,
+                  num_mel_bins=80,
+                  frame_length=25,
+                  frame_shift=10,
+                  dither=0.0,
+                  sample_frequency=16000,
+                  subseg_cmn=True):
 
     wav = wav.unsqueeze(0) * (1 << 15)
     feat = kaldi.fbank(wav,
@@ -89,19 +92,26 @@ def get_args():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('--scp', required=True, help='wav scp')
     parser.add_argument('--segments', required=True, help='vad segments')
-    parser.add_argument('--ark-path', required=True, help='path to store feat ark')
-    parser.add_argument('--subseg-cmn', default=True, type=lambda x: x.lower() == 'true',
-                        help='doing cmn before sub segmentation or before sub segmentation')
+    parser.add_argument('--ark-path',
+                        required=True,
+                        help='path to store feat ark')
+    parser.add_argument(
+        '--subseg-cmn',
+        default=True,
+        type=lambda x: x.lower() == 'true',
+        help='doing cmn before sub segmentation or before sub segmentation')
     args = parser.parse_args()
 
     return args
+
 
 def main():
     args = get_args()
 
     utt_to_wav = read_scp(args.scp)
     utt_to_segments = read_segments(args.segments)
-    speech_segments_id, speech_segments = get_speech_segments(utt_to_wav, utt_to_segments)
+    speech_segments_id, speech_segments = get_speech_segments(
+        utt_to_wav, utt_to_segments)
 
     validate_path(args.ark_path)
     feat_ark = os.path.abspath(args.ark_path)

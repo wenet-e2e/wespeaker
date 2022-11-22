@@ -162,7 +162,7 @@ if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
         single_file_res_dir=exp/spectral_cluster/${sad_type}_single_file_res
         mkdir -p $single_file_res_dir
         echo -e "\nGet the DER results for each file and the results will be stored underd ${single_file_res_dir}\n..."
-    
+
         awk '{print $2}' exp/spectral_cluster/${sad_type}_sad_rttm | sort -u  | while read file_name; do
             perl external_tools/SCTK-2.4.12/src/md-eval/md-eval.pl \
                  -c 0.25 \
