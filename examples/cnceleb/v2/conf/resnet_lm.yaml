@@ -8,6 +8,7 @@
 exp_dir: exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150-LM
 gpus: "[0,1]"
 num_avg: 1
+enable_amp: False # whether enable automatic mixed precision training
 do_lm: True
 
 seed: 42

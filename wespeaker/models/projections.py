@@ -134,6 +134,9 @@ class AddMarginProduct(nn.Module):
                                                      in_features))
         nn.init.xavier_uniform_(self.weight)
 
+    def update(self, margin):
+        self.margin = margin
+
     def forward(self, input, label):
         # ---------------- cos(theta) & phi(theta) ---------------
         cosine = F.linear(F.normalize(input), F.normalize(self.weight))
