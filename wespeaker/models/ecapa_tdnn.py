@@ -244,10 +244,11 @@ def ECAPA_TDNN_GLOB_c512(feat_dim, embed_dim, pooling_func='ASTP'):
 
 
 if __name__ == '__main__':
-    x = torch.zeros(2, 200, 80)
+    x = torch.zeros(10, 200, 80)
     model = ECAPA_TDNN_GLOB_c512(feat_dim=80,
                                  embed_dim=192,
                                  pooling_func='ASTP')
+    model.eval()
     out = model(x)
     print(out.shape)
 

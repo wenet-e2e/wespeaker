@@ -33,18 +33,24 @@ pip install -r requirements.txt
 ```shell
 pip3 install wespeakerruntime
 ```
+
+## 🔥 News
+
+* 2022.11.22: We support Automatic Mixed Precision (AMP) training now, see [#103](https://github.com/wenet-e2e/wespeaker/pull/103).
+* 2022.11.22: RepVGG is supported, see [#102](https://github.com/wenet-e2e/wespeaker/pull/102).
+* 2022.11.04: A two-convariance based PLDA is implemented, check it out! [#95](https://github.com/wenet-e2e/wespeaker/pull/95)
+
 ## Recipes
 
 * [VoxCeleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxceleb/v2): Speaker Verification recipe on the [VoxCeleb dataset](https://www.robots.ox.ac.uk/~vgg/data/voxceleb/)
-    * 🔥 We support a two-convariance based PLDA, although the performance is still inferior to cosine, check it out!
     * 🔥 UPDATE 2022.10.31: We support deep r-vector up to the 293-layer version! Achiving **0.447%/0.043** EER/mindcf on vox1-O-clean test set
-    * 🔥 UPDATE 2022.7.19: We apply the same setups as the CNCeleb recipe, and obtain SOTA performance considering the open-source systems
-    * 🔥 EER/minDCF on vox1-O-clean test set are **0.723%/0.069** (ResNet34) and **0.728%/0.099** (ECAPA_TDNN_GLOB_c1024), after LM fine-tuning and AS-Norm
+    * 🔥 UPDATE 2022.07.19: We apply the same setups as the CNCeleb recipe, and obtain SOTA performance considering the open-source systems
+      - EER/minDCF on vox1-O-clean test set are **0.723%/0.069** (ResNet34) and **0.728%/0.099** (ECAPA_TDNN_GLOB_c1024), after LM fine-tuning and AS-Norm
 * [CNCeleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/cnceleb/v2): Speaker Verification recipe on the [CnCeleb dataset](http://cnceleb.org/)
     * 🔥 UPDATE 2022.10.31: 221-layer ResNet achieves **5.655%/0.330**  EER/minDCF
-    * 🔥 UPDATE 2022.7.12: We are migrating the winner system of CNSRC 2022 [report](https://aishell-cnsrc.oss-cn-hangzhou.aliyuncs.com/T082.pdf) [slides](https://aishell-cnsrc.oss-cn-hangzhou.aliyuncs.com/T082-ZhengyangChen.pdf)
-    * 🔥 EER/minDCF reduction from 8.426%/0.487 to **6.492%/0.354** after large margin fine-tuning and AS-Norm
-* [VoxConverse](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxconverse): 🔥 UPDATE 2022.7.2:  Diarization recipe on the [VoxConverse dataset](https://www.robots.ox.ac.uk/~vgg/data/voxconverse/)
+    * 🔥 UPDATE 2022.07.12: We migrate the winner system of CNSRC 2022 [report](https://aishell-cnsrc.oss-cn-hangzhou.aliyuncs.com/T082.pdf) [slides](https://aishell-cnsrc.oss-cn-hangzhou.aliyuncs.com/T082-ZhengyangChen.pdf)
+      - EER/minDCF reduction from 8.426%/0.487 to **6.492%/0.354** after large margin fine-tuning and AS-Norm
+* [VoxConverse](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxconverse): Diarization recipe on the [VoxConverse dataset](https://www.robots.ox.ac.uk/~vgg/data/voxconverse/)
 
 ## Support List:
 
@@ -52,6 +58,7 @@ pip3 install wespeakerruntime
     - [x] [Standard X-vector](http://www.danielpovey.com/files/2017_interspeech_embeddings.pdf)
     - [x] [ResNet](https://arxiv.org/pdf/1512.03385.pdf)
     - [x] [ECAPA_TDNN](https://arxiv.org/abs/2005.07143)
+    - [x] [RepVGG](https://arxiv.org/pdf/2101.03697.pdf)
 * Pooling Functions
     - [x] TAP(mean) / TSDP(std) / TSTP(mean+std)
         - Comparison of mean/std pooling can be found in [shuai_iscslp](https://x-lance.sjtu.edu.cn/en/papers/2021/iscslp21_shuai_1_.pdf), [anna_arxiv](https://arxiv.org/pdf/2203.10300.pdf)
@@ -73,6 +80,10 @@ pip3 install wespeakerruntime
     - [x] Noise && RIR
     - [x] Speed Perturb
     - [x] SpecAug
+* Training Strategy
+    - [x] Well-designed Learning Rate and Margin Schedulers
+    - [x] Large Margin Fine-tuning
+    - [x] Automatic Mixed Precision (AMP) Training
 * Literature
     - [x] [Awesome Speaker Papers](docs/speaker_recognition_papers.md)
 

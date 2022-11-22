@@ -902,14 +902,13 @@ if __name__ == '__main__':
                            deploy=False,
                            use_se=False)
     model.eval()
-    print(model)
     y = model(torch.randn(10, 200, 80))
-    print(y[0].size())
+    print(y.size())
 
     num_params = sum(p.numel() for p in model.parameters())
     print("{} M".format(num_params / 1e6))
 
-    from thop import profile
-    x_np = torch.randn(1, 200, 80)
-    flops, params = profile(model, inputs=(x_np, ))
-    print("FLOPs: {} G, Params: {} M".format(flops / 1e9, params / 1e6))
+    # from thop import profile
+    # x_np = torch.randn(1, 200, 80)
+    # flops, params = profile(model, inputs=(x_np, ))
+    # print("FLOPs: {} G, Params: {} M".format(flops / 1e9, params / 1e6))
