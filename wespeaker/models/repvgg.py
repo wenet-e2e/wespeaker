@@ -181,7 +181,7 @@ class RepVGGBlock(nn.Module):
                 "It's a training repvgg structure but branch conv not exits.")
 
     #   Optional. This improves the accuracy and facilitates quantization.
-    #   1.  Cancel the original weight decay on rbr_dense.conv.weight 
+    #   1.  Cancel the original weight decay on rbr_dense.conv.weight
     #       and rbr_1x1.conv.weight.
     #   2.  Use like this.
     #       loss = criterion(....)
@@ -211,7 +211,7 @@ class RepVGGBlock(nn.Module):
 
 
 #   This func derives the equivalent kernel and bias in a DIFFERENTIABLE way.
-#   You can get the equivalent kernel and bias 
+#   You can get the equivalent kernel and bias
 #   at any time and do whatever you want,
 #   for example, apply some penalties or constraints during training,
 #   just like you do to the other models.
@@ -459,8 +459,8 @@ class RepVGG(nn.Module):
     def __init__(self,
                  head_inplanes=1,
                  block="RepVGG",
-                 num_blocks=[2, 4, 14, 1],
-                 strides=[1, 1, 2, 2, 2],
+                 num_blocks=None,
+                 strides=None,
                  base_width=64,
                  width_multiplier=None,
                  override_groups_map=None,
@@ -593,6 +593,7 @@ def REPVGG_TINY_A0(feat_dim,
                    deploy=False,
                    use_se=False):
     return RepVGG(num_blocks=[3, 4, 23, 3],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[0.5, 0.5, 0.5, 0.5],
                   override_groups_map=None,
                   deploy=deploy,
@@ -608,6 +609,7 @@ def REPVGG_TINY_RSBB_A0(feat_dim,
                         deploy=False,
                         use_se=False):
     return RepVGG(num_blocks=[3, 4, 23, 3],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[0.5, 0.5, 0.5, 0.5],
                   override_groups_map=None,
                   deploy=deploy,
@@ -624,6 +626,7 @@ def REPVGG_A0(feat_dim,
               deploy=False,
               use_se=False):
     return RepVGG(num_blocks=[2, 4, 14, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[0.75, 0.75, 0.75, 2.5],
                   override_groups_map=None,
                   deploy=deploy,
@@ -639,6 +642,7 @@ def REPVGG_RSBB_A0(feat_dim,
                    deploy=False,
                    use_se=False):
     return RepVGG(num_blocks=[2, 4, 14, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[0.75, 0.75, 0.75, 2.5],
                   override_groups_map=None,
                   deploy=deploy,
@@ -655,6 +659,7 @@ def REPVGG_A1(feat_dim,
               deploy=False,
               use_se=False):
     return RepVGG(num_blocks=[2, 4, 14, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[1, 1, 1, 2.5],
                   override_groups_map=None,
                   deploy=deploy,
@@ -670,6 +675,7 @@ def REPVGG_A2(feat_dim,
               deploy=False,
               use_se=False):
     return RepVGG(num_blocks=[2, 4, 14, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[1.5, 1.5, 1.5, 2.75],
                   override_groups_map=None,
                   deploy=deploy,
@@ -685,6 +691,7 @@ def REPVGG_RSBB_A2(feat_dim,
                    deploy=False,
                    use_se=False):
     return RepVGG(num_blocks=[2, 4, 14, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[1.5, 1.5, 1.5, 2.75],
                   override_groups_map=None,
                   deploy=deploy,
@@ -701,6 +708,7 @@ def REPVGG_B0(feat_dim,
               deploy=False,
               use_se=False):
     return RepVGG(num_blocks=[4, 6, 16, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[1, 1, 1, 2.5],
                   override_groups_map=None,
                   deploy=deploy,
@@ -716,6 +724,7 @@ def REPVGG_RSBB_B0(feat_dim,
                    deploy=False,
                    use_se=False):
     return RepVGG(num_blocks=[4, 6, 16, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[1, 1, 1, 2.5],
                   override_groups_map=None,
                   deploy=deploy,
@@ -732,6 +741,7 @@ def REPVGG_B1(feat_dim,
               deploy=False,
               use_se=False):
     return RepVGG(num_blocks=[4, 6, 16, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[2, 2, 2, 4],
                   override_groups_map=None,
                   deploy=deploy,
@@ -747,6 +757,7 @@ def REPVGG_B1g2(feat_dim,
                 deploy=False,
                 use_se=False):
     return RepVGG(num_blocks=[4, 6, 16, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[2, 2, 2, 4],
                   override_groups_map=g2_map,
                   deploy=deploy,
@@ -762,6 +773,7 @@ def REPVGG_B1g4(feat_dim,
                 deploy=False,
                 use_se=False):
     return RepVGG(num_blocks=[4, 6, 16, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[2, 2, 2, 4],
                   override_groups_map=g4_map,
                   deploy=deploy,
@@ -777,6 +789,7 @@ def REPVGG_B2(feat_dim,
               deploy=False,
               use_se=False):
     return RepVGG(num_blocks=[4, 6, 16, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[2.5, 2.5, 2.5, 5],
                   override_groups_map=None,
                   deploy=deploy,
@@ -792,6 +805,7 @@ def REPVGG_B2g2(feat_dim,
                 deploy=False,
                 use_se=False):
     return RepVGG(num_blocks=[4, 6, 16, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[2.5, 2.5, 2.5, 5],
                   override_groups_map=g2_map,
                   deploy=deploy,
@@ -807,6 +821,7 @@ def REPVGG_B2g4(feat_dim,
                 deploy=False,
                 use_se=False):
     return RepVGG(num_blocks=[4, 6, 16, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[2.5, 2.5, 2.5, 5],
                   override_groups_map=g4_map,
                   deploy=deploy,
@@ -822,6 +837,7 @@ def REPVGG_B3(feat_dim,
               deploy=False,
               use_se=False):
     return RepVGG(num_blocks=[4, 6, 16, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[3, 3, 3, 5],
                   override_groups_map=None,
                   deploy=deploy,
@@ -837,6 +853,7 @@ def REPVGG_B3g2(feat_dim,
                 deploy=False,
                 use_se=False):
     return RepVGG(num_blocks=[4, 6, 16, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[3, 3, 3, 5],
                   override_groups_map=g2_map,
                   deploy=deploy,
@@ -852,6 +869,7 @@ def REPVGG_B3g4(feat_dim,
                 deploy=False,
                 use_se=False):
     return RepVGG(num_blocks=[4, 6, 16, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[3, 3, 3, 5],
                   override_groups_map=g4_map,
                   deploy=deploy,
@@ -867,6 +885,7 @@ def REPVGG_D2SE(feat_dim,
                 deploy=False,
                 use_se=True):
     return RepVGG(num_blocks=[8, 14, 24, 1],
+                  strides=[1, 1, 2, 2, 2],
                   width_multiplier=[2.5, 2.5, 2.5, 5],
                   override_groups_map=g4_map,
                   deploy=deploy,
