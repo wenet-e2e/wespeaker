@@ -29,6 +29,8 @@ def run_epoch(dataloader,
               margin_scheduler,
               epoch,
               logger,
+              scaler,
+              enable_amp,
               log_batch_interval=100,
               device=torch.device('cuda')):
     model.train()
@@ -54,11 +56,14 @@ def run_epoch(dataloader,
 
             features = features.float().to(device)  # (B,T,F)
             targets = targets.long().to(device)
-            outputs = model(features)  # (embed_a,embed_b) in most cases
-            embeds = outputs[-1] if isinstance(outputs, tuple) else outputs
-            outputs = model.module.projection(embeds, targets)
 
-            loss = criterion(outputs, targets)
+            with torch.cuda.amp.autocast(enabled=enable_amp):
+                outputs = model(features)  # (embed_a,embed_b) in most cases
+                embeds = outputs[-1] if isinstance(outputs, tuple) else outputs
+                outputs = model.module.projection(embeds, targets)
+
+                loss = criterion(outputs, targets)
+
             # loss, acc
             loss_meter.add(loss.item())
             acc_meter.add(outputs.cpu().detach().numpy(),
@@ -66,8 +71,9 @@ def run_epoch(dataloader,
 
             # updata the model
             optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
 
             # log
             if (i + 1) % log_batch_interval == 0:

@@ -3,6 +3,7 @@
 exp_dir: exp/RepVGG-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
 gpus: "[0,1]"
 num_avg: 100
+enable_amp: False # whether enable automatic mixed precision training
 
 seed: 42
 num_epochs: 150
@@ -41,11 +42,11 @@ model_init: null
 model_args:
   feat_dim: 80
   embed_dim: 256 # 512
-  pooling_func: 'TSTP'
+  pooling_func: "TSTP"
   deploy: False
   use_se: False
 projection_args:
-  project_type: 'arc_margin' # add_margin, arc_margin, sphere, softmax
+  project_type: "arc_margin" # add_margin, arc_margin, sphere, softmax
   scale: 32.0
   easy_margin: False
 
@@ -56,7 +57,7 @@ margin_update:
   increase_start_epoch: 20
   fix_start_epoch: 40
   update_margin: True
-  increase_type: 'exp'  # exp, linear
+  increase_type: "exp" # exp, linear
 
 loss: CrossEntropyLoss
 loss_args: {}

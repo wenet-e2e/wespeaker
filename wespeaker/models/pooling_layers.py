@@ -47,7 +47,7 @@ class TSDP(nn.Module):
 
     def forward(self, x):
         # The last dimension is the temporal axis
-        pooling_std = torch.sqrt(torch.var(x, dim=-1) + 1e-8)
+        pooling_std = torch.sqrt(torch.var(x, dim=-1) + 1e-7)
         pooling_std = pooling_std.flatten(start_dim=1)
         return pooling_std
 
@@ -64,7 +64,7 @@ class TSTP(nn.Module):
     def forward(self, x):
         # The last dimension is the temporal axis
         pooling_mean = x.mean(dim=-1)
-        pooling_std = torch.sqrt(torch.var(x, dim=-1) + 1e-8)
+        pooling_std = torch.sqrt(torch.var(x, dim=-1) + 1e-7)
         pooling_mean = pooling_mean.flatten(start_dim=1)
         pooling_std = pooling_std.flatten(start_dim=1)
 
