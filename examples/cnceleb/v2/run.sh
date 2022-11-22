@@ -81,7 +81,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   model_path=$avg_model
   if [ $repvgg_convert == "true" ]; then
     echo "convert repvgg model ..."
-    python wespeaker/utils/convert_repvgg.py \
+    python wespeaker/models/convert_repvgg.py \
       --config $exp_dir/config.yaml \
       --load $avg_model \
       --save $exp_dir/models/covert_model.pt
