@@ -256,7 +256,7 @@ if __name__ == '__main__':
     num_params = sum(p.numel() for p in model.parameters())
     print("{} M".format(num_params / 1e6))
 
-    #from thop import profile
-    #x_np = torch.randn(1, 200, 80)
-    #flops, params = profile(model, inputs=(x_np, ))
-    #print("FLOPS: {} G, Params: {} M".format(flops / 1e9, params / 1e6))
+    # from thop import profile
+    # x_np = torch.randn(1, 200, 80)
+    # flops, params = profile(model, inputs=(x_np, ))
+    # print("FLOPS: {} G, Params: {} M".format(flops / 1e9, params / 1e6))
