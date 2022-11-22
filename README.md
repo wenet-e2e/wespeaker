@@ -37,8 +37,8 @@ pip3 install wespeakerruntime
 ## 🔥 News
 
 * 2022.11.22: We support Automatic Mixed Precision (AMP) training now, see [#103](https://github.com/wenet-e2e/wespeaker/pull/103).
-* 2022.11.22: RepVGG is implemented, see [#102](https://github.com/wenet-e2e/wespeaker/pull/102).
-* 2022.11.04: A two-convariance based PLDA is supported, check it out! [#95](https://github.com/wenet-e2e/wespeaker/pull/95)
+* 2022.11.22: RepVGG is supported, see [#102](https://github.com/wenet-e2e/wespeaker/pull/102).
+* 2022.11.04: A two-convariance based PLDA is implemented, check it out! [#95](https://github.com/wenet-e2e/wespeaker/pull/95)
 
 ## Recipes
 
