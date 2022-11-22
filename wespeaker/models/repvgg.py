@@ -17,10 +17,12 @@ Some modifications from the original architecture:
 REPVGG_TINY_A0: Smaller hidden_dim and Deeper structure
 
 Ref:
-1. RepVGG: Making VGG-style ConvNets Great Again (https://arxiv.org/pdf/2101.03697)
+1. RepVGG: Making VGG-style ConvNets Great Again
+   (https://arxiv.org/pdf/2101.03697)
    Github: https://github.com/DingXiaoH/RepVGG
 2. Rep Works in Speaker Verification (https://arxiv.org/pdf/2110.09720)
-3. asv-subtools: https://github.com/Snowdar/asv-subtools/blob/master/pytorch/libs/nnet/repvgg.py
+3. asv-subtools:
+   https://github.com/Snowdar/asv-subtools/blob/master/pytorch/libs/nnet/repvgg.py
 """
 
 import torch.nn as nn
@@ -35,8 +37,8 @@ g4_map = {l: 4 for l in optional_groupwise_layers}
 
 
 class SEBlock_2D(torch.nn.Module):
-    """ A SE Block layer layer which can learn to use global information to selectively emphasise informative 
-    features and suppress less useful ones.
+    """ A SE Block layer layer which can learn to use global information to
+    selectively emphasise informative features and suppress less useful ones.
     This is a pytorch implementation of SE Block based on the paper:
     Squeeze-and-Excitation Networks
     by JFChou xmuspeech 2019-07-13
@@ -45,7 +47,8 @@ class SEBlock_2D(torch.nn.Module):
 
     def __init__(self, in_planes, ratio=16, inplace=True):
         '''
-        @ratio: a reduction ratio which allows us to vary the capacity and computational cost of the SE blocks 
+        @ratio: a reduction ratio which allows us to vary the capacity
+        and computational cost of the SE blocks
         in the network.
         '''
         super(SEBlock_2D, self).__init__()
@@ -59,7 +62,8 @@ class SEBlock_2D(torch.nn.Module):
 
     def forward(self, inputs):
         """
-        @inputs: a 3-dimensional tensor (a batch), including [samples-index, frames-dim-index, frames-index]
+        @inputs: a 3-dimensional tensor (a batch),
+                 including [samples-index, frames-dim-index, frames-index]
         """
         assert len(inputs.shape) == 4
         assert inputs.shape[1] == self.in_planes
@@ -177,7 +181,8 @@ class RepVGGBlock(nn.Module):
                 "It's a training repvgg structure but branch conv not exits.")
 
     #   Optional. This improves the accuracy and facilitates quantization.
-    #   1.  Cancel the original weight decay on rbr_dense.conv.weight and rbr_1x1.conv.weight.
+    #   1.  Cancel the original weight decay on rbr_dense.conv.weight 
+    #       and rbr_1x1.conv.weight.
     #   2.  Use like this.
     #       loss = criterion(....)
     #       for every RepVGGBlock blk:
@@ -195,7 +200,8 @@ class RepVGGBlock(nn.Module):
                                          self.rbr_1x1.bn.eps).sqrt())).reshape(
                                              -1, 1, 1, 1).detach()
 
-        # The L2 loss of the "circle" of weights in 3x3 kernel. Use regular L2 on them.
+        # The L2 loss of the "circle" of weights in 3x3 kernel.
+        # Use regular L2 on them.
         l2_loss_circle = (K3**2).sum() - (K3[:, :, 1:2, 1:2]**2).sum()
         # The equivalent resultant central point of 3x3 kernel.
         eq_kernel = K3[:, :, 1:2, 1:2] * t3 + K1 * t1
@@ -205,8 +211,10 @@ class RepVGGBlock(nn.Module):
 
 
 #   This func derives the equivalent kernel and bias in a DIFFERENTIABLE way.
-#   You can get the equivalent kernel and bias at any time and do whatever you want,
-#   for example, apply some penalties or constraints during training, just like you do to the other models.
+#   You can get the equivalent kernel and bias 
+#   at any time and do whatever you want,
+#   for example, apply some penalties or constraints during training,
+#   just like you do to the other models.
 #   May be useful for quantization or pruning.
 
 
