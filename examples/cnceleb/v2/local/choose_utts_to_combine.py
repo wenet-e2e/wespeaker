@@ -2,6 +2,7 @@
 
 # Copyright 2016  Vijayaditya Peddinti
 #           2016  Johns Hopkins University (author: Daniel Povey)
+#           2022  Zhengyang Chen (chenzhengyang117@gmail.com)
 # Apache 2.0
 
 from __future__ import print_function
@@ -152,7 +153,7 @@ def CombineList(min_duration, durations):
         # by means of the combine_left variable [ True or False ]
         if left_dur == 0.0:
             combine_left = False
-        elif right_dur == 0.0:
+        elif right_dur == 0.0 or LessThan(min_duration, right_dur):
             combine_left = True
         elif LessThan(left_dur + this_dur, min_duration):
             # combining left would still be below the minimum duration->
@@ -216,11 +217,11 @@ def SelfTest():
     # in the two examples below, it combines with the shorter one if both would
     # be above min-dur.
     assert CombineList(0.5, [6.0, 0.1, 7.0]) == [(0, 2), (2, 3)]
-    assert CombineList(0.5, [7.0, 0.1, 6.0]) == [(0, 1), (1, 3)]
+    assert CombineList(0.5, [7.0, 0.1, 6.0]) == [(0, 2), (2, 3)]
     # in the example below, it combines with whichever one would
     # take it above the min-dur, if there is only one such.
     # note, it tests the 0.1 first as the queue is popped from the end.
-    assert CombineList(1.0, [1.0, 0.5, 0.1, 6.0]) == [(0, 2), (2, 4)]
+    assert CombineList(1.0, [1.0, 0.5, 0.1, 6.0]) == [(0, 3), (3, 4)]
 
     for x in range(100):
         min_duration = 0.05
