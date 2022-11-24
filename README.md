@@ -4,7 +4,7 @@
 [![Python-Version](https://img.shields.io/badge/Python-3.8%7C3.9-brightgreen)](https://github.com/wenet-e2e/wespeaker)
 
 [**Roadmap**](ROADMAP.md)
-| [**Awesome Papers**](docs/speaker_recognition_papers.md)
+| [**Paper**](https://arxiv.org/abs/2210.17016)
 | [**Runtime (x86_gpu)**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/server/x86_gpu)
 | [**Python binding**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/binding/python)
 | [**Pretrained Models**](docs/pretrained.md)
