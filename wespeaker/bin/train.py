@@ -195,7 +195,7 @@ def train(config='conf/config.yaml', **kwargs):
             logger.info(line)
     dist.barrier()  # synchronize here
 
-    scaler = torch.cuda.amp.GradScaler()
+    scaler = torch.cuda.amp.GradScaler(enabled=configs['enable_amp'])
     for epoch in range(start_epoch, configs['num_epochs'] + 1):
         # train_sampler.set_epoch(epoch)
         train_dataset.set_epoch(epoch)
