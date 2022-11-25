@@ -225,7 +225,7 @@ class Linear(nn.Module):
                                    nn.ReLU(inplace=True),
                                    nn.Linear(emb_dim, class_num))
 
-    def forward(self, input, label=None):
+    def forward(self, input, label):
         out = self.trans(input)
         return out
 
