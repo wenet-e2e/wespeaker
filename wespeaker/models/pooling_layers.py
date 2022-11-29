@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 Pooling functions to aggregate frame-level deep features
 into segment-level speaker embeddings
@@ -24,10 +23,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class TAP(nn.Module):
     """
     Temporal average pooling, only first-order mean is considered
     """
+
     def __init__(self, **kwargs):
         super(TAP, self).__init__()
 
@@ -42,6 +43,7 @@ class TSDP(nn.Module):
     """
     Temporal standard deviation pooling, only second-order std is considered
     """
+
     def __init__(self, **kwargs):
         super(TSDP, self).__init__()
 
@@ -58,6 +60,7 @@ class TSTP(nn.Module):
     x-vector
     Comment: simple concatenation can not make full use of both statistics
     """
+
     def __init__(self, **kwargs):
         super(TSTP, self).__init__()
 
@@ -76,6 +79,7 @@ class ASTP(nn.Module):
     """ Attentive statistics pooling: Channel- and context-dependent
         statistics pooling, first used in ECAPA_TDNN.
     """
+
     def __init__(self, in_dim, bottleneck_dim=128, global_context_att=False):
         super(ASTP, self).__init__()
         self.global_context_att = global_context_att
@@ -127,12 +131,19 @@ class MHASTP(torch.nn.Module):
         Self Multi-Head Attention for Speaker Recognition
         https://arxiv.org/pdf/1906.09890.pdf
     """
-    def __init__(self, in_dim, layer_num=2, head_num=2, d_s = 1, bottleneck_dim=64):
+
+    def __init__(self,
+                 in_dim,
+                 layer_num=2,
+                 head_num=2,
+                 d_s=1,
+                 bottleneck_dim=64):
         super(MHASTP, self).__init__()
-        assert (in_dim % head_num) == 0 # make sure that head num can be divided by input_dim
+        assert (in_dim % head_num
+                ) == 0  # make sure that head num can be divided by input_dim
         self.head_num = head_num
         d_model = int(in_dim / head_num)
-        channel_dims = [bottleneck_dim for i in range(layer_num+1)]
+        channel_dims = [bottleneck_dim for i in range(layer_num + 1)]
         if d_s > 1:
             d_s = d_model
         else:
@@ -142,10 +153,15 @@ class MHASTP(torch.nn.Module):
         heads_att_trans = []
         for i in range(self.head_num):
             att_trans = nn.Sequential()
-            for i in range(layer_num-1):
-                att_trans.add_module('att_' + str(i), nn.Conv1d(channel_dims[i], channel_dims[i+1], 1, 1))
+            for i in range(layer_num - 1):
+                att_trans.add_module(
+                    'att_' + str(i),
+                    nn.Conv1d(channel_dims[i], channel_dims[i + 1], 1, 1))
                 att_trans.add_module('tanh' + str(i), nn.Tanh())
-            att_trans.add_module('att_' + str(layer_num-1), nn.Conv1d(channel_dims[layer_num-1], channel_dims[layer_num], 1, 1))
+            att_trans.add_module(
+                'att_' + str(layer_num - 1),
+                nn.Conv1d(channel_dims[layer_num - 1], channel_dims[layer_num],
+                          1, 1))
             heads_att_trans.append(att_trans)
         self.heads_att_trans = nn.ModuleList(heads_att_trans)
 
@@ -160,7 +176,7 @@ class MHASTP(torch.nn.Module):
             att_score = layer(chunks[i])
             alpha = F.softmax(att_score, dim=-1)
             mean = torch.sum(alpha * chunks[i], dim=2)
-            var = torch.sum(alpha * chunks[i] ** 2, dim=2) - mean ** 2
+            var = torch.sum(alpha * chunks[i]**2, dim=2) - mean**2
             std = torch.sqrt(var.clamp(min=1e-10))
             chunks_out.append(torch.cat((mean, std), dim=1))
         out = torch.cat(chunks_out, dim=1)
@@ -184,9 +200,22 @@ class MQMHASTP(torch.nn.Module):
     AS (H = 1, Q > 1, n = 2, d_s = 1) ref: https://arxiv.org/pdf/1803.10963.pdf
     VSA (H = 1, Q > 1, n = 2, d_s = d_h) ref: http://www.interspeech2020.org/uploadfile/pdf/Mon-2-10-5.pdf
     """
-    def __init__(self, in_dim, layer_num=2, query_num=2, head_num=8, d_s = 2, bottleneck_dim=64):
+
+    def __init__(self,
+                 in_dim,
+                 layer_num=2,
+                 query_num=2,
+                 head_num=8,
+                 d_s=2,
+                 bottleneck_dim=64):
         super(MQMHASTP, self).__init__()
-        self.n_query = nn.ModuleList([MHASTP(in_dim, layer_num = layer_num, head_num = head_num, d_s = d_s, bottleneck_dim=bottleneck_dim) for i in range(query_num)])
+        self.n_query = nn.ModuleList([
+            MHASTP(in_dim,
+                   layer_num=layer_num,
+                   head_num=head_num,
+                   d_s=d_s,
+                   bottleneck_dim=bottleneck_dim) for i in range(query_num)
+        ])
         self.query_num = query_num
 
     def forward(self, input):
@@ -195,22 +224,24 @@ class MQMHASTP(torch.nn.Module):
             or a 4-dimensional tensor in resnet architecture
             0-dim: batch-dimension, last-dim: time-dimension (frame-dimension)
         """
-        if len(input.shape) == 4: # B x F x T
-            input = input.reshape(input.shape[0], input.shape[1]*input.shape[2], input.shape[3])
+        if len(input.shape) == 4:  # B x F x T
+            input = input.reshape(input.shape[0],
+                                  input.shape[1] * input.shape[2],
+                                  input.shape[3])
         assert len(input.shape) == 3
         res = []
         for i, layer in enumerate(self.n_query):
             res.append(layer(input))
-        out = torch.cat(res, dim = -1)
+        out = torch.cat(res, dim=-1)
         return out
+
 
 if __name__ == '__main__':
     data = torch.randn(16, 512, 10, 35)
     # model = AttentiveStatisticsPooling(input_dim=512, affine_layers=3, norm_way='softmax',stddev=True)
     # model = StatisticsPooling()
-    model = MQMHASTP(512*10)
+    model = MQMHASTP(512 * 10)
     print(model)
 
     out = model(data)
     print(out.shape)
-
