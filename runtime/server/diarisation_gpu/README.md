@@ -31,7 +31,7 @@ Clone the repository:
 # Clond WeSpeaker repo
 git clone https://github.com/wenet-e2e/wespeaker.git
 export WeSpeaker=$PWD/wespeaker/
-cd runtime???
+cd runtime/server/diarisation_gpu
 export PROJECT_DIR=$PWD
 
 ```
@@ -72,8 +72,7 @@ cp external_tools/silero-vad-3.1/files/silero_vad.jit $SAD_DIR/
 
 You can use the following command to access the evluation datas from voxconverse:
 
-bash
-```
+```bash
 bash $WeSpeaker/examples/voxconverse/v1/run.sh --stage 2 --stop_stage 2
 ```
 
@@ -104,9 +103,7 @@ Run the following commands to put the pretrained SAD and Speaker models into cur
 
 ```bash
 cd ${PROJECT_DIR}
-
 mkdir -p model_repo/run/1
-
 cp -r $SPK_MODEL_REPO/* model_repo/
 
 ```
@@ -171,8 +168,7 @@ Finally, you can get the RTTM information in `$output_directory/rttm`.
 
 If you want to test the performances of our SD pipeline, you can run: 
 
-bash
-```
+```bash
 perl external_tools/SCTK-2.4.12/src/md-eval/md-eval.pl \
     -c 0.25 \
     -r <(cat data/voxconverse-master/dev/*.rttm) \
