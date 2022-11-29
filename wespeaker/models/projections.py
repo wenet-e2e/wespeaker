@@ -130,9 +130,11 @@ class ArcMarginProduct(nn.Module):
 class ArcMarginProduct_intertopk_subcenter(nn.Module):
     r"""Implement of large margin arc distance with intertopk and subcenter:
         Reference:
-            MULTI-QUERY MULTI-HEAD ATTENTION POOLING AND INTER-TOPK PENALTY FOR SPEAKER VERIFICATION 
+            MULTI-QUERY MULTI-HEAD ATTENTION POOLING AND INTER-TOPK PENALTY
+            FOR SPEAKER VERIFICATION.
             https://arxiv.org/pdf/2110.05042.pdf
-            Sub-center ArcFace: Boosting Face Recognition by Large-Scale Noisy Web Faces
+            Sub-center ArcFace: Boosting Face Recognition by
+            Large-Scale Noisy Web Faces.
             https://ibug.doc.ic.ac.uk/media/uploads/documents/eccv_1445.pdf
         Args:
             in_features: size of each input sample
@@ -238,9 +240,10 @@ class ArcMarginProduct_intertopk_subcenter(nn.Module):
         return output
 
     def extra_repr(self):
-        return 'in_features={}, out_features={}, scale={}, margin={}, easy_margin={} K={} mp={} k_top={}'.format(
-            self.in_features, self.out_features, self.scale, self.margin,
-            self.easy_margin, self.K, self.mp, self.k_top)
+        return 'in_features={}, out_features={}, scale={}, margin={}, easy_margin={},' \
+            'K={}, mp={}, k_top={}'.format(
+                self.in_features, self.out_features, self.scale, self.margin,
+                self.easy_margin, self.K, self.mp, self.k_top)
 
 
 class AddMarginProduct(nn.Module):

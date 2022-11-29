@@ -195,10 +195,14 @@ class MQMHASTP(torch.nn.Module):
         head_num: the number of heads
         bottleneck_dim: the bottleneck dimension
 
-    SA (H = 1, Q = 1, n = 2, d_s = 1) ref: https://www.danielpovey.com/files/2018_interspeech_xvector_attention.pdf
-    MHA (H > 1, Q = 1, n = 1, d_s = 1) ref: https://arxiv.org/pdf/1906.09890.pdf
-    AS (H = 1, Q > 1, n = 2, d_s = 1) ref: https://arxiv.org/pdf/1803.10963.pdf
-    VSA (H = 1, Q > 1, n = 2, d_s = d_h) ref: http://www.interspeech2020.org/uploadfile/pdf/Mon-2-10-5.pdf
+    SA (H = 1, Q = 1, n = 2, d_s = 1) ref:
+        https://www.danielpovey.com/files/2018_interspeech_xvector_attention.pdf
+    MHA (H > 1, Q = 1, n = 1, d_s = 1) ref:
+        https://arxiv.org/pdf/1906.09890.pdf
+    AS (H = 1, Q > 1, n = 2, d_s = 1) ref:
+        https://arxiv.org/pdf/1803.10963.pdf
+    VSA (H = 1, Q > 1, n = 2, d_s = d_h) ref:
+        http://www.interspeech2020.org/uploadfile/pdf/Mon-2-10-5.pdf
     """
 
     def __init__(self,
@@ -238,7 +242,6 @@ class MQMHASTP(torch.nn.Module):
 
 if __name__ == '__main__':
     data = torch.randn(16, 512, 10, 35)
-    # model = AttentiveStatisticsPooling(input_dim=512, affine_layers=3, norm_way='softmax',stddev=True)
     # model = StatisticsPooling()
     model = MQMHASTP(512 * 10)
     print(model)
