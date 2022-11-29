@@ -113,11 +113,10 @@ if __name__ == '__main__':
         if not os.path.exists(dir_name) and (dir_name != ''):
             os.makedirs(dir_name)
         seg_writer = open(os.path.join(FLAGS.output_directory,
-                                       'rttm'+str(idx)), 'w', encoding="utf-8")
+                                       'rttm' + str(idx)), 'w', encoding="utf-8")
 
-        with grpcclient.InferenceServerClient(
-                        url=FLAGS.url,
-                        verbose=FLAGS.verbose) as triton_client:
+        with grpcclient.InferenceServerClient(url=FLAGS.url,
+                                              verbose=FLAGS.verbose) as triton_client:
             protocol_client = grpcclient
             speech_client = SpeakerClient(triton_client, FLAGS.model_name,
                                           protocol_client)
@@ -137,7 +136,7 @@ if __name__ == '__main__':
                                                  channel,
                                                  begin,
                                                  end - begin,
-                                                 label)+'\n')
+                                                 label) + '\n')
                     seg_writer.flush()
         return predictions
 

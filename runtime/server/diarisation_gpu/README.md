@@ -2,7 +2,7 @@
 
 In this best practice, we'll go through how to deploy a WeSpeaker diarisation pipeline in GPU by using NVIDIA [Triton Inference Server](https://github.com/triton-inference-server/server), which contains several modules including SAD, Speaker Embedding Extraction, Clustering and etc.
 
-We will use [Triton Business Logic Scripting](https://github.com/triton-inference-server/python_backend#business-logic-scripting) (BLS) to implement this pipeline. 
+We will use [Triton Business Logic Scripting](https://github.com/triton-inference-server/python_backend#business-logic-scripting) (BLS) to implement this pipeline.
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@ We will use [Triton Business Logic Scripting](https://github.com/triton-inferenc
 
 ## Preparation
 
-Let's prepare enrivonments, models and data first. 
+Let's prepare enrivonments, models and data first.
 
 ### Prepare Environment
 
@@ -38,7 +38,7 @@ export PROJECT_DIR=$PWD
 
 ### Prepare Models
 
-To depoloy this pipeline, first we should obtain SAD and Speaker models.  
+To depoloy this pipeline, first we should obtain SAD and Speaker models.
 
 #### Speaker Models
 
@@ -50,7 +50,7 @@ mkdir -p ${SPK_MODEL_DIR}
 wget -c https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34_LM.onnx -O ${SPK_MODEL_DIR}/voxceleb_resnet34_LM.onnx
 ```
 
-Then you can follow the best practice of [GPU deployment](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/server/x86_gpu) to deploy the WeSpeaker model in Triton. 
+Then you can follow the best practice of [GPU deployment](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/server/x86_gpu) to deploy the WeSpeaker model in Triton.
 After that, speaker models will be avaliable in `wespeaker/runtime/server/x86_gpu/model_repo/` directory.
 
 ```bash
@@ -59,7 +59,7 @@ export SPK_MODEL_REPO="wespeaker/runtime/server/x86_gpu/model_repo/"
 
 #### SAD Models
 
-Speaker activity detection model: system SAD (VAD model pretrained by [silero](https://github.com/snakers4/silero-vad)). 
+Speaker activity detection model: system SAD (VAD model pretrained by [silero](https://github.com/snakers4/silero-vad)).
 
 ```bash
 export SAD_DIR=/workspace/SAD
@@ -76,7 +76,7 @@ You can use the following command to access the evluation datas from voxconverse
 bash $WeSpeaker/examples/voxconverse/v1/run.sh --stage 2 --stop_stage 2
 ```
 
-If you are using your own data, you can evaluate the audio one by one. Or you should preapre a `wav.scp`, which contains a list of audios. For example, 
+If you are using your own data, you can evaluate the audio one by one. Or you should preapre a `wav.scp`, which contains a list of audios. For example,
 
 ```
 abjxc abjxc.wav
@@ -128,12 +128,12 @@ Business Logic Scripting (BLS) can execute inference requests on other models be
 
 ## Inference Client
 
-In this section, we will show how to send requests to our deployed SD service, and receive the RTTM results. 
+In this section, we will show how to send requests to our deployed SD service, and receive the RTTM results.
 
 
 ### Quick Start
 
-Run, 
+Run,
 
 ```bash
 AUDIO_DATA=<path to your test wav files>
@@ -162,11 +162,11 @@ python client.py --url=localhost:8001 --wavscp=$wav_scp_dir/wav.scp --output_dir
 cat $output_directory/rttm* > $output_directory/rttm
 ```
 
-Finally, you can get the RTTM information in `$output_directory/rttm`. 
+Finally, you can get the RTTM information in `$output_directory/rttm`.
 
 ### Compute Metrics
 
-If you want to test the performances of our SD pipeline, you can run: 
+If you want to test the performances of our SD pipeline, you can run:
 
 ```bash
 perl external_tools/SCTK-2.4.12/src/md-eval/md-eval.pl \

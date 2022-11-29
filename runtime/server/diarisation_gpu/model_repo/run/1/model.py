@@ -36,8 +36,8 @@ class TritonPythonModel:
             self.device = "cpu"
 
         # Get OUTPUT0 configuration
-        output0_config = pb_utils.get_output_config_by_name(
-                model_config, "LABELS")
+        output0_config = pb_utils.get_output_config_by_name(model_config, 
+                                                            "LABELS")
         # Convert Triton types to numpy types
         self.output0_dtype = pb_utils.triton_string_to_numpy(
             output0_config['data_type'])
@@ -62,9 +62,8 @@ class TritonPythonModel:
             chunk = wav[current_start_sample:
                         current_start_sample + window_size_samples]
             if len(chunk) < window_size_samples:
-                chunk = torch.nn.functional.pad(
-                            chunk,
-                            (0, int(window_size_samples - len(chunk))))
+                chunk = torch.nn.functional.pad(chunk,
+                                                (0, int(window_size_samples - len(chunk))))
             speech_prob = self.sad_model(chunk, 16000)
             chunks.append(speech_prob)
         return chunks
@@ -119,11 +118,11 @@ class TritonPythonModel:
                 speech['start'] = int(max(0,
                                       speech['start'] - speech_pad_samples))
             if i != len(speeches) - 1:
-                silence_duration = speeches[i+1]['start'] - speech['end']
+                silence_duration = speeches[i + 1]['start'] - speech['end']
                 if silence_duration < 2 * speech_pad_samples:
                     speech['end'] += int(silence_duration // 2)
-                    speeches[i+1]['start'] = int(max(0, speeches[i+1]['start']
-                                                     - silence_duration // 2))
+                    speeches[i + 1]['start'] = int(max(0,
+                                                       speeches[i + 1]['start'] - silence_duration // 2))
                 else:
                     speech['end'] += int(speech_pad_samples)
             else:
@@ -299,14 +298,13 @@ class TritonPythonModel:
 
         inference_response_awaits = []
         for wavs in total_subsegments:
-            input_tensor_spk0 = pb_utils.Tensor.from_dlpack(
-                                    "WAV", to_dlpack(wavs))
+            input_tensor_spk0 = pb_utils.Tensor.from_dlpack("WAV",
+                                                            to_dlpack(wavs))
 
             input_tensors_spk = [input_tensor_spk0]
-            inference_request = pb_utils.InferenceRequest(
-                                 model_name='speaker',
-                                 requested_output_names=['EMBEDDINGS'],
-                                 inputs=input_tensors_spk)
+            inference_request = pb_utils.InferenceRequest(model_name='speaker',
+                                                          requested_output_names=['EMBEDDINGS'],
+                                                          inputs=input_tensors_spk)
             inference_response_awaits.append(inference_request.async_exec())
 
         inference_responses = await asyncio.gather(
@@ -314,11 +312,11 @@ class TritonPythonModel:
 
         for inference_response in inference_responses:
             if inference_response.has_error():
-                raise pb_utils.TritonModelException(
-                          inference_response.error().message())
+                raise pb_utils.TritonModelException(inference_response.
+                                                    error().message())
             else:
-                batched_result = pb_utils.get_output_tensor_by_name(
-                                 inference_response, 'EMBEDDINGS')
+                batched_result = pb_utils.get_output_tensor_by_name(inference_response,
+                                                                    'EMBEDDINGS')
                 total_embds.extend(from_dlpack(batched_result.to_dlpack()))
 
         out_embds = list()
@@ -336,16 +334,14 @@ class TritonPythonModel:
         inference_response_awaits = []
         for i, embd in enumerate(out_embds):
             embd = torch.stack(embd)
-            input_tensor_embds0 = pb_utils.Tensor.from_dlpack(
-                                  "EMBEDDINGS",
-                                  to_dlpack(torch.unsqueeze(embd, 0)))
+            input_tensor_embds0 = pb_utils.Tensor.from_dlpack("EMBEDDINGS",
+                                                              to_dlpack(torch.unsqueeze(embd, 0)))
 
             input_tensors_spk = [input_tensor_embds0]
-            inference_request = pb_utils.InferenceRequest(
-                                 model_name='clusterer',
-                                 requested_output_names=['LABELS'],
-                                 request_id=str(i),
-                                 inputs=input_tensors_spk)
+            inference_request = pb_utils.InferenceRequest(model_name='clusterer',
+                                                          requested_output_names=['LABELS'],
+                                                          request_id=str(i),
+                                                          inputs=input_tensors_spk)
             inference_response_awaits.append(inference_request.async_exec())
 
         inference_responses = await asyncio.gather(
@@ -355,11 +351,11 @@ class TritonPythonModel:
         results = []
         for inference_response in inference_responses:
             if inference_response.has_error():
-                raise pb_utils.TritonModelException(
-                          inference_response.error().message())
+                raise pb_utils.TritonModelException(inference_response.
+                                                    error().message())
             else:
-                result = pb_utils.get_output_tensor_by_name(
-                         inference_response, 'LABELS').as_numpy()[0]
+                result = pb_utils.get_output_tensor_by_name(inference_response,
+                                                            'LABELS').as_numpy()[0]
                 utt_to_subseg_labels = self.read_labels(out_time_info[i],
                                                         result)
                 i += 1
@@ -372,8 +368,7 @@ class TritonPythonModel:
         for b in batch_count:
             sents = np.array(results[st:st + b])
             out0 = pb_utils.Tensor("LABELS", sents.astype(self.output0_dtype))
-            inference_response = pb_utils.InferenceResponse(
-                                     output_tensors=[out0])
+            inference_response = pb_utils.InferenceResponse(output_tensors=[out0])
             responses.append(inference_response)
             st += b
         return responses
