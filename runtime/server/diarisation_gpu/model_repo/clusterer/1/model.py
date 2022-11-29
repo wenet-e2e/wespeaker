@@ -158,6 +158,6 @@ class TritonPythonModel:
             out0 = pb_utils.Tensor("LABELS",
                                    batch_labels.astype(self.output0_dtype))
             inference_response = pb_utils.InferenceResponse(
-                                 output_tensors=[out0])
+                output_tensors=[out0])
             responses.append(inference_response)
         return responses

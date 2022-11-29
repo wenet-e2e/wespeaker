@@ -28,7 +28,7 @@ output [
   {
     name: "LABELS"
     data_type: TYPE_INT32
-    dims: [ -1 ] 
+    dims: [ -1 ]
   }
 ]
 

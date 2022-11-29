@@ -36,7 +36,7 @@ class TritonPythonModel:
             self.device = "cpu"
 
         # Get OUTPUT0 configuration
-        output0_config = pb_utils.get_output_config_by_name(model_config, 
+        output0_config = pb_utils.get_output_config_by_name(model_config,
                                                             "LABELS")
         # Convert Triton types to numpy types
         self.output0_dtype = pb_utils.triton_string_to_numpy(
@@ -62,8 +62,8 @@ class TritonPythonModel:
             chunk = wav[current_start_sample:
                         current_start_sample + window_size_samples]
             if len(chunk) < window_size_samples:
-                chunk = torch.nn.functional.pad(chunk,
-                                                (0, int(window_size_samples - len(chunk))))
+                chunk = torch.nn.functional.pad(
+                    chunk, (0, int(window_size_samples - len(chunk))))
             speech_prob = self.sad_model(chunk, 16000)
             chunks.append(speech_prob)
         return chunks
@@ -121,8 +121,8 @@ class TritonPythonModel:
                 silence_duration = speeches[i + 1]['start'] - speech['end']
                 if silence_duration < 2 * speech_pad_samples:
                     speech['end'] += int(silence_duration // 2)
-                    speeches[i + 1]['start'] = int(max(0,
-                                                       speeches[i + 1]['start'] - silence_duration // 2))
+                    speeches[i + 1]['start'] = int(
+                        max(0, speeches[i + 1]['start'] - silence_duration // 2))
                 else:
                     speech['end'] += int(speech_pad_samples)
             else:
@@ -334,8 +334,8 @@ class TritonPythonModel:
         inference_response_awaits = []
         for i, embd in enumerate(out_embds):
             embd = torch.stack(embd)
-            input_tensor_embds0 = pb_utils.Tensor.from_dlpack("EMBEDDINGS",
-                                                              to_dlpack(torch.unsqueeze(embd, 0)))
+            input_tensor_embds0 = pb_utils.Tensor.from_dlpack(
+                "EMBEDDINGS", to_dlpack(torch.unsqueeze(embd, 0)))
 
             input_tensors_spk = [input_tensor_embds0]
             inference_request = pb_utils.InferenceRequest(model_name='clusterer',
