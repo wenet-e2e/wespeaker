@@ -151,6 +151,8 @@ class ResNet(nn.Module):
         self.n_stats = 1 if pooling_func == 'TAP' or pooling_func == "TSDP" else 2
         self.pool = getattr(pooling_layers, pooling_func)(
             in_dim=self.stats_dim * block.expansion)
+        if pooling_func == 'MQMHASTP':
+            self.n_stats *= self.pool.query_num
         self.seg_1 = nn.Linear(self.stats_dim * block.expansion * self.n_stats,
                                embed_dim)
         if self.two_emb_layer:
