@@ -148,10 +148,10 @@ class ResNet(nn.Module):
                                        num_blocks[3],
                                        stride=2)
 
-        self.n_stats = 1 if pooling_func == 'TAP' or pooling_func == "TSDP" else 2
         self.pool = getattr(pooling_layers, pooling_func)(
             in_dim=self.stats_dim * block.expansion)
-        self.seg_1 = nn.Linear(self.stats_dim * block.expansion * self.n_stats,
+        self.pool_out_dim = self.pool.get_out_dim()
+        self.seg_1 = nn.Linear(self.pool_out_dim,
                                embed_dim)
         if self.two_emb_layer:
             self.seg_bn_1 = nn.BatchNorm1d(embed_dim, affine=False)
@@ -248,7 +248,7 @@ def ResNet293(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
 
 
 if __name__ == '__main__':
-    model = ResNet34(feat_dim=80, embed_dim=256, pooling_func='TSTP')
+    model = ResNet34(feat_dim=80, embed_dim=256, pooling_func='MQMHASTP')
     model.eval()
     y = model(torch.randn(10, 200, 80))
     print(y[-1].size())

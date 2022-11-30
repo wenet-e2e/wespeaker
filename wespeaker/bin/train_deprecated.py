@@ -123,6 +123,7 @@ def train(config='conf/config.yaml', **kwargs):
     if configs['feature_args']['raw_wav'] and configs['dataset_args']['speed_perturb']:
         # diff speed is regarded as diff spk
         configs['projection_args']['num_class'] *= 3
+    configs['projection_args']['do_lm'] = config.get('do_lm', False)
     projection = get_projection(configs['projection_args'])
     model.add_module("projection", projection)
     if rank == 0:

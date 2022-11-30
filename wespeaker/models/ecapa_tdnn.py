@@ -191,11 +191,11 @@ class ECAPA_TDNN(nn.Module):
         cat_channels = channels * 3
         out_channels = 512 * 3
         self.conv = nn.Conv1d(cat_channels, out_channels, kernel_size=1)
-        self.n_stats = 1 if pooling_func == 'TAP' or pooling_func == "TSDP" else 2
         self.pool = getattr(pooling_layers, pooling_func)(
             in_dim=out_channels, global_context_att=global_context_att)
-        self.bn = nn.BatchNorm1d(out_channels * self.n_stats)
-        self.linear = nn.Linear(out_channels * self.n_stats, embed_dim)
+        self.pool_out_dim = self.pool.get_out_dim()
+        self.bn = nn.BatchNorm1d(self.pool_out_dim)
+        self.linear = nn.Linear(self.pool_out_dim, embed_dim)
 
     def forward(self, x):
         x = x.permute(0, 2, 1)  # (B,T,F) -> (B,F,T)
@@ -247,7 +247,7 @@ if __name__ == '__main__':
     x = torch.zeros(10, 200, 80)
     model = ECAPA_TDNN_GLOB_c512(feat_dim=80,
                                  embed_dim=192,
-                                 pooling_func='ASTP')
+                                 pooling_func='MQMHASTP')
     model.eval()
     out = model(x)
     print(out.shape)

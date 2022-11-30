@@ -520,10 +520,10 @@ class RepVGG(nn.Module):
         self.output_planes = self.in_planes
         self.stats_dim = self.output_planes * int(feat_dim / 8)
 
-        self.n_stats = 1 if pooling_func == "TAP" or pooling_func == "TSDP" else 2
         self.pool = getattr(pooling_layers,
                             pooling_func)(in_dim=self.stats_dim)
-        self.seg = nn.Linear(self.stats_dim * self.n_stats, embed_dim)
+        self.pool_out_dim = self.pool.get_out_dim()
+        self.seg = nn.Linear(self.pool_out_dim, embed_dim)
 
         # init paramters
         for m in self.modules():
@@ -898,7 +898,7 @@ def REPVGG_D2SE(feat_dim,
 if __name__ == '__main__':
     model = REPVGG_TINY_A0(feat_dim=80,
                            embed_dim=256,
-                           pooling_func='TSTP',
+                           pooling_func='TAP',
                            deploy=False,
                            use_se=False)
     model.eval()
