@@ -36,9 +36,9 @@ pip3 install wespeakerruntime
 
 ## 🔥 News
 
+* 2022.11.30: Multi-Query Multi-Head Attentive Pooling (MQMHASTP) and Intertopk-Subcenter Loss are supported, see [#115](https://github.com/wenet-e2e/wespeaker/pull/115)
 * 2022.11.22: We support Automatic Mixed Precision (AMP) training now, see [#103](https://github.com/wenet-e2e/wespeaker/pull/103).
 * 2022.11.22: RepVGG is supported, see [#102](https://github.com/wenet-e2e/wespeaker/pull/102).
-* 2022.11.04: A two-convariance based PLDA is implemented, check it out! [#95](https://github.com/wenet-e2e/wespeaker/pull/95)
 
 ## Recipes
 
@@ -63,12 +63,15 @@ pip3 install wespeakerruntime
     - [x] TAP(mean) / TSDP(std) / TSTP(mean+std)
         - Comparison of mean/std pooling can be found in [shuai_iscslp](https://x-lance.sjtu.edu.cn/en/papers/2021/iscslp21_shuai_1_.pdf), [anna_arxiv](https://arxiv.org/pdf/2203.10300.pdf)
     - [x] Attentive Statistics Pooling (ASTP)
-        - mainly for ECAPA_TDNN
+        - Mainly for ECAPA_TDNN
+    - [x] Multi-Query and Multi-Head Attentive Statistics Pooling (MQMHASTP)
+        - Details can be found in [MQMHASTP](https://arxiv.org/pdf/2110.05042.pdf)
 * Criteria
     - [x] Softmax
     - [x] [Sphere (A-Softmax)](https://www.researchgate.net/publication/327389164)
     - [x] [Add_Margin (AM-Softmax)](https://arxiv.org/pdf/1801.05599.pdf)
     - [x] [Arc_Margin (AAM-Softmax)](https://arxiv.org/pdf/1801.07698v1.pdf)
+    - [x] [Arc_Margin+Inter-topk+Sub-center](https://arxiv.org/pdf/2110.05042.pdf)
 * Scoring
     - [x] Cosine
     - [x] PLDA
