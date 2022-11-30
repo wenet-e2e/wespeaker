@@ -49,10 +49,10 @@ model_init: null
 model_args:
   feat_dim: 80
   embed_dim: 256
-  pooling_func: "TSTP"
+  pooling_func: "TSTP" # TSTP, ASTP, MQMHASTP
   two_emb_layer: False
 projection_args:
-  project_type: "arc_margin" # add_margin, arc_margin, sphere, softmax
+  project_type: "arc_margin" # add_margin, arc_margin, sphere, softmax, arc_margin_intertopk_subcenter
   scale: 32.0
   easy_margin: False
 

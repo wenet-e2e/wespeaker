@@ -78,9 +78,9 @@ class XVEC(nn.Module):
                                  context_size=1,
                                  dilation=1)
 
-        self.n_stats = 1 if pooling_func == 'TAP' or pooling_func == "TSDP" else 2
         self.pool = getattr(pooling_layers, pooling_func)(in_dim=stats_dim)
-        self.seg_1 = nn.Linear(stats_dim * self.n_stats, embed_dim)
+        self.pool_out_dim = self.pool.get_out_dim()
+        self.seg_1 = nn.Linear(self.pool_out_dim, embed_dim)
         self.seg_bn_1 = nn.BatchNorm1d(embed_dim, affine=False)
         self.seg_2 = nn.Linear(embed_dim, embed_dim)
 

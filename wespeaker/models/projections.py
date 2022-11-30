@@ -33,6 +33,17 @@ def get_projection(conf):
                                       scale=conf['scale'],
                                       margin=0.0,
                                       easy_margin=conf['easy_margin'])
+    elif conf['project_type'] == 'arc_margin_intertopk_subcenter':
+        projection = ArcMarginProduct_intertopk_subcenter(
+            conf['embed_dim'],
+            conf['num_class'],
+            scale=conf['scale'],
+            margin=0.0,
+            easy_margin=conf['easy_margin'],
+            K=conf.get('K', 3),
+            mp=conf.get('mp', 0.06),
+            k_top=conf.get('k_top', 5),
+            do_lm=conf.get('do_lm', False))
     elif conf['project_type'] == 'sphere':
         projection = SphereProduct(conf['embed_dim'],
                                    conf['num_class'],
@@ -52,6 +63,7 @@ class ArcMarginProduct(nn.Module):
             margin: margin
             cos(theta + margin)
         """
+
     def __init__(self,
                  in_features,
                  out_features,
@@ -63,7 +75,8 @@ class ArcMarginProduct(nn.Module):
         self.out_features = out_features
         self.scale = scale
         self.margin = margin
-        self.weight = nn.Parameter(torch.FloatTensor(out_features, in_features))
+        self.weight = nn.Parameter(torch.FloatTensor(out_features,
+                                                     in_features))
         nn.init.xavier_uniform_(self.weight)
 
         self.easy_margin = easy_margin
@@ -115,6 +128,132 @@ class ArcMarginProduct(nn.Module):
                                                       self.easy_margin)
 
 
+class ArcMarginProduct_intertopk_subcenter(nn.Module):
+    r"""Implement of large margin arc distance with intertopk and subcenter:
+        Reference:
+            MULTI-QUERY MULTI-HEAD ATTENTION POOLING AND INTER-TOPK PENALTY
+            FOR SPEAKER VERIFICATION.
+            https://arxiv.org/pdf/2110.05042.pdf
+            Sub-center ArcFace: Boosting Face Recognition by
+            Large-Scale Noisy Web Faces.
+            https://ibug.doc.ic.ac.uk/media/uploads/documents/eccv_1445.pdf
+        Args:
+            in_features: size of each input sample
+            out_features: size of each output sample
+            scale: norm of input feature
+            margin: margin
+            cos(theta + margin)
+            K: number of sub-centers
+            k_top: number of hard samples
+            mp: margin penalty of hard samples
+            do_lm: whether do large margin finetune
+        """
+
+    def __init__(self,
+                 in_features,
+                 out_features,
+                 scale=32.0,
+                 margin=0.2,
+                 easy_margin=False,
+                 K=3,
+                 mp=0.06,
+                 k_top=5,
+                 do_lm=False):
+        super(ArcMarginProduct_intertopk_subcenter, self).__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.scale = scale
+        self.margin = margin
+        self.do_lm = do_lm
+
+        # intertopk + subcenter
+        self.K = K
+        if do_lm:  # if do LMF, remove hard sample penalty
+            self.mp = 0.0
+            self.k_top = 0
+        else:
+            self.mp = mp
+            self.k_top = k_top
+
+        # initial classifier
+        self.weight = nn.Parameter(
+            torch.FloatTensor(self.K * out_features, in_features))
+        nn.init.xavier_uniform_(self.weight)
+
+        self.easy_margin = easy_margin
+        self.cos_m = math.cos(margin)
+        self.sin_m = math.sin(margin)
+        self.th = math.cos(math.pi - margin)
+        self.mm = math.sin(math.pi - margin) * margin
+        self.mmm = 1.0 + math.cos(
+            math.pi - margin)  # this can make the output more continuous
+        ########
+        self.m = self.margin
+        ########
+        self.cos_mp = math.cos(0.0)
+        self.sin_mp = math.sin(0.0)
+
+    def update(self, margin=0.2):
+        self.margin = margin
+        self.cos_m = math.cos(margin)
+        self.sin_m = math.sin(margin)
+        self.th = math.cos(math.pi - margin)
+        self.mm = math.sin(math.pi - margin) * margin
+        self.m = self.margin
+        self.mmm = 1.0 + math.cos(math.pi - margin)
+
+        # hard sample margin is increasing as margin
+        if margin > 0.001:
+            mp = self.mp * (margin / 0.2)
+        else:
+            mp = 0.0
+        self.cos_mp = math.cos(mp)
+        self.sin_mp = math.sin(mp)
+
+    def forward(self, input, label):
+        cosine = F.linear(F.normalize(input),
+                          F.normalize(self.weight))  # (batch, out_dim * k)
+        cosine = torch.reshape(
+            cosine, (-1, self.out_features, self.K))  # (batch, out_dim, k)
+        cosine, _ = torch.max(cosine, 2)  # (batch, out_dim)
+
+        sine = torch.sqrt(1.0 - torch.pow(cosine, 2))
+        phi = cosine * self.cos_m - sine * self.sin_m
+        phi_mp = cosine * self.cos_mp + sine * self.sin_mp
+
+        if self.easy_margin:
+            phi = torch.where(cosine > 0, phi, cosine)
+        else:
+            ########
+            # phi = torch.where(cosine > self.th, phi, cosine - self.mm)
+            phi = torch.where(cosine > self.th, phi, cosine - self.mmm)
+            ########
+
+        one_hot = input.new_zeros(cosine.size())
+        one_hot.scatter_(1, label.view(-1, 1).long(), 1)
+
+        if self.k_top > 0:
+            # topk (j != y_i)
+            _, top_k_index = torch.topk(cosine - 2 * one_hot,
+                                        self.k_top)  # exclude j = y_i
+            top_k_one_hot = input.new_zeros(cosine.size()).scatter_(
+                1, top_k_index, 1)
+
+            # sum
+            output = (one_hot * phi) + (top_k_one_hot * phi_mp) + (
+                (1.0 - one_hot - top_k_one_hot) * cosine)
+        else:
+            output = (one_hot * phi) + ((1.0 - one_hot) * cosine)
+        output *= self.scale
+        return output
+
+    def extra_repr(self):
+        return 'in_features={}, out_features={}, scale={}, margin={}, easy_margin={},' \
+            'K={}, mp={}, k_top={}, do_lm={}'.format(
+                self.in_features, self.out_features, self.scale, self.margin,
+                self.easy_margin, self.K, self.mp, self.k_top, self.do_lm)
+
+
 class AddMarginProduct(nn.Module):
     r"""Implement of large margin cosine distance: :
     Args:
@@ -124,6 +263,7 @@ class AddMarginProduct(nn.Module):
         margin: margin
         cos(theta) - margin
     """
+
     def __init__(self, in_features, out_features, scale=32.0, margin=0.20):
         super(AddMarginProduct, self).__init__()
         self.in_features = in_features
@@ -164,6 +304,7 @@ class SphereProduct(nn.Module):
         margin: margin
         cos(margin * theta)
     """
+
     def __init__(self, in_features, out_features, margin=2):
         super(SphereProduct, self).__init__()
         self.in_features = in_features
@@ -174,7 +315,8 @@ class SphereProduct(nn.Module):
         self.power = 1
         self.LambdaMin = 5.0
         self.iter = 0
-        self.weight = nn.Parameter(torch.FloatTensor(out_features, in_features))
+        self.weight = nn.Parameter(torch.FloatTensor(out_features,
+                                                     in_features))
         nn.init.xavier_uniform(self.weight)
 
         # duplication formula
@@ -218,6 +360,7 @@ class Linear(nn.Module):
     """
     The linear transform for simple softmax loss
     """
+
     def __init__(self, emb_dim=512, class_num=1000):
         super(Linear, self).__init__()
 
@@ -231,13 +374,29 @@ class Linear(nn.Module):
 
 
 if __name__ == '__main__':
-    projection = ArcMarginProduct(100,
-                                  200,
-                                  scale=32.0,
-                                  margin=0.2,
-                                  easy_margin=False)
+    #    projection = ArcMarginProduct(100,
+    #                                  200,
+    #                                  scale=32.0,
+    #                                  margin=0.2,
+    #                                  easy_margin=False)
+    #
+    #    print(hasattr(projection, 'update_mar'))
+    projection = ArcMarginProduct_intertopk_subcenter(100,
+                                                      200,
+                                                      scale=32.0,
+                                                      margin=0.0,
+                                                      easy_margin=False,
+                                                      K=3,
+                                                      mp=0.06,
+                                                      k_top=5)
+    print(hasattr(projection, 'update'))
+    projection.update(0.2)
+    print(projection)
+    embed = torch.randn(16, 100)
+    label = torch.randint(200, (16, ))
+    out = projection(embed, label)
+    print(out.size())
 
-    print(hasattr(projection, 'update_mar'))
     # for name, param in projection.named_parameters():
     #     print(name)
     #     print(param.shape)

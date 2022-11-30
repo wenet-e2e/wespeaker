@@ -118,6 +118,7 @@ def train(config='conf/config.yaml', **kwargs):
         if configs.get('do_lm', False):
             logger.info('No speed perturb while doing large margin fine-tuning')
             configs['dataset_args']['speed_perturb'] = False
+    configs['projection_args']['do_lm'] = configs.get('do_lm', False)
     projection = get_projection(configs['projection_args'])
     model.add_module("projection", projection)
     if rank == 0:
