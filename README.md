@@ -25,7 +25,7 @@ git clone https://github.com/wenet-e2e/wespeaker.git
 ``` sh
 conda create -n wespeaker python=3.9
 conda activate wespeaker
-conda install pytorch=1.10.1 torchaudio=0.10.1 cudatoolkit=11.3 -c pytorch -c conda-forge
+conda install pytorch=1.12.1 torchaudio=0.12.1 cudatoolkit=11.3 -c pytorch -c conda-forge
 pip install -r requirements.txt
 ```
 
