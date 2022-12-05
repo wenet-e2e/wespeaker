@@ -71,6 +71,7 @@ def run_epoch(dataloader,
 
             # updata the model
             optimizer.zero_grad()
+            # scaler does nothing here if enable_amp=False
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()

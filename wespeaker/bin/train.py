@@ -112,13 +112,13 @@ def train(config='conf/config.yaml', **kwargs):
     # projection layer
     configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
     configs['projection_args']['num_class'] = len(spk2id_dict)
+    configs['projection_args']['do_lm'] = configs.get('do_lm', False)
     if configs['data_type'] != 'feat' and configs['dataset_args']['speed_perturb']:
         # diff speed is regarded as diff spk
         configs['projection_args']['num_class'] *= 3
         if configs.get('do_lm', False):
             logger.info('No speed perturb while doing large margin fine-tuning')
             configs['dataset_args']['speed_perturb'] = False
-    configs['projection_args']['do_lm'] = configs.get('do_lm', False)
     projection = get_projection(configs['projection_args'])
     model.add_module("projection", projection)
     if rank == 0:
@@ -196,11 +196,12 @@ def train(config='conf/config.yaml', **kwargs):
             logger.info(line)
     dist.barrier()  # synchronize here
 
-    scaler = torch.cuda.amp.GradScaler(enabled=configs['enable_amp'])
+    # scaler = torch.cuda.amp.GradScaler(enabled=configs['enable_amp'])
     for epoch in range(start_epoch, configs['num_epochs'] + 1):
         # train_sampler.set_epoch(epoch)
         train_dataset.set_epoch(epoch)
 
+        scaler = torch.cuda.amp.GradScaler(enabled=configs['enable_amp'])
         run_epoch(train_dataloader,
                   loader_size,
                   ddp_model,
