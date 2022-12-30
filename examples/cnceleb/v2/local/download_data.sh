@@ -37,7 +37,7 @@ fi
 
 if [ ! -f ${download_dir}/cn-celeb_v2.tar.gz ]; then
   echo "Downloading cn-celeb_v2.tar.gz ..."
-  if ! wget --no-check-certificate https://www.openslr.org/resources/82/cn-celeb_v2.tar.gz -P ${download_dir}
+  wget --no-check-certificate https://www.openslr.org/resources/82/cn-celeb_v2.tar.gz -P ${download_dir}
   md5=$(md5sum ${download_dir}/cn-celeb_v2.tar.gz | awk '{print $1}')
   [ $md5 != "7ab1b214028a7439e26608b2d5a0336c" ] && echo "Wrong md5sum of cn-celeb_v2.tar.gz" && exit 1
 fi
