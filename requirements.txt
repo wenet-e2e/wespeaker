@@ -21,4 +21,3 @@ lmdb==1.3.0
 onnxruntime
 soundfile==0.10.3.post1
 pypeln==0.4.9
-torchaudio
