@@ -36,9 +36,11 @@ pip3 install wespeakerruntime
 
 ## 🔥 News
 
-* 2022.11.30: Multi-Query Multi-Head Attentive Pooling (MQMHASTP) and Intertopk-Subcenter Loss are supported, see [#115](https://github.com/wenet-e2e/wespeaker/pull/115)
-* 2022.11.22: We support Automatic Mixed Precision (AMP) training now, see [#103](https://github.com/wenet-e2e/wespeaker/pull/103).
-* 2022.11.22: RepVGG is supported, see [#102](https://github.com/wenet-e2e/wespeaker/pull/102).
+* 2023.02.15: Update the code for multi-node training. For how to setup multi-node training, please refer to [#131](https://github.com/wenet-e2e/wespeaker/pull/131).
+* 2022.11.30: Multi-Query Multi-Head Attentive Pooling (MQMHASTP) and Intertopk-Subcenter Loss are supported, see [#115](https://github.com/wenet-e2e/wespeaker/pull/115).
+* 2022.11.22:
+    * We support Automatic Mixed Precision (AMP) training now, see [#103](https://github.com/wenet-e2e/wespeaker/pull/103).
+    * RepVGG is supported, see [#102](https://github.com/wenet-e2e/wespeaker/pull/102).
 
 ## Recipes
 
