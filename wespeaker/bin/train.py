@@ -44,10 +44,10 @@ def train(config='conf/config.yaml', **kwargs):
     configs = parse_config_or_kwargs(config, **kwargs)
     checkpoint = configs.get('checkpoint', None)
     # dist configs
-    rank = int(os.environ['LOCAL_RANK'])
+    rank = int(os.environ['RANK'])
     world_size = int(os.environ['WORLD_SIZE'])
     gpu = int(configs['gpus'][rank])
-    os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu)
+    torch.cuda.set_device(gpu)
     dist.init_process_group(backend='nccl')
 
     model_dir = os.path.join(configs['exp_dir'], "models")
@@ -58,7 +58,7 @@ def train(config='conf/config.yaml', **kwargs):
             print(model_dir + " already exists !!!")
             if checkpoint is None:
                 exit(1)
-    dist.barrier()  # let the rank 0 mkdir first
+    dist.barrier(device_ids=[gpu])  # let the rank 0 mkdir first
 
     logger = get_logger(configs['exp_dir'], 'train.log')
     if world_size > 1:
@@ -188,13 +188,13 @@ def train(config='conf/config.yaml', **kwargs):
             fout.write(data)
 
     # training
-    dist.barrier()  # synchronize here
+    dist.barrier(device_ids=[gpu])  # synchronize here
     if rank == 0:
         logger.info("<========== Training process ==========>")
         header = ['Epoch', 'Batch', 'Lr', 'Margin', 'Loss', "Acc"]
         for line in tp.header(header, width=10, style='grid').split('\n'):
             logger.info(line)
-    dist.barrier()  # synchronize here
+    dist.barrier(device_ids=[gpu])  # synchronize here
 
     # scaler = torch.cuda.amp.GradScaler(enabled=configs['enable_amp'])
     for epoch in range(start_epoch, configs['num_epochs'] + 1):
