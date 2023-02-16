@@ -125,7 +125,7 @@ class ASTP(nn.Module):
         if self.global_context_att:
             context_mean = torch.mean(x, dim=-1, keepdim=True).expand_as(x)
             context_std = torch.sqrt(
-                torch.var(x, dim=-1, keepdim=True) + 1e-10).expand_as(x)
+                torch.var(x, dim=-1, keepdim=True) + 1e-7).expand_as(x)
             x_in = torch.cat((x, context_mean, context_std), dim=1)
         else:
             x_in = x
@@ -136,7 +136,7 @@ class ASTP(nn.Module):
         alpha = torch.softmax(self.linear2(alpha), dim=2)
         mean = torch.sum(alpha * x, dim=2)
         var = torch.sum(alpha * (x**2), dim=2) - mean**2
-        std = torch.sqrt(var.clamp(min=1e-10))
+        std = torch.sqrt(var.clamp(min=1e-7))
         return torch.cat([mean, std], dim=1)
 
     def get_out_dim(self):
@@ -208,7 +208,7 @@ class MHASTP(torch.nn.Module):
             alpha = F.softmax(att_score, dim=-1)
             mean = torch.sum(alpha * chunks[i], dim=2)
             var = torch.sum(alpha * chunks[i]**2, dim=2) - mean**2
-            std = torch.sqrt(var.clamp(min=1e-10))
+            std = torch.sqrt(var.clamp(min=1e-7))
             chunks_out.append(torch.cat((mean, std), dim=1))
         out = torch.cat(chunks_out, dim=1)
         return out
