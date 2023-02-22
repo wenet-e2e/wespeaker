@@ -13,12 +13,12 @@
 // limitations under the License.
 
 #include <string>
+#include <iostream>
+
 #include "frontend/wav.h"
 #include "utils/utils.h"
 #include "gflags/gflags.h"
 #include "utils/timer.h"
-#include <iostream>
-
 #include "speaker/e2e_speaker.h"
 
 
@@ -39,8 +39,6 @@ int main(int argc, char* argv[]) {
 
   // init model
   int init_err_code = 0;
-  LOG(INFO) << "test";
-  LOG(INFO) << FLAGS_speaker_model_path;
   auto e2e_speaker = std::make_shared<wespeaker::E2ESPEAKER>(FLAGS_speaker_model_path,
     FLAGS_fbank_dim, FLAGS_sample_rate, FLAGS_embedding_size, FLAGS_SamplesPerChunk);
 
@@ -49,18 +47,18 @@ int main(int argc, char* argv[]) {
   LOG(INFO) << "embedding size: " << embedding_size;
   // read enroll wav/pcm data
   auto data_reader = wenet::ReadAudioFile(FLAGS_enroll_wav);
-  int16_t* data = const_cast<int16_t*>(data_reader->data());
+  int16_t* enroll_data = const_cast<int16_t*>(data_reader->data());
   int samples = data_reader->num_sample();
-  // 注意需要预先分配内存
+  // // NOTE(cdliang): memory allocation
   std::vector<float> enroll_embs(embedding_size, 0);
   int enroll_wave_dur = static_cast<int>(static_cast<float>(samples) /
                               data_reader->sample_rate() * 1000);
   LOG(INFO) << enroll_wave_dur;
-  e2e_speaker->ExtractEmbedding(data,
+  e2e_speaker->ExtractEmbedding(enroll_data,
                                 samples,
                                 &enroll_embs);
 
-  // 测试数据
+  // test wav
   auto test_data_reader = wenet::ReadAudioFile(FLAGS_test_wav);
   int16_t* test_data = const_cast<int16_t*>(test_data_reader->data());
   int test_samples = test_data_reader->num_sample();
