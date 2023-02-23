@@ -41,8 +41,9 @@ int main(int argc, char* argv[]) {
   int init_err_code = 0;
   LOG(INFO) << "test";
   LOG(INFO) << FLAGS_speaker_model_path;
-  auto e2e_speaker = std::make_shared<wespeaker::E2ESPEAKER>(FLAGS_speaker_model_path,
-    FLAGS_fbank_dim, FLAGS_sample_rate, FLAGS_embedding_size, FLAGS_SamplesPerChunk);
+  auto e2e_speaker = std::make_shared<wespeaker::E2ESPEAKER>(
+    FLAGS_speaker_model_path, FLAGS_fbank_dim, FLAGS_sample_rate,
+    FLAGS_embedding_size, FLAGS_SamplesPerChunk);
 
   LOG(INFO) << "Init model ...";
   int embedding_size = e2e_speaker->EmbeddingSize();
