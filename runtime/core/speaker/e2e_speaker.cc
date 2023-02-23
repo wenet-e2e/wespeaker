@@ -13,6 +13,8 @@
 // limitations under the License.
 
 #include <algorithm>
+#include <functional>
+#include <limits>
 #include "speaker/e2e_speaker.h"
 
 
