@@ -47,6 +47,9 @@ class E2ESPEAKER {
                         const std::vector<float>& emb2);
 
  private:
+  void ApplyMean(std::vector<std::vector<float>>* feats,
+                 unsigned int feat_dim);
+
   std::shared_ptr<wespeaker::SpeakerModel> model_ = nullptr;
   std::shared_ptr<wenet::FeaturePipelineConfig> feature_config_ = nullptr;
   std::shared_ptr<wenet::FeaturePipeline> feature_pipeline_ = nullptr;

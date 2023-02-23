@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
+#include <algorithm>
 #include "speaker/e2e_speaker.h"
+
 
 #ifdef USE_ONNX
   #include "speaker/onnx_speaker_model.h"
@@ -45,37 +46,63 @@ int E2ESPEAKER::EmbeddingSize() {
   return embedding_size_;
 }
 
+void E2ESPEAKER::ApplyMean(std::vector<std::vector<float>>* feat,
+                           unsigned int feat_dim) {
+  std::vector<float> mean(feat_dim, 0);
+  for (auto& i : *feat) {
+    std::transform(i.begin(), i.end(), mean.begin(), mean.begin(),
+                   std::plus<>{});
+  }
+  std::transform(mean.begin(), mean.end(), mean.begin(),
+                 [&](const float d) {return d / feat->size();});
+  for (auto& i : *feat) {
+    std::transform(i.begin(), i.end(), mean.begin(), i.begin(), std::minus<>{});
+  }
+}
+
 void E2ESPEAKER::ExtractFeature(const int16_t* data, int data_size,
     std::vector<std::vector<std::vector<float>>>* chunks_feat) {
   // NOTE(cdliang): extract feature with chunk by chunk
-  //                if per_chunk_samples_ <= 0,
-  //                then per_chunk_samples_ = data_size
   if (data != nullptr) {
     std::vector<std::vector<float>> feat;
     feat.clear();
-    if (per_chunk_samples_ <= 0)
-      per_chunk_samples_ = data_size;
-    int chunk_num = static_cast<int>(data_size / per_chunk_samples_);
-    int pos = 0;
-    int start_ = 0;
-    int end_ = 0;
-    for (int i = 0; i <= chunk_num; i++) {
-      start_ = i * per_chunk_samples_;
-      end_ = (i + 1) * per_chunk_samples_;
-      if (i == chunk_num && data_size % per_chunk_samples_) {
-        feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
-          data + start_, data + data_size));
-        feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
-          data, data + per_chunk_samples_ - data_size % per_chunk_samples_));
-      } else {
-        feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
-          data + start_, data + end_));
-      }
+    if (per_chunk_samples_ <= 0) {
+      // full
+      feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
+        data, data + data_size));
       feature_pipeline_->set_input_finished();
       feature_pipeline_->Read(feature_pipeline_->num_frames(), &feat);
+      // CMN, without CVN
+      this->ApplyMean(&feat, feat[0].size());
       chunks_feat->push_back(feat);
       feat.clear();
       feature_pipeline_->Reset();
+    } else {
+      int chunk_num = static_cast<int>(data_size / per_chunk_samples_);
+      int pos = 0;
+      int start_ = 0;
+      int end_ = 0;
+      for (int i = 0; i <= chunk_num; i++) {
+        start_ = i * per_chunk_samples_;
+        end_ = (i + 1) * per_chunk_samples_;
+        if (i == chunk_num && data_size % per_chunk_samples_) {
+          feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
+            data + start_, data + data_size));
+          feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
+            data, data + per_chunk_samples_ - data_size % per_chunk_samples_));
+        } else {
+          feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
+            data + start_, data + end_));
+        }
+        feature_pipeline_->set_input_finished();
+        feature_pipeline_->Read(feature_pipeline_->num_frames(), &feat);
+        // CMN, without CVN
+        // feat: [198, 80]
+        this->ApplyMean(&feat, feat[0].size());
+        chunks_feat->push_back(feat);
+        feat.clear();
+        feature_pipeline_->Reset();
+      }
     }
   }
 }

@@ -39,6 +39,8 @@ int main(int argc, char* argv[]) {
 
   // init model
   int init_err_code = 0;
+  LOG(INFO) << "test";
+  LOG(INFO) << FLAGS_speaker_model_path;
   auto e2e_speaker = std::make_shared<wespeaker::E2ESPEAKER>(FLAGS_speaker_model_path,
     FLAGS_fbank_dim, FLAGS_sample_rate, FLAGS_embedding_size, FLAGS_SamplesPerChunk);
 
@@ -49,7 +51,7 @@ int main(int argc, char* argv[]) {
   auto data_reader = wenet::ReadAudioFile(FLAGS_enroll_wav);
   int16_t* enroll_data = const_cast<int16_t*>(data_reader->data());
   int samples = data_reader->num_sample();
-  // // NOTE(cdliang): memory allocation
+  // NOTE(cdliang): memory allocation
   std::vector<float> enroll_embs(embedding_size, 0);
   int enroll_wave_dur = static_cast<int>(static_cast<float>(samples) /
                               data_reader->sample_rate() * 1000);
