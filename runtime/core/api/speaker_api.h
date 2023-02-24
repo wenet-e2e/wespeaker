@@ -13,8 +13,8 @@
 // limitations under the License.
 
 
-#ifndef SPEAKER_SPEAKER_API_H_
-#define SPEAKER_SPEAKER_API_H_
+#ifndef API_SPEAKER_API_H_
+#define API_SPEAKER_API_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -82,4 +82,4 @@ float wespeaker_compute_similarity(float* embedding1,
 };
 #endif
 
-#endif  // SPEAKER_SPEAKER_API_H_
+#endif  // API_SPEAKER_API_H_
