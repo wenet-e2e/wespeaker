@@ -20,9 +20,7 @@
 #include "frontend/wav.h"
 #include "utils/utils.h"
 #include "utils/timer.h"
-#include "speaker/e2e_speaker.h"
-#include "gflags/gflags.h"
-#include "glog/logging.h"
+#include "api/speaker_api.h"
 
 DEFINE_string(wav_list, "", "input wav scp");
 DEFINE_string(result, "", "output embedding file");
@@ -39,12 +37,17 @@ int main(int argc, char* argv[]) {
 
   // init model
   int init_err_code = 0;
-  auto e2e_speaker = std::make_shared<wespeaker::E2ESPEAKER>(
-    FLAGS_speaker_model_path, FLAGS_fbank_dim, FLAGS_sample_rate,
-    FLAGS_embedding_size, FLAGS_SamplesPerChunk);
+  auto e2e_speaker = wespeaker_init(
+    FLAGS_speaker_model_path.c_str(),
+    FLAGS_fbank_dim,
+    FLAGS_sample_rate,
+    FLAGS_embedding_size,
+    FLAGS_SamplesPerChunk,
+    &init_err_code);
   LOG(INFO) << "Init model ...";
-  int embedding_size = e2e_speaker->EmbeddingSize();
+  int embedding_size = wespeaker_embedding_size(e2e_speaker);
   LOG(INFO) << "embedding size: " << embedding_size;
+  LOG(INFO) << wespeaker_embedding_size(e2e_speaker);
   // read wav.scp
   // [utt, wav_path]
   std::vector<std::pair<std::string, std::string>> waves;
@@ -78,7 +81,9 @@ int main(int argc, char* argv[]) {
                                     data_reader->sample_rate() * 1000);
     int extract_time = 0;
     wenet::Timer timer;
-    e2e_speaker->ExtractEmbedding(data, samples, &embs);
+    wespeaker_extract_embedding(e2e_speaker, reinterpret_cast<char*>(data),
+                                samples * sizeof(int16_t),
+                                embs.data(), embedding_size);
     extract_time = timer.Elapsed();
     for (size_t i = 0; i < embs.size(); i++) {
       result << " " << embs[i];
@@ -94,5 +99,6 @@ int main(int argc, char* argv[]) {
             << total_extract_time << "ms.";
   LOG(INFO) << "RTF: "
             << static_cast<float>(total_extract_time) / total_waves_dur;
+  wespeaker_free(e2e_speaker);
   return 0;
 }
