@@ -25,13 +25,13 @@
 
 namespace wespeaker {
 
-class E2ESPEAKER {
+class E2eSpeaker {
  public:
-  explicit E2ESPEAKER(const std::string& model_path,
-                      const int& feat_dim,
-                      const int& sample_rate,
-                      const int& embedding_size,
-                      const int& SamplesPerChunk);
+  explicit E2eSpeaker(const std::string& model_path,
+                      const int feat_dim,
+                      const int sample_rate,
+                      const int embedding_size,
+                      const int SamplesPerChunk);
   // return embedding_size
   int EmbeddingSize();
   // extract fbank

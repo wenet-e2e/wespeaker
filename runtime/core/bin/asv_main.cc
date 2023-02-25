@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
   // init model
   LOG(INFO) << FLAGS_speaker_model_path;
   LOG(INFO) << "Init model ...";
-  auto e2e_speaker = std::make_shared<wespeaker::E2ESPEAKER>(
+  auto e2e_speaker = std::make_shared<wespeaker::E2eSpeaker>(
     FLAGS_speaker_model_path, FLAGS_fbank_dim, FLAGS_sample_rate,
     FLAGS_embedding_size, FLAGS_SamplesPerChunk);
   int embedding_size = e2e_speaker->EmbeddingSize();
