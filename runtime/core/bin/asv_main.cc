@@ -18,7 +18,7 @@
 #include "gflags/gflags.h"
 #include "utils/timer.h"
 
-#include "api/speaker_api.h"
+#include "speaker/e2e_speaker.h"
 
 
 DEFINE_string(enroll_wav, "", "First wav as enroll wav.");
@@ -38,31 +38,25 @@ int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
 
   // init model
-  int init_err_code = 0;
-  auto e2e_speaker = wespeaker_init(
-    FLAGS_speaker_model_path.c_str(),
-    FLAGS_fbank_dim,
-    FLAGS_sample_rate,
-    FLAGS_embedding_size,
-    FLAGS_SamplesPerChunk,
-    &init_err_code);
+  LOG(INFO) << FLAGS_speaker_model_path;
   LOG(INFO) << "Init model ...";
-  int embedding_size = wespeaker_embedding_size(e2e_speaker);
+  auto e2e_speaker = std::make_shared<wespeaker::E2ESPEAKER>(
+    FLAGS_speaker_model_path, FLAGS_fbank_dim, FLAGS_sample_rate,
+    FLAGS_embedding_size, FLAGS_SamplesPerChunk);
+  int embedding_size = e2e_speaker->EmbeddingSize();
   LOG(INFO) << "embedding size: " << embedding_size;
   // read enroll wav/pcm data
   auto data_reader = wenet::ReadAudioFile(FLAGS_enroll_wav);
-  int16_t* data = const_cast<int16_t*>(data_reader->data());
-  int samples = data_reader->num_sample();
+  int16_t* enroll_data = const_cast<int16_t*>(data_reader->data());
+  int enroll_samples = data_reader->num_sample();
   // NOTE(cdliang): memory allocation
   std::vector<float> enroll_embs(embedding_size, 0);
-  int enroll_wave_dur = static_cast<int>(static_cast<float>(samples) /
+  int enroll_wave_dur = static_cast<int>(static_cast<float>(enroll_samples) /
                               data_reader->sample_rate() * 1000);
   LOG(INFO) << enroll_wave_dur;
-  wespeaker_extract_embedding(e2e_speaker,
-                              reinterpret_cast<char*>(data),
-                              samples * sizeof(int16_t),
-                              enroll_embs.data(),
-                              embedding_size);
+  e2e_speaker->ExtractEmbedding(enroll_data,
+                                enroll_samples,
+                                &enroll_embs);
   // test wav
   auto test_data_reader = wenet::ReadAudioFile(FLAGS_test_wav);
   int16_t* test_data = const_cast<int16_t*>(test_data_reader->data());
@@ -71,22 +65,18 @@ int main(int argc, char* argv[]) {
   int test_wave_dur = static_cast<int>(static_cast<float>(test_samples) /
                               test_data_reader->sample_rate() * 1000);
   LOG(INFO) << test_wave_dur;
-  wespeaker_extract_embedding(e2e_speaker,
-                              reinterpret_cast<char*>(test_data),
-                              test_samples * sizeof(int16_t),
-                              test_embs.data(),
-                              embedding_size);
+  e2e_speaker->ExtractEmbedding(test_data,
+                                test_samples,
+                                &test_embs);
   float cosine_score;
   LOG(INFO) << "compute score ...";
-  cosine_score = wespeaker_compute_similarity(enroll_embs.data(),
-                                              test_embs.data(),
-                                              e2e_speaker);
+  cosine_score = e2e_speaker->CosineSimilarity(enroll_embs,
+                                               test_embs);
   LOG(INFO) << "Cosine socre: " << cosine_score;
   if (cosine_score >= FLAGS_threshold) {
     LOG(INFO) << "It's the same speaker!";
   } else {
     LOG(INFO) << "Warning! It's a different speaker.";
   }
-  wespeaker_free(e2e_speaker);
   return 0;
 }
