@@ -1,8 +1,8 @@
 set(speaker_srcs
   e2e_speaker.cc)
 
-if(NOT TORCH AND NOT ONNX)
-  message(FATAL_ERROR "Please build with TORCH or ONNX!")
+if(NOT ONNX)
+  message(FATAL_ERROR "Please build with ONNX!")
 endif()
 if(ONNX)
   list(APPEND speaker_srcs onnx_speaker_model.cc)

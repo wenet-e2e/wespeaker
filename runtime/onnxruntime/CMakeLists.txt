@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.14)
 project(wespeaker VERSION 0.1)
 
 option(ONNX "whether to build with ONNX" ON)
-option(TORCH "whether to build with TORCH" OFF)
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
@@ -16,9 +15,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -pthread -fPIC")
 
 # Include all dependency
-if(TORCH)
-  include(libtorch)
-endif()
 if(ONNX)
   include(onnx)
 endif()
