@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// 基类 SpeakerModel
-
 #ifndef SPEAKER_SPEAKER_MODEL_H_
 #define SPEAKER_SPEAKER_MODEL_H_
 
@@ -26,7 +24,7 @@ namespace wespeaker {
 class SpeakerModel {
  public:
   virtual ~SpeakerModel() = default;
-  // 提取embedding
+  // extract embedding
   // NOTE: https://www.cnblogs.com/zhmlzhml/p/12973618.html
   virtual void ExtractEmbedding(const std::vector<std::vector<float>>& feats,
                                 std::vector<float>* embed) {}

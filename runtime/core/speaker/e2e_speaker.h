@@ -32,14 +32,12 @@ class E2ESPEAKER {
                       const int& sample_rate,
                       const int& embedding_size,
                       const int& SamplesPerChunk);
-  // 返回embedding_size
+  // return embedding_size
   int EmbeddingSize();
-  // 提取fbank
-  // 每个chunk 2s
+  // extract fbank
   void ExtractFeature(const int16_t* data, int data_size,
     std::vector<std::vector<std::vector<float>>>* chunks_feat);
-  // 提取embedding
-  // 2s 分块进行提取 最后输出平均值
+  // extract embedding
   void ExtractEmbedding(const int16_t* data, int data_size,
                         std::vector<float>* avg_emb);
 

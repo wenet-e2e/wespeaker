@@ -29,7 +29,6 @@ void WriteToFile(const std::string& file_path,
                  const std::vector<std::vector<float>>& embs) {
   // embs [num_enroll, emb_dim]
   std::ofstream fout;
-  // 写入文件 覆盖
   fout.open(file_path, std::ios::out);
   for (size_t i = 0; i < embs.size(); i++) {
     for (size_t j = 0; j < embs[0].size(); j++) {
@@ -55,57 +54,6 @@ void ReadToFile(const std::string& file_path,
     embs->push_back(tmp);
   }
 }
-
-std::string JoinPath(const std::string& left, const std::string& right) {
-  std::string path(left);
-  if (path.size() && path.back() != '/') {
-    path.push_back('/');
-  }
-  path.append(right);
-  return path;
-}
-
-std::unordered_map<std::string, int32_t> ReadModelConfig(
-  const std::string& path_to_config) {
-  std::ifstream fin(path_to_config);
-  if (!fin.good()) {
-    LOG(FATAL) << "can't read vad config file at " << path_to_config;
-  }
-  std::string line;
-  std::unordered_map<std::string, int32_t> config;
-  while (std::getline(fin, line)) {
-    std::string key;
-    std::string val;
-    bool is_found_delim = false;
-    auto ptr = line.begin();
-    while (ptr != line.end()) {
-      while (*ptr == ' ') {
-        ptr = line.erase(ptr);
-        if (ptr == line.end()) {
-          break;
-        }
-      }
-      if (ptr == line.end()) {
-        break;
-      } else if (*ptr == '=') {
-        is_found_delim = true;
-      } else {
-        if (!is_found_delim) {
-          key.append(1, *ptr);
-        } else {
-          val.append(1, *ptr);
-        }
-      }
-      ptr++;
-    }
-    if (val != "") {
-      config[key] = std::stoi(val);
-    }
-  }
-  fin.close();
-  return config;
-}
-
 
 std::string Ltrim(const std::string& str) {
   size_t start = str.find_first_not_of(WHITESPACE);

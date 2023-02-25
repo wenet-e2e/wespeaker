@@ -111,7 +111,7 @@ void E2ESPEAKER::ExtractFeature(const int16_t* data, int data_size,
 
 void E2ESPEAKER::ExtractEmbedding(const int16_t* data, int data_size,
                                   std::vector<float>* avg_emb) {
-  // chunks_feat: [nchunk, 198, 80]
+  // chunks_feat: [nchunk, T, D]
   std::vector<std::vector<std::vector<float>>> chunks_feat;
   this->ExtractFeature(data, data_size, &chunks_feat);
   int chunk_num = chunks_feat.size();

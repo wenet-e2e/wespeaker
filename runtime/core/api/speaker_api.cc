@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-#include "api/speaker_api.h"
-
 #include <vector>
 #include <iostream>
 #include <utility>
@@ -22,6 +19,7 @@
 #include "glog/logging.h"
 #include "utils/utils.h"
 #include "speaker/e2e_speaker.h"
+#include "api/speaker_api.h"
 
 
 #define PARAM_NULL_RETURN(param)            \

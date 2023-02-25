@@ -28,10 +28,6 @@ void WriteToFile(const std::string& file_path,
 void ReadToFile(const std::string& file_path,
                 std::vector<std::vector<float>>* embs);
 
-std::string JoinPath(const std::string& left, const std::string& right);
-std::unordered_map<std::string, int32_t> ReadModelConfig(
-    const std::string& path_to_config);
-
 // Split the string with space or tab.
 void SplitString(const std::string& str, std::vector<std::string>* strs);
 
