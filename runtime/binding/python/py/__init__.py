@@ -1,1 +1,1 @@
-from .inference import Speaker  # noqa
+from .speaker import Speaker  # noqa

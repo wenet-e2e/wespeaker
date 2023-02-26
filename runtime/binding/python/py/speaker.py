@@ -52,7 +52,8 @@ class Speaker:
                        num_mel_bins: int = 80,
                        frame_length: int = 25,
                        frame_shift: int = 10,
-                       dither: float = 0.0):
+                       dither: float = 0.0,
+                       cmn: bool = True):
         """ Extract fbank, simlilar to the one in wespeaker.dataset.processor,
             While integrating the wave reading and CMN.
         """
@@ -70,48 +71,75 @@ class Speaker:
                           window_type='hamming',
                           use_energy=False)
         mat = mat.numpy()
-        # CMN, without CVN
-        mat = mat - np.mean(mat, axis=0)
+        if cmn:
+            # CMN, without CVN
+            mat = mat - np.mean(mat, axis=0)
         return mat
 
-    def extract_embedding_wav(self, wav_path: str, resample_rate: int = 16000):
-        """ Extract embedding from wav file.
+    def extract_embedding(self, wav_path: str,
+                          resample_rate: int = 16000,
+                          num_mel_bins: int = 80,
+                          frame_length: int = 25,
+                          frame_shift: int = 10,
+                          cmn: bool = True):
+        """ Extract embedding from wav file, and use fbank features.
 
         Args:
-            wav_path: the path of wav
-            resample_rate: sampling rate
+            wav_path(str): the path of wav
+            resample_rate(int): sampling rate
+            num_mel_bins(int): dimension of fbank
+            frame_length(int): frame length
+            frame_shift(int): frame shift
+            cmn(bool): if true, cepstrum average normalization is applied
         Return:
-            embeddings(list): [1, emb_dim]
+            embeddings(numpy.ndarray): [1, emb_dim]
         """
-        feats = self._compute_fbank(wav_path, resample_rate=resample_rate)
+        feats = self._compute_fbank(wav_path,
+                                    resample_rate=resample_rate,
+                                    num_mel_bins=num_mel_bins,
+                                    frame_length=frame_length,
+                                    frame_shift=frame_shift,
+                                    cmn=cmn)
         feats = np.expand_dims(feats, 0)
         embeddings = self.session.run(output_names=['embs'],
                                       input_feed={'feats': feats})
         return embeddings[0]  # [1, emb_dim]
 
-    def extract_embedding_feat(self, feats):
-        """ Extract embedding from feat(fbank).
+    def extract_embedding_feat(self, feats, cmn=True):
+        """ Extract embedding from feature(fbank).
         Args:
             feats(numpy.ndarray): [B, T, D]
+            cmn(bool): if true, cepstrum average normalization is applied
         Returns:
-            embeddings(list): [B, emb_dim]
+            embeddings(numpy.ndarray): [B, emb_dim]
         """
         assert isinstance(
             feats, np.ndarray), 'NOTE: the type of feats need be np.ndarray.'
         assert len(feats.shape) == 3, "NOTE: the shape of feats is [B, T, D]."
+        if cmn:
+            # CMN, without CVN
+            feats = feats - np.mean(feats, axis=1)
         embeddings = self.session.run(output_names=['embs'],
                                       input_feed={'feats': feats})
         return embeddings[0]  # [B, embed]
 
-    def extract_embedding(self,
-                          wav_scp: str,
-                          embed_ark: str,
-                          resample_rate: int = 16000):
-        """ Extract embedding from wav.scp
+    def extract_embedding_kaldiio(self,
+                                  wav_scp: str,
+                                  embed_ark: str,
+                                  resample_rate: int = 16000,
+                                  num_mel_bins: int = 80,
+                                  frame_length: int = 25,
+                                  frame_shift: int = 10,
+                                  cmn: bool = True):
+        """ Extract embedding from wav.scp, and use fbank features.
         Args:
-            wav.scp: [utt, wav_path]
-            embed_ark: output path (kaldi format)
-            resample_rate: sampling rate
+            wav.scp(str): [utt, wav_path]
+            embed_ark(str): output path (kaldi format)
+            resample_rate(int): sampling rate
+            num_mel_bins(int): dimension of fbank
+            frame_length(int): frame length
+            frame_shift(int): frame shift
+            cmn(bool): if true, cepstrum average normalization is applied
         """
         assert embed_ark[-3:] == "ark"
         embed_scp = embed_ark[:-3] + "scp"
@@ -122,7 +150,9 @@ class Speaker:
             for line in wav_scp_fin.readlines():
                 line = line.strip().split()
                 utt = line[0]
-                embed = self.extract_embedding_wav(line[1], resample_rate)
+                embed = self.extract_embedding(line[1], resample_rate,
+                                               num_mel_bins, frame_length,
+                                               frame_shift, cmn)
                 writer(utt, embed)
         wav_scp_fin.close()
 
