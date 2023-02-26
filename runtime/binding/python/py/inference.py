@@ -22,7 +22,7 @@ from .hub import Hub
 import kaldiio
 
 
-class Inference:
+class Speaker:
 
     def __init__(self,
                  onnx_path: Optional[str] = None,
@@ -80,12 +80,28 @@ class Inference:
         Args:
             wav_path: the path of wav
             resample_rate: sampling rate
+        Return:
+            embeddings(list): [1, emb_dim]
         """
         feats = self._compute_fbank(wav_path, resample_rate=resample_rate)
         feats = np.expand_dims(feats, 0)
         embeddings = self.session.run(output_names=['embs'],
                                       input_feed={'feats': feats})
         return embeddings[0]  # [1, emb_dim]
+
+    def extract_embedding_feat(self, feats):
+        """ Extract embedding from feat(fbank).
+        Args:
+            feats(numpy.ndarray): [B, T, D]
+        Returns:
+            embeddings(list): [B, emb_dim]
+        """
+        assert isinstance(
+            feats, np.ndarray), 'NOTE: the type of feats need be np.ndarray.'
+        assert len(feats.shape) == 3, "NOTE: the shape of feats is [B, T, D]."
+        embeddings = self.session.run(output_names=['embs'],
+                                      input_feed={'feats': feats})
+        return embeddings[0]  # [B, embed]
 
     def extract_embedding(self,
                           wav_scp: str,
@@ -109,3 +125,20 @@ class Inference:
                 embed = self.extract_embedding_wav(line[1], resample_rate)
                 writer(utt, embed)
         wav_scp_fin.close()
+
+    def compute_cosine_score(self, emb1, emb2):
+        """ Compute cosine score between emb1 and emb2.
+        Args:
+            emb1(numpy.ndarray): embedding of speaker-1
+            emb2(numpy.ndarray): embedding of speaker-2
+        Return:
+            score(float): cosine score
+        """
+        assert isinstance(emb1, np.ndarray) and isinstance(
+            emb2, np.ndarray
+        ), "NOTE: the type of emb1 and emb2 need be numpy.ndarray"
+        assert len(emb1.shape) == len(
+            emb2.shape
+        ), "NOTE: the embedding size of emb1 and emb2 need to be equal"
+        return np.dot(emb1,
+                      emb2) / (np.linalg.norm(emb1) * np.linalg.norm(emb2))

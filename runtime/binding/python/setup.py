@@ -26,7 +26,7 @@ package_name = "wespeakerruntime"
 
 setuptools.setup(
     name=package_name,
-    version='1.0.0',
+    version='1.0.1',
     author="Chengdong Liang",
     author_email="liangchengdongd@qq.com",
     package_dir={
