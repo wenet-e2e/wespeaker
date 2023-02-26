@@ -4,7 +4,6 @@ This is a python binding of WeSpeaker.
 
 WeSpeaker is a production first and production ready end-to-end speaker recognition toolkit.
 
-
 1. Two onnx models are available: [voxceleb model](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34_LM.onnx), [cnceleb_model](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/cnceleb/cnceleb_resnet34_LM.onnx)
 2. Extract embedding from wav file or feature(Fbank/MFCC).
 3. Support using `kaldiio` to save embedding.
@@ -58,7 +57,7 @@ The parameters of `compute_cosine_score`:
 - `emb1`(numpy.ndarray): embedding of speaker-1
 - `emb2`(numpy.ndarray): embedding of speaker-2
 
-### Extract embedding from feature(fbank/MFCC)
+### [Optional] Extract embedding from feature(fbank/MFCC)
 
 ``` python
 import sys
@@ -73,7 +72,7 @@ The parameters of `extract_embedding_feat`:
 - `feats`(numpy.ndarray): the shape is [B, T, D].
 - `cmn`(bool): if true, cepstrum average normalization is applied. Default: True
 
-### Extract embedding from wav.scp
+### [Optional] Extract embedding from wav.scp
 
 ``` python
 import sys
@@ -91,8 +90,6 @@ The parameters of `extract_embedding_kaldiio`:
 - `frame_length`(int): frame length. Default: 25
 - `frame_shift`(int): frame shift. Default: 10
 - `cmn`(bool): if true, cepstrum average normalization is applied. Default: True
-
-
 
 ## Build on Your Local Machine
 
