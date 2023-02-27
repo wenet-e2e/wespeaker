@@ -27,6 +27,8 @@ namespace wespeaker {
 
 class OnnxSpeakerModel : public SpeakerModel {
  public:
+  static void InitEngineThreads(int num_threads = 1);
+ public:
   explicit OnnxSpeakerModel(const std::string& model_path);
 
   void ExtractEmbedding(const std::vector<std::vector<float>>& feats,
