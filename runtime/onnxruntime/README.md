@@ -56,7 +56,9 @@ onnx_dir=your_model_dir
 
 ## Benchmark
 1. RTF
-> set num_threads = 1
+> num_threads = 1
+>
+> SamplesPerChunk = 80000
 >
 > CPU: Intel(R) Xeon(R) Platinum 8160 CPU @ 2.10GHz
 
