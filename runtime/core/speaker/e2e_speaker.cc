@@ -29,6 +29,8 @@ E2eSpeaker::E2eSpeaker(const std::string& model_path,
                        const int sample_rate,
                        const int embedding_size,
                        const int SamplesPerChunk) {
+  // NOTE(cdliang): default num_threads = 1
+  const int kNumGemmThreads = 1;
   LOG(INFO) << "Reading model " << model_path;
   embedding_size_ = embedding_size;
   LOG(INFO) << "Embedding size: " << embedding_size_;
@@ -40,6 +42,7 @@ E2eSpeaker::E2eSpeaker(const std::string& model_path,
     std::make_shared<wenet::FeaturePipeline>(*feature_config_);
   feature_pipeline_->Reset();
 #ifdef USE_ONNX
+  OnnxSpeakerModel::InitEngineThreads(kNumGemmThreads);
   model_ = std::make_shared<OnnxSpeakerModel>(model_path);
 #endif
 }
@@ -128,7 +131,6 @@ void E2eSpeaker::ExtractEmbedding(const int16_t* data, int data_size,
     (*avg_emb)[i] /= chunk_num;
   }
 }
-
 
 float E2eSpeaker::CosineSimilarity(const std::vector<float>& emb1,
                                   const std::vector<float>& emb2) {

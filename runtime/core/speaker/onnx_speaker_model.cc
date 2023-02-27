@@ -21,18 +21,38 @@
 
 namespace wespeaker {
 
+Ort::Env OnnxSpeakerModel::env_ = Ort::Env(
+  ORT_LOGGING_LEVEL_WARNING, "OnnxModel");
+Ort::SessionOptions OnnxSpeakerModel::session_options_ = Ort::SessionOptions();
+
+void OnnxSpeakerModel::InitEngineThreads(int num_threads) {
+  session_options_.SetIntraOpNumThreads(num_threads);
+}
+
 OnnxSpeakerModel::OnnxSpeakerModel(const std::string& model_path) {
-  Ort::Env env_ = Ort::Env(ORT_LOGGING_LEVEL_WARNING, "OnnxModel");
-  Ort::SessionOptions session_options_ = Ort::SessionOptions();
-  session_options_.SetIntraOpNumThreads(1);
   session_options_.SetGraphOptimizationLevel(
       GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
   // 1. Load sessions
   speaker_session_ = std::make_shared<Ort::Session>(env_, model_path.c_str(),
                                                       session_options_);
   // 2. Model info
-  input_names_ = {"feats"};
-  output_names_ = {"embs"};
+  Ort::AllocatorWithDefaultOptions allocator;
+  // 2.1. input info
+  int num_nodes = speaker_session_->GetInputCount();
+  // NOTE(cdliang): for speaker model, num_nodes is 1.
+  CHECK_EQ(num_nodes, 1);
+  input_names_.resize(num_nodes);
+  char* name = speaker_session_->GetInputName(0, allocator);
+  input_names_[0] = name;
+  LOG(INFO) << "Ouput name: " << name;
+
+  // 2.2. output info
+  num_nodes = speaker_session_->GetOutputCount();
+  CHECK_EQ(num_nodes, 1);
+  output_names_.resize(num_nodes);
+  name = speaker_session_->GetOutputName(0, allocator);
+  output_names_[0] = name;
+  LOG(INFO) << "Output name: " << name;
 }
 
 void OnnxSpeakerModel::ExtractEmbedding(

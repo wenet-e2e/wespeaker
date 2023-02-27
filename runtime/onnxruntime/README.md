@@ -13,7 +13,7 @@ python wespeaker/bin/export_onnx.py \
 # When it finishes, you can find `final.onnx`.
 ```
 
-* Step 2. Build. The build requires cmake 3.14 or above.
+* Step 2. Build. The build requires cmake 3.14 or above, and gcc/g++ 5.4 or above.
 
 ``` sh
 mkdir build && cd build
@@ -33,7 +33,14 @@ embed_out=your_embedding_txt
   --wav_list $wav_scp \
   --result $embed_out \
   --speaker_model_path $onnx_dir/final.onnx
+  --SamplesPerChunk  80000  # 5s
+
 ```
+
+> NOTE: SamplesPerChunk: samples of one chunk. SamplesPerChunk = sample_rate * duration
+>
+> If SamplesPerChunk = -1, compute the embedding of whole sentence;
+> else compute embedding with chunk by chunk, and then average embeddings of chunk.
 
 2. Calculate the similarity of two speech.
 ```sh
@@ -46,3 +53,26 @@ onnx_dir=your_model_dir
     --threshold 0.5 \
     --speaker_model_path $onnx_dir/final.onnx
 ```
+
+## Benchmark
+1. RTF
+> num_threads = 1
+>
+> SamplesPerChunk = 80000
+>
+> CPU: Intel(R) Xeon(R) Platinum 8160 CPU @ 2.10GHz
+
+| Model              | RTF       |
+| ------------------ | --------- |
+| ResNet-34          | 0.060735  |
+| ECAPA-TDNN (C=512) | 0.0183512 |
+
+2. EER (%)
+> onnxruntime: SamplesPerChunk=-1.
+>
+> don't use mean normalization for evaluation embeddings.
+
+| Model          | vox-O | vox-E | vox-H |
+| -------------- | ----- | ----- | ----- |
+| ResNet-34-pt   | 0.814 | 0.933 | 1.679 |
+| ResNet-34-onnx | 0.814 | 0.933 | 1.679 |
