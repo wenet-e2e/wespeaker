@@ -21,7 +21,8 @@
 
 namespace wespeaker {
 
-Ort::Env OnnxSpeakerModel::env_ = Ort::Env(ORT_LOGGING_LEVEL_WARNING, "OnnxModel");
+Ort::Env OnnxSpeakerModel::env_ = Ort::Env(
+  ORT_LOGGING_LEVEL_WARNING, "OnnxModel");
 Ort::SessionOptions OnnxSpeakerModel::session_options_ = Ort::SessionOptions();
 
 void OnnxSpeakerModel::InitEngineThreads(int num_threads) {
@@ -51,7 +52,7 @@ OnnxSpeakerModel::OnnxSpeakerModel(const std::string& model_path) {
   output_names_.resize(num_nodes);
   name = speaker_session_->GetOutputName(0, allocator);
   output_names_[0] = name;
-  LOG(INFO) << "Output name: " << name; 
+  LOG(INFO) << "Output name: " << name;
 }
 
 void OnnxSpeakerModel::ExtractEmbedding(
