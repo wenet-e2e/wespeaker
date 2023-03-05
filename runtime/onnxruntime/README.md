@@ -62,10 +62,15 @@ onnx_dir=your_model_dir
 >
 > CPU: Intel(R) Xeon(R) Platinum 8160 CPU @ 2.10GHz
 
-| Model              | RTF       |
-| ------------------ | --------- |
-| ResNet-34          | 0.060735  |
-| ECAPA-TDNN (C=512) | 0.0183512 |
+| Model               | Params  | RTF      |
+| ------------------- | ------- | -------- |
+| ECAPA-TDNN (C=512)  | 6.19 M  | 0.018351 |
+| ECAPA-TDNN (C=1024) | 14.65 M | 0.041724 |
+| RepVGG-TINY-A0      | 6.26 M  | 0.055117 |
+| ResNet-34           | 6.63 M  | 0.060735 |
+| ResNet-152          | 19.88 M | 0.179379 |
+| ResNet-221          | 23.86 M | 0.267511 |
+| ResNet-293          | 28.69 M | 0.364011 |
 
 2. EER (%)
 > onnxruntime: SamplesPerChunk=-1.
