@@ -20,12 +20,12 @@
 #include "frontend/wav.h"
 #include "utils/utils.h"
 #include "utils/timer.h"
-#include "speaker/e2e_speaker.h"
+#include "speaker/speaker_engine.h"
 
 DEFINE_string(wav_list, "", "input wav scp");
 DEFINE_string(result, "", "output embedding file");
 
-DEFINE_string(speaker_model_path, "", "path of e2e speaker model");
+DEFINE_string(speaker_model_path, "", "path of speaker model");
 DEFINE_int32(fbank_dim, 80, "fbank feature dimension");
 DEFINE_int32(sample_rate, 16000, "sample rate");
 DEFINE_int32(embedding_size, 256, "embedding size");
@@ -37,10 +37,10 @@ int main(int argc, char* argv[]) {
 
   // init model
   LOG(INFO) << "Init model ...";
-  auto e2e_speaker = std::make_shared<wespeaker::E2eSpeaker>(
+  auto speaker_engine = std::make_shared<wespeaker::SpeakerEngine>(
     FLAGS_speaker_model_path, FLAGS_fbank_dim, FLAGS_sample_rate,
     FLAGS_embedding_size, FLAGS_SamplesPerChunk);
-  int embedding_size = e2e_speaker->EmbeddingSize();
+  int embedding_size = speaker_engine->EmbeddingSize();
   LOG(INFO) << "embedding size: " << embedding_size;
   // read wav.scp
   // [utt, wav_path]
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
                                     data_reader->sample_rate() * 1000);
     int extract_time = 0;
     wenet::Timer timer;
-    e2e_speaker->ExtractEmbedding(data, samples, &embs);
+    speaker_engine->ExtractEmbedding(data, samples, &embs);
     extract_time = timer.Elapsed();
     for (size_t i = 0; i < embs.size(); i++) {
       result << " " << embs[i];

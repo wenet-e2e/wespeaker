@@ -1,5 +1,5 @@
 set(speaker_srcs
-  e2e_speaker.cc)
+  speaker_engine.cc)
 
 if(NOT ONNX)
   message(FATAL_ERROR "Please build with ONNX!")

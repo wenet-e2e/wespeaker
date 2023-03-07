@@ -18,14 +18,14 @@
 #include "gflags/gflags.h"
 #include "utils/timer.h"
 
-#include "speaker/e2e_speaker.h"
+#include "speaker/speaker_engine.h"
 
 
 DEFINE_string(enroll_wav, "", "First wav as enroll wav.");
 DEFINE_string(test_wav, "", "Second wav as test wav.");
 DEFINE_double(threshold, 0.5, "Threshold");
 
-DEFINE_string(speaker_model_path, "", "path of e2e speaker model");
+DEFINE_string(speaker_model_path, "", "path of speaker model");
 DEFINE_int32(fbank_dim, 80, "fbank feature dimension");
 DEFINE_int32(sample_rate, 16000, "sample rate");
 DEFINE_int32(embedding_size, 256, "embedding size");
@@ -40,10 +40,10 @@ int main(int argc, char* argv[]) {
   // init model
   LOG(INFO) << FLAGS_speaker_model_path;
   LOG(INFO) << "Init model ...";
-  auto e2e_speaker = std::make_shared<wespeaker::E2eSpeaker>(
+  auto speaker_engine = std::make_shared<wespeaker::SpeakerEngine>(
     FLAGS_speaker_model_path, FLAGS_fbank_dim, FLAGS_sample_rate,
     FLAGS_embedding_size, FLAGS_SamplesPerChunk);
-  int embedding_size = e2e_speaker->EmbeddingSize();
+  int embedding_size = speaker_engine->EmbeddingSize();
   LOG(INFO) << "embedding size: " << embedding_size;
   // read enroll wav/pcm data
   auto data_reader = wenet::ReadAudioFile(FLAGS_enroll_wav);
@@ -54,9 +54,9 @@ int main(int argc, char* argv[]) {
   int enroll_wave_dur = static_cast<int>(static_cast<float>(enroll_samples) /
                               data_reader->sample_rate() * 1000);
   LOG(INFO) << enroll_wave_dur;
-  e2e_speaker->ExtractEmbedding(enroll_data,
-                                enroll_samples,
-                                &enroll_embs);
+  speaker_engine->ExtractEmbedding(enroll_data,
+                                   enroll_samples,
+                                   &enroll_embs);
   // test wav
   auto test_data_reader = wenet::ReadAudioFile(FLAGS_test_wav);
   int16_t* test_data = const_cast<int16_t*>(test_data_reader->data());
@@ -65,13 +65,13 @@ int main(int argc, char* argv[]) {
   int test_wave_dur = static_cast<int>(static_cast<float>(test_samples) /
                               test_data_reader->sample_rate() * 1000);
   LOG(INFO) << test_wave_dur;
-  e2e_speaker->ExtractEmbedding(test_data,
-                                test_samples,
-                                &test_embs);
+  speaker_engine->ExtractEmbedding(test_data,
+                                   test_samples,
+                                   &test_embs);
   float cosine_score;
   LOG(INFO) << "compute score ...";
-  cosine_score = e2e_speaker->CosineSimilarity(enroll_embs,
-                                               test_embs);
+  cosine_score = speaker_engine->CosineSimilarity(enroll_embs,
+                                                  test_embs);
   LOG(INFO) << "Cosine socre: " << cosine_score;
   if (cosine_score >= FLAGS_threshold) {
     LOG(INFO) << "It's the same speaker!";

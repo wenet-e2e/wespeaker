@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SPEAKER_E2E_SPEAKER_H_
-#define SPEAKER_E2E_SPEAKER_H_
+#ifndef SPEAKER_SPEAKER_ENGINE_H_
+#define SPEAKER_SPEAKER_ENGINE_H_
 
 #include <string>
 #include <vector>
@@ -25,13 +25,13 @@
 
 namespace wespeaker {
 
-class E2eSpeaker {
+class SpeakerEngine {
  public:
-  explicit E2eSpeaker(const std::string& model_path,
-                      const int feat_dim,
-                      const int sample_rate,
-                      const int embedding_size,
-                      const int SamplesPerChunk);
+  explicit SpeakerEngine(const std::string& model_path,
+                         const int feat_dim,
+                         const int sample_rate,
+                         const int embedding_size,
+                         const int SamplesPerChunk);
   // return embedding_size
   int EmbeddingSize();
   // extract fbank
@@ -57,4 +57,4 @@ class E2eSpeaker {
 
 }  // namespace wespeaker
 
-#endif  // SPEAKER_E2E_SPEAKER_H_
+#endif  // SPEAKER_SPEAKER_ENGINE_H_
