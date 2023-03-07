@@ -15,7 +15,7 @@
 #include <algorithm>
 #include <functional>
 #include <limits>
-#include "speaker/e2e_speaker.h"
+#include "speaker/speaker_engine.h"
 
 
 #ifdef USE_ONNX
@@ -24,11 +24,11 @@
 
 namespace wespeaker {
 
-E2eSpeaker::E2eSpeaker(const std::string& model_path,
-                       const int feat_dim,
-                       const int sample_rate,
-                       const int embedding_size,
-                       const int SamplesPerChunk) {
+SpeakerEngine::SpeakerEngine(const std::string& model_path,
+                             const int feat_dim,
+                             const int sample_rate,
+                             const int embedding_size,
+                             const int SamplesPerChunk) {
   // NOTE(cdliang): default num_threads = 1
   const int kNumGemmThreads = 1;
   LOG(INFO) << "Reading model " << model_path;
@@ -47,12 +47,12 @@ E2eSpeaker::E2eSpeaker(const std::string& model_path,
 #endif
 }
 
-int E2eSpeaker::EmbeddingSize() {
+int SpeakerEngine::EmbeddingSize() {
   return embedding_size_;
 }
 
-void E2eSpeaker::ApplyMean(std::vector<std::vector<float>>* feat,
-                           unsigned int feat_dim) {
+void SpeakerEngine::ApplyMean(std::vector<std::vector<float>>* feat,
+                              unsigned int feat_dim) {
   std::vector<float> mean(feat_dim, 0);
   for (auto& i : *feat) {
     std::transform(i.begin(), i.end(), mean.begin(), mean.begin(),
@@ -65,7 +65,7 @@ void E2eSpeaker::ApplyMean(std::vector<std::vector<float>>* feat,
   }
 }
 
-void E2eSpeaker::ExtractFeature(const int16_t* data, int data_size,
+void SpeakerEngine::ExtractFeature(const int16_t* data, int data_size,
     std::vector<std::vector<std::vector<float>>>* chunks_feat) {
   // NOTE(cdliang): extract feature with chunk by chunk
   if (data != nullptr) {
@@ -112,8 +112,8 @@ void E2eSpeaker::ExtractFeature(const int16_t* data, int data_size,
   }
 }
 
-void E2eSpeaker::ExtractEmbedding(const int16_t* data, int data_size,
-                                  std::vector<float>* avg_emb) {
+void SpeakerEngine::ExtractEmbedding(const int16_t* data, int data_size,
+                                     std::vector<float>* avg_emb) {
   // chunks_feat: [nchunk, T, D]
   std::vector<std::vector<std::vector<float>>> chunks_feat;
   this->ExtractFeature(data, data_size, &chunks_feat);
@@ -132,8 +132,8 @@ void E2eSpeaker::ExtractEmbedding(const int16_t* data, int data_size,
   }
 }
 
-float E2eSpeaker::CosineSimilarity(const std::vector<float>& emb1,
-                                  const std::vector<float>& emb2) {
+float SpeakerEngine::CosineSimilarity(const std::vector<float>& emb1,
+                                      const std::vector<float>& emb2) {
   CHECK_EQ(emb1.size(), emb2.size());
   float dot = std::inner_product(emb1.begin(), emb1.end(), emb2.begin(), 0.0);
   float emb1_sum = std::inner_product(emb1.begin(), emb1.end(),
