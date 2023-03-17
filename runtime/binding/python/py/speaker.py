@@ -171,4 +171,4 @@ class Speaker:
             emb2.shape
         ), "NOTE: the embedding size of emb1 and emb2 need to be equal"
         return np.dot(emb1,
-                      emb2) / (np.linalg.norm(emb1) * np.linalg.norm(emb2))
+                      emb2.T) / (np.linalg.norm(emb1) * np.linalg.norm(emb2.T))
