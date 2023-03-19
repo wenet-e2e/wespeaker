@@ -65,50 +65,47 @@ void SpeakerEngine::ApplyMean(std::vector<std::vector<float>>* feat,
   }
 }
 
+void SpeakerEngine::ExtractFeatureOneChunk(
+  const std::vector<int16_t>& chunk_wav,
+  std::vector<std::vector<float>>* chunk_feat) {
+  feature_pipeline_->AcceptWaveform(chunk_wav);
+  feature_pipeline_->set_input_finished();
+  feature_pipeline_->Read(feature_pipeline_->num_frames(), chunk_feat);
+  this->ApplyMean(chunk_feat, (*chunk_feat)[0].size());
+  feature_pipeline_->Reset();
+}
+
 void SpeakerEngine::ExtractFeature(const int16_t* data, int data_size,
     std::vector<std::vector<std::vector<float>>>* chunks_feat) {
-  // NOTE(cdliang): extract feature with chunk by chunk
   if (data != nullptr) {
-    std::vector<std::vector<float>> feat;
-    feat.clear();
-    if (per_chunk_samples_ <= 0) {
-      // full
-      feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
-        data, data + data_size));
-      feature_pipeline_->set_input_finished();
-      feature_pipeline_->Read(feature_pipeline_->num_frames(), &feat);
-      // CMN, without CVN
-      this->ApplyMean(&feat, feat[0].size());
-      chunks_feat->push_back(feat);
-      feat.clear();
-      feature_pipeline_->Reset();
+    std::vector<std::vector<float>> chunk_feat;
+    if (per_chunk_samples_ <= 0 || per_chunk_samples_ == data_size) {
+      // full mode
+      this->ExtractFeatureOneChunk(std::vector<int16_t>(
+        data, data + data_size), &chunk_feat);
+      chunks_feat->push_back(chunk_feat);
+      chunk_feat.clear();
     } else {
-      int chunk_num = static_cast<int>(data_size / per_chunk_samples_);
-      int pos = 0;
-      int start_ = 0;
-      int end_ = 0;
-      for (int i = 0; i <= chunk_num; i++) {
-        start_ = i * per_chunk_samples_;
-        end_ = (i + 1) * per_chunk_samples_;
-        if (i == chunk_num && data_size % per_chunk_samples_) {
-          feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
-            data + start_, data + data_size));
-          feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
-            data, data + per_chunk_samples_ - data_size % per_chunk_samples_));
-        } else {
-          feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
-            data + start_, data + end_));
-        }
-        feature_pipeline_->set_input_finished();
-        feature_pipeline_->Read(feature_pipeline_->num_frames(), &feat);
-        // CMN, without CVN
-        // feat: [T, D]
-        this->ApplyMean(&feat, feat[0].size());
-        chunks_feat->push_back(feat);
-        feat.clear();
-        feature_pipeline_->Reset();
+      // NOTE(cdliang): extract feature with chunk by chunk
+      int chunk_num = static_cast<int>(data_size / per_chunk_samples_) + 1;
+      for (int i = 1; i < chunk_num; i++) {
+        this->ExtractFeatureOneChunk(std::vector<int16_t>(
+          data + (i - 1) * per_chunk_samples_,
+          data + i * per_chunk_samples_), &chunk_feat);
+        chunks_feat->push_back(chunk_feat);
+        chunk_feat.clear();
       }
+      // last chunk
+      std::vector<int16_t> chunk_wav(
+        data + (chunk_num - 1) * per_chunk_samples_, data + data_size);
+      chunk_wav.insert(chunk_wav.end(), data,
+        data + per_chunk_samples_ - data_size % per_chunk_samples_);
+      this->ExtractFeatureOneChunk(chunk_wav, &chunk_feat);
+      chunks_feat->push_back(chunk_feat);
+      chunk_feat.clear();
     }
+  } else {
+    LOG(ERROR) << "Input is nullptr!";
   }
 }
 
