@@ -65,7 +65,8 @@ void SpeakerEngine::ApplyMean(std::vector<std::vector<float>>* feat,
   }
 }
 
-void SpeakerEngine::ExtractFeatureOneChunk(const std::vector<int16_t>& chunk_wav,
+void SpeakerEngine::ExtractFeatureOneChunk(
+  const std::vector<int16_t>& chunk_wav,
   std::vector<std::vector<float>>* chunk_feat) {
   feature_pipeline_->AcceptWaveform(chunk_wav);
   feature_pipeline_->set_input_finished();
@@ -89,14 +90,17 @@ void SpeakerEngine::ExtractFeature(const int16_t* data, int data_size,
       int chunk_num = static_cast<int>(data_size / per_chunk_samples_) + 1;
       for (int i = 1; i < chunk_num; i++) {
         this->ExtractFeatureOneChunk(std::vector<int16_t>(
-          data + (i - 1) * per_chunk_samples_, data + i * per_chunk_samples_), &chunk_feat);
+          data + (i - 1) * per_chunk_samples_,
+          data + i * per_chunk_samples_), &chunk_feat);
         chunks_feat->push_back(chunk_feat);
         chunk_feat.clear();
       }
       // last chunk
-      std::vector<int16_t> last_chunk_wav(data + (chunk_num - 1) * per_chunk_samples_, data + data_size);
-      last_chunk_wav.insert(last_chunk_wav.end(), data, data + per_chunk_samples_ - data_size % per_chunk_samples_);
-      this->ExtractFeatureOneChunk(last_chunk_wav, &chunk_feat);
+      std::vector<int16_t> chunk_wav(
+        data + (chunk_num - 1) * per_chunk_samples_, data + data_size);
+      chunk_wav.insert(chunk_wav.end(), data,
+        data + per_chunk_samples_ - data_size % per_chunk_samples_);
+      this->ExtractFeatureOneChunk(chunk_wav, &chunk_feat);
       chunks_feat->push_back(chunk_feat);
       chunk_feat.clear();
     }
