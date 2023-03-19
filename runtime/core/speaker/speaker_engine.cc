@@ -65,35 +65,43 @@ void SpeakerEngine::ApplyMean(std::vector<std::vector<float>>* feat,
   }
 }
 
+void SpeakerEngine::ExtractFeatureOneChunk(const std::vector<int16_t>& chunk_wav,
+  std::vector<std::vector<float>>* chunk_feat) {
+  feature_pipeline_->AcceptWaveform(chunk_wav);
+  feature_pipeline_->set_input_finished();
+  feature_pipeline_->Read(feature_pipeline_->num_frames(), chunk_feat);
+  this->ApplyMean(chunk_feat, (*chunk_feat)[0].size());
+  feature_pipeline_->Reset();
+}
+
 void SpeakerEngine::ExtractFeature(const int16_t* data, int data_size,
     std::vector<std::vector<std::vector<float>>>* chunks_feat) {
   if (data != nullptr) {
-    // NOTE(cdliang): extract feature with chunk by chunk
-    feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
-      data, data + data_size));
-    int chunk_num = 1;
-    if (per_chunk_samples_ > 0 && per_chunk_samples_ != data_size) {
-      feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
-        data, data + per_chunk_samples_ - data_size % per_chunk_samples_));
-      chunk_num = static_cast<int>(data_size / per_chunk_samples_) + 1;
-    }
-    feature_pipeline_->set_input_finished();
-    std::vector<std::vector<float>> feat;
-    feature_pipeline_->Read(feature_pipeline_->num_frames(), &feat);
-    this->ApplyMean(&feat, feat[0].size());
-    LOG(INFO) << feat.size();
-    int chunk_size = feat.size() / chunk_num;
-    for (int i = 0; i < chunk_num; i++) {
-      std::vector<std::vector<float>> chunk;
-      for (int j = i * chunk_size; j < (i + 1) * chunk_size; j++) {
-        chunk.push_back(feat[j]);
+    std::vector<std::vector<float>> chunk_feat;
+    if (per_chunk_samples_ <= 0 || per_chunk_samples_ == data_size) {
+      // full mode
+      this->ExtractFeatureOneChunk(std::vector<int16_t>(
+        data, data + data_size), &chunk_feat);
+      chunks_feat->push_back(chunk_feat);
+      chunk_feat.clear();
+    } else {
+      // NOTE(cdliang): extract feature with chunk by chunk
+      int chunk_num = static_cast<int>(data_size / per_chunk_samples_) + 1;
+      for (int i = 1; i < chunk_num; i++) {
+        this->ExtractFeatureOneChunk(std::vector<int16_t>(
+          data + (i - 1) * per_chunk_samples_, data + i * per_chunk_samples_), &chunk_feat);
+        chunks_feat->push_back(chunk_feat);
+        chunk_feat.clear();
       }
-      chunks_feat->push_back(chunk);
+      // last chunk
+      std::vector<int16_t> last_chunk_wav(data + (chunk_num - 1) * per_chunk_samples_, data + data_size);
+      last_chunk_wav.insert(last_chunk_wav.end(), data, data + per_chunk_samples_ - data_size % per_chunk_samples_);
+      this->ExtractFeatureOneChunk(last_chunk_wav, &chunk_feat);
+      chunks_feat->push_back(chunk_feat);
+      chunk_feat.clear();
     }
-    feat.clear();
-    feature_pipeline_->Reset();
   } else {
-    LOG(INFO) << "Input is empty!";
+    LOG(ERROR) << "Input is nullptr!";
   }
 }
 
