@@ -67,48 +67,33 @@ void SpeakerEngine::ApplyMean(std::vector<std::vector<float>>* feat,
 
 void SpeakerEngine::ExtractFeature(const int16_t* data, int data_size,
     std::vector<std::vector<std::vector<float>>>* chunks_feat) {
-  // NOTE(cdliang): extract feature with chunk by chunk
   if (data != nullptr) {
-    std::vector<std::vector<float>> feat;
-    feat.clear();
-    if (per_chunk_samples_ <= 0) {
-      // full
+    // NOTE(cdliang): extract feature with chunk by chunk
+    feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
+      data, data + data_size));
+    int chunk_num = 1;
+    if (per_chunk_samples_ > 0 && per_chunk_samples_ != data_size) {
       feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
-        data, data + data_size));
-      feature_pipeline_->set_input_finished();
-      feature_pipeline_->Read(feature_pipeline_->num_frames(), &feat);
-      // CMN, without CVN
-      this->ApplyMean(&feat, feat[0].size());
-      chunks_feat->push_back(feat);
-      feat.clear();
-      feature_pipeline_->Reset();
-    } else {
-      int chunk_num = static_cast<int>(data_size / per_chunk_samples_);
-      int pos = 0;
-      int start_ = 0;
-      int end_ = 0;
-      for (int i = 0; i <= chunk_num; i++) {
-        start_ = i * per_chunk_samples_;
-        end_ = (i + 1) * per_chunk_samples_;
-        if (i == chunk_num && data_size % per_chunk_samples_) {
-          feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
-            data + start_, data + data_size));
-          feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
-            data, data + per_chunk_samples_ - data_size % per_chunk_samples_));
-        } else {
-          feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
-            data + start_, data + end_));
-        }
-        feature_pipeline_->set_input_finished();
-        feature_pipeline_->Read(feature_pipeline_->num_frames(), &feat);
-        // CMN, without CVN
-        // feat: [T, D]
-        this->ApplyMean(&feat, feat[0].size());
-        chunks_feat->push_back(feat);
-        feat.clear();
-        feature_pipeline_->Reset();
-      }
+        data, data + per_chunk_samples_ - data_size % per_chunk_samples_));
+      chunk_num = static_cast<int>(data_size / per_chunk_samples_) + 1;
     }
+    feature_pipeline_->set_input_finished();
+    std::vector<std::vector<float>> feat;
+    feature_pipeline_->Read(feature_pipeline_->num_frames(), &feat);
+    this->ApplyMean(&feat, feat[0].size());
+    LOG(INFO) << feat.size();
+    int chunk_size = feat.size() / chunk_num;
+    for (int i = 0; i < chunk_num; i++) {
+      std::vector<std::vector<float>> chunk;
+      for (int j = i * chunk_size; j < (i + 1) * chunk_size; j++) {
+        chunk.push_back(feat[j]);
+      }
+      chunks_feat->push_back(chunk);
+    }
+    feat.clear();
+    feature_pipeline_->Reset();
+  } else {
+    LOG(INFO) << "Input is empty!";
   }
 }
 
