@@ -123,7 +123,7 @@ def train(config='conf/config.yaml', **kwargs):
     if configs['feature_args']['raw_wav'] and configs['dataset_args']['speed_perturb']:
         # diff speed is regarded as diff spk
         configs['projection_args']['num_class'] *= 3
-    configs['projection_args']['do_lm'] = config.get('do_lm', False)
+    configs['projection_args']['do_lm'] = configs.get('do_lm', False)
     projection = get_projection(configs['projection_args'])
     model.add_module("projection", projection)
     if rank == 0:
@@ -166,7 +166,6 @@ def train(config='conf/config.yaml', **kwargs):
     # scheduler
     configs['scheduler_args']['num_epochs'] = configs['num_epochs']
     configs['scheduler_args']['epoch_iter'] = len(train_dataloader)
-    configs['scheduler_args']['process_num'] = world_size
     scheduler = getattr(schedulers, configs['scheduler'])(
         optimizer, **configs['scheduler_args'])
     if rank == 0:
