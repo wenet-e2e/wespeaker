@@ -47,7 +47,7 @@ def run_epoch(dataloader,
     with torch.set_grad_enabled(True), model_context():
         for i, batch in enumerate(dataloader):
             utts = batch['key']
-            targets = batch['label']
+            targets = batch['label'] if len(batch['label'].shape) else batch['label'].unsqueeze(0)
             features = batch['feat']
 
             cur_iter = (epoch - 1) * loader_size + i
