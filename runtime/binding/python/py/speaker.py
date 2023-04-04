@@ -67,7 +67,7 @@ class Speaker:
                           frame_length=frame_length,
                           frame_shift=frame_shift,
                           dither=dither,
-                          sample_frequency=sample_rate,
+                          sample_frequency=resample_rate,
                           window_type='hamming',
                           use_energy=False)
         mat = mat.numpy()
