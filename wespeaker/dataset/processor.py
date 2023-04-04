@@ -289,7 +289,7 @@ def get_random_chunk(data, chunk_len):
         repeat_shape = repeat_factor if len(data_shape) == 1 else (repeat_factor, 1)
         if type(data) == torch.Tensor:
             data = data.repeat(repeat_shape)
-        else: # np.array
+        else:  # np.array
             data = np.tile(data, repeat_shape)
         data = data[:chunk_len]
 
