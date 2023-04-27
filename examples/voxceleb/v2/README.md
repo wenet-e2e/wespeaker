@@ -43,6 +43,10 @@
 |                      |       | √ | √ | **0.447** | **0.657** | **1.183** |
 | RepVGG_TINY_A0       | 6.26M | × | × | 0.909 | 1.034 | 1.943 |
 |                      |       | × | √ | 0.824 | 0.953 | 1.709 |
+| CAM++                | 7.18M | × | × | 0.803 | 0.932 | 1.860 |
+|                      |       | × | √ | 0.718 | 0.879 | 1.735 |
+|                      |       | √ | x | 0.707 | 0.845 | 1.664 |
+|                      |       | √ | √ | 0.659 | 0.803 | 1.569 |
 
 
 * 🔥 UPDATE 2022.11.30: We support arc_margin_intertopk_subcenter loss function and Multi-query Multi-head Attentive Statistics Pooling, and obtain better performance especially on hard trials [VoxSRC](https://www.robots.ox.ac.uk/~vgg/data/voxceleb/competition2021.html).

@@ -32,7 +32,8 @@ embed_out=your_embedding_txt
 ./build/bin/extract_emb_main \
   --wav_list $wav_scp \
   --result $embed_out \
-  --speaker_model_path $onnx_dir/final.onnx
+  --speaker_model_path $onnx_dir/final.onnx \
+  --embedding_size 256 \
   --SamplesPerChunk  80000  # 5s
 
 ```
@@ -51,7 +52,8 @@ onnx_dir=your_model_dir
     --enroll_wav wav1_path \
     --test_wav wav2_path \
     --threshold 0.5 \
-    --speaker_model_path $onnx_dir/final.onnx
+    --speaker_model_path $onnx_dir/final.onnx \
+    --embedding_size 256
 ```
 
 ## Benchmark
@@ -71,6 +73,7 @@ onnx_dir=your_model_dir
 | ResNet-152          | 19.88 M | 0.179379 |
 | ResNet-221          | 23.86 M | 0.267511 |
 | ResNet-293          | 28.69 M | 0.364011 |
+| CAM++               | 7.18 M  | 0.022978 |
 
 2. EER (%)
 > onnxruntime: SamplesPerChunk=-1.

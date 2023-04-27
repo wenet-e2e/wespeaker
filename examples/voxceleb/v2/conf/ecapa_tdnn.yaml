@@ -43,7 +43,7 @@ model_init: null
 model_args:
   feat_dim: 80
   embed_dim: 192
-  pooling_func: "ASTP"
+  pooling_func: "ASTP" # the default pooling_func in ECAPA_TDNN is ASTP
 projection_args:
   project_type: "arc_margin" # add_margin, arc_margin, sphere, softmax
   scale: 32.0

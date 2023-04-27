@@ -11,8 +11,8 @@ stop_stage=-1
 data=data
 data_type="shard"  # shard/raw
 
-config=conf/resnet.yaml
-exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
+config=conf/campplus.yaml
+exp_dir=exp/CAMPPlus-TSTP-emb512-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
 gpus="[0,1]"
 num_avg=10
 checkpoint=
@@ -22,7 +22,7 @@ score_norm_method="asnorm"  # asnorm/snorm
 top_n=300
 
 # setup for large margin fine-tuning
-lm_config=conf/resnet_lm.yaml
+lm_config=conf/campplus_lm.yaml
 
 . tools/parse_options.sh || exit 1
 

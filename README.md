@@ -36,10 +36,11 @@ pip3 install wespeakerruntime
 
 ## 🔥 News
 
-* 2023.02.27: Update onnxruntime (C++), see [onnxruntime](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/onnxruntime), [#135](https://github.com/wenet-e2e/wespeaker/pull/135)
+* 2023.04.27: Support the [CAM++](https://arxiv.org/abs/2303.00332) model, with better performance and single-thread inference rtf in comparison with the ResNet34 model, see [#153](https://github.com/wenet-e2e/wespeaker/pull/153).
+
+* 2023.02.27: Update onnxruntime (C++), see [onnxruntime](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/onnxruntime), [#135](https://github.com/wenet-e2e/wespeaker/pull/135).
 
 * 2023.02.15: Update the code for multi-node training. For how to setup multi-node training, please refer to [#131](https://github.com/wenet-e2e/wespeaker/pull/131).
-* 2022.11.30: Multi-Query Multi-Head Attentive Pooling (MQMHASTP) and Intertopk-Subcenter Loss are supported, see [#115](https://github.com/wenet-e2e/wespeaker/pull/115).
 
 ## Recipes
 

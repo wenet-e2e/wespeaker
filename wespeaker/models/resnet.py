@@ -248,10 +248,14 @@ def ResNet293(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
 
 
 if __name__ == '__main__':
-    model = ResNet34(feat_dim=80, embed_dim=256, pooling_func='MQMHASTP')
+    x = torch.zeros(10, 200, 80)
+    model = ResNet34(feat_dim=80,
+                     embed_dim=256,
+                     pooling_func='TSTP',
+                     two_emb_layer=False)
     model.eval()
-    y = model(torch.randn(10, 200, 80))
-    print(y[-1].size())
+    out = model(x)
+    print(out[-1].size())
 
     num_params = sum(p.numel() for p in model.parameters())
     print("{} M".format(num_params / 1e6))
