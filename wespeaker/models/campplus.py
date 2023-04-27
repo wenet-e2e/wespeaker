@@ -13,12 +13,18 @@
 # limitations under the License.
 
 '''
-Reference: CAM++: A Fast and Efficient Network for Speaker Verification Using Context-Aware Masking
+This implementation is adapted from github repo:
+https://github.com/alibaba-damo-academy/3D-Speaker
 
-This implementation is adapted from github repo: https://github.com/alibaba-damo-academy/3D-Speaker
 Some modifications:
 1. Reuse the pooling layers in wespeaker
-2. Remove the memory_efficient mechanism to meet the torch.jit.script export requirements
+2. Remove the memory_efficient mechanism to meet the torch.jit.script
+   export requirements
+
+Reference:
+[1] Hui Wang, Siqi Zheng, Yafeng Chen, Luyao Cheng and Qian Chen.
+    "CAM++: A Fast and Efficient Network for Speaker Verification
+    Using Context-Aware Masking". arXiv preprint arXiv:2303.00332
 '''
 
 from collections import OrderedDict
@@ -58,8 +64,8 @@ class TDNNLayer(nn.Module):
                  config_str='batchnorm-relu'):
         super(TDNNLayer, self).__init__()
         if padding < 0:
-            assert kernel_size % 2 == 1, 'Expect equal paddings, but got even kernel size ({})'.format(
-                kernel_size)
+            assert kernel_size % 2 == 1, 'Expect equal paddings, \
+                    but got even kernel size ({})'.format(kernel_size)
             padding = (kernel_size - 1) // 2 * dilation
         self.linear = nn.Conv1d(in_channels,
                                 out_channels,
@@ -120,7 +126,6 @@ class CAMLayer(nn.Module):
         else:
             raise ValueError('Wrong segment pooling type.')
         shape = seg.shape
-        # seg = seg.unsqueeze(-1).expand(*shape, seg_len).reshape(*shape[:-1], -1)
         seg = seg.unsqueeze(-1).expand(shape[0], shape[1], shape[2],
                                        seg_len).reshape(shape[0], shape[1], -1)
         seg = seg[..., :x.shape[-1]]
@@ -138,8 +143,8 @@ class CAMDenseTDNNLayer(nn.Module):
                  bias=False,
                  config_str='batchnorm-relu'):
         super(CAMDenseTDNNLayer, self).__init__()
-        assert kernel_size % 2 == 1, 'Expect equal paddings, but got even kernel size ({})'.format(
-            kernel_size)
+        assert kernel_size % 2 == 1, 'Expect equal paddings, \
+                but got even kernel size ({})'.format(kernel_size)
         padding = (kernel_size - 1) // 2 * dilation
         self.nonlinear1 = get_nonlinear(config_str, in_channels)
         self.linear1 = nn.Conv1d(in_channels, bn_channels, 1, bias=False)
@@ -268,8 +273,8 @@ class BasicResBlock(nn.Module):
 
 class FCM(nn.Module):
     def __init__(self,
-                 block=BasicResBlock,
-                 num_blocks=[2, 2],
+                 block,
+                 num_blocks,
                  m_channels=32,
                  feat_dim=80):
         super(FCM, self).__init__()
@@ -331,7 +336,7 @@ class CAMPPlus(nn.Module):
                  config_str='batchnorm-relu'):
         super(CAMPPlus, self).__init__()
 
-        self.head = FCM(feat_dim=feat_dim)
+        self.head = FCM(block=BasicResBlock, num_blocks=[2, 2], feat_dim=feat_dim)
         channels = self.head.out_channels
 
         self.xvector = nn.Sequential(

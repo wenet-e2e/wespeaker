@@ -249,7 +249,10 @@ def ResNet293(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
 
 if __name__ == '__main__':
     x = torch.zeros(10, 200, 80)
-    model = ResNet34(feat_dim=80, embed_dim=256, pooling_func='TSTP', two_emb_layer=False)
+    model = ResNet34(feat_dim=80,
+                     embed_dim=256,
+                     pooling_func='TSTP',
+                     two_emb_layer=False)
     model.eval()
     out = model(x)
     print(out[-1].size())
