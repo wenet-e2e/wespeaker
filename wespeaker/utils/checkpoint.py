@@ -17,10 +17,7 @@ import torch
 
 
 def load_checkpoint(model: torch.nn.Module, path: str):
-    if torch.cuda.is_available():
-        checkpoint = torch.load(path)
-    else:
-        checkpoint = torch.load(path, map_location='cpu')
+    checkpoint = torch.load(path, map_location='cpu')
     model.load_state_dict(checkpoint, strict=False)
 
 
