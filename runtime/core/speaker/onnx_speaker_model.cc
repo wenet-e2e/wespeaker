@@ -61,12 +61,12 @@ void OnnxSpeakerModel::ExtractEmbedding(
   Ort::MemoryInfo memory_info =
         Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
   // prepare onnx required data
-  std::vector<float> feats_onnx;
   unsigned int num_frames = feats.size();
   unsigned int feat_dim = feats[0].size();
+  std::vector<float> feats_onnx(num_frames * feat_dim, 0.0);
   for (size_t i = 0; i < num_frames; ++i) {
     for (size_t j = 0; j < feat_dim; ++j) {
-      feats_onnx.emplace_back(feats[i][j]);
+      feats_onnx[i * feat_dim + j] = feats[i][j];
     }
   }
   // NOTE(cdliang): batchsize = 1
@@ -82,6 +82,7 @@ void OnnxSpeakerModel::ExtractEmbedding(
   float* outputs = ort_outputs[0].GetTensorMutableData<float>();
   auto type_info = ort_outputs[0].GetTensorTypeAndShapeInfo();
 
+  embed->reserve(type_info.GetElementCount());
   for (size_t i = 0; i < type_info.GetElementCount(); ++i) {
     embed->emplace_back(outputs[i]);
   }
