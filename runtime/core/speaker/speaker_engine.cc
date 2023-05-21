@@ -71,7 +71,8 @@ void SpeakerEngine::ApplyMean(std::vector<std::vector<float>>* feat,
 // When per_chunk_samples_ <= 0, extract the features of the full audio.
 // 2. chunk by chunk
 // Extract audio features chunk by chunk, with 198 frames for each chunk.
-// If the last chunk is less than 198 frames, concatenate the head frame to the tail.
+// If the last chunk is less than 198 frames,
+// concatenate the head frame to the tail.
 void SpeakerEngine::ExtractFeature(const int16_t* data, int data_size,
     std::vector<std::vector<std::vector<float>>>* chunks_feat) {
   if (data != nullptr) {
