@@ -59,8 +59,9 @@ pip3 install wespeakerruntime
 * Model (SOTA Models)
     - [x] [Standard X-vector](http://www.danielpovey.com/files/2017_interspeech_embeddings.pdf)
     - [x] [ResNet](https://arxiv.org/pdf/1512.03385.pdf)
-    - [x] [ECAPA_TDNN](https://arxiv.org/abs/2005.07143)
+    - [x] [ECAPA_TDNN](https://arxiv.org/pdf/2005.07143.pdf)
     - [x] [RepVGG](https://arxiv.org/pdf/2101.03697.pdf)
+    - [x] [CAM++](https://arxiv.org/pdf/2303.00332.pdf)
 * Pooling Functions
     - [x] TAP(mean) / TSDP(std) / TSTP(mean+std)
         - Comparison of mean/std pooling can be found in [shuai_iscslp](https://x-lance.sjtu.edu.cn/en/papers/2021/iscslp21_shuai_1_.pdf), [anna_arxiv](https://arxiv.org/pdf/2203.10300.pdf)
@@ -89,6 +90,10 @@ pip3 install wespeakerruntime
     - [x] Well-designed Learning Rate and Margin Schedulers
     - [x] Large Margin Fine-tuning
     - [x] Automatic Mixed Precision (AMP) Training
+* Runtime
+    - [x] Python Binding
+    - [x] Triton Inference Server on verification && diarization in GPU deployment
+    - [x] C++ Onnxruntime
 * Literature
     - [x] [Awesome Speaker Papers](docs/speaker_recognition_papers.md)
 
