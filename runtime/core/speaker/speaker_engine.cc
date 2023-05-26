@@ -104,7 +104,7 @@ void SpeakerEngine::ExtractFeature(const int16_t* data, int data_size,
       if (last_frames > 0) {
         feature_pipeline_->Read(last_frames, &chunk_feat);
         if (chunks_feat->empty()) {
-          // wav_len < 2s
+          // wav_len < chunk_len
           int num_pad = static_cast<int>(num_chunk_frames_ / last_frames);
           for (int i = 1; i < num_pad; i++) {
             chunk_feat.insert(chunk_feat.end(), chunk_feat.begin(),
