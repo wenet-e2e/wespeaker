@@ -86,13 +86,14 @@ void SpeakerEngine::ExtractFeature(const int16_t* data, int data_size,
       chunks_feat->emplace_back(chunk_feat);
       chunk_feat.clear();
     } else {
+      // NOTE(cdliang): extract feature with chunk by chunk
       int num_chunk_frames_ = 1 + ((
         per_chunk_samples_ - sample_rate_ / 1000 * 25) /
         (sample_rate_ / 1000 * 10));
       int chunk_num = std::ceil(
         feature_pipeline_->num_frames() / num_chunk_frames_);
-      // NOTE(cdliang): extract feature with chunk by chunk
       chunks_feat->reserve(chunk_num);
+      chunk_feat.reserve(num_chunk_frames_);
       while (feature_pipeline_->NumQueuedFrames() >= num_chunk_frames_) {
         feature_pipeline_->Read(num_chunk_frames_, &chunk_feat);
         chunks_feat->emplace_back(chunk_feat);
@@ -102,9 +103,20 @@ void SpeakerEngine::ExtractFeature(const int16_t* data, int data_size,
       int last_frames = feature_pipeline_->NumQueuedFrames();
       if (last_frames > 0) {
         feature_pipeline_->Read(last_frames, &chunk_feat);
-        chunk_feat.insert(chunk_feat.end(),
-          (*chunks_feat)[0].begin(),
-          (*chunks_feat)[0].begin() + num_chunk_frames_ - chunk_feat.size());
+        if (chunks_feat->empty()) {
+          // wav_len < chunk_len
+          int num_pad = static_cast<int>(num_chunk_frames_ / last_frames);
+          for (int i = 1; i < num_pad; i++) {
+            chunk_feat.insert(chunk_feat.end(), chunk_feat.begin(),
+                              chunk_feat.begin() + last_frames);
+          }
+          chunk_feat.insert(chunk_feat.end(), chunk_feat.begin(),
+            chunk_feat.begin() + num_chunk_frames_ - chunk_feat.size());
+        } else {
+          chunk_feat.insert(chunk_feat.end(),
+            (*chunks_feat)[0].begin(),
+            (*chunks_feat)[0].begin() + num_chunk_frames_ - chunk_feat.size());
+        }
         CHECK_EQ(chunk_feat.size(), num_chunk_frames_);
         chunks_feat->emplace_back(chunk_feat);
         chunk_feat.clear();
