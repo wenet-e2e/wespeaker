@@ -160,7 +160,7 @@ class TritonPythonModel:
         window_fs = int(window_fs * sr)
         period_fs = int(period_fs * sr)
         for segment in segments:
-            seg_begin, seg_end = int(segment['start'] * sr)
+            seg_begin = int(segment['start'] * sr)
             seg_end = int(segment['end'] * sr)
             seg_signal = wav[seg_begin: seg_end + 1]
             seg_length = seg_end - seg_begin
