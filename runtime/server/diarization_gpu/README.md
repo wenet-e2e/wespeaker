@@ -94,6 +94,11 @@ Build the server docker image:
 docker build . -f Dockerfile/dockerfile.server -t wespeaker_server:latest --network host
 ```
 
+You can also directly use the pre-built image:
+```
+dpcker pull wd929/wespeaker_server:v1
+```
+
 Build the client docker image:
 ```
 docker build . -f Dockerfile/dockerfile.client -t wespeaker_client:latest --network host
