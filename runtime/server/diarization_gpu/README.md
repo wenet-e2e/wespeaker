@@ -94,6 +94,11 @@ Build the server docker image:
 docker build . -f Dockerfile/dockerfile.server -t wespeaker_server:latest --network host
 ```
 
+You can also directly use the pre-built image:
+```
+docker pull wd929/wespeaker_server:v1
+```
+
 Build the client docker image:
 ```
 docker build . -f Dockerfile/dockerfile.client -t wespeaker_client:latest --network host
@@ -114,7 +119,7 @@ Now start server:
 
 ```bash
 # Start the docker container
-docker run --gpus all -v $PWD/model_repo:/workspace/model_repo -v $SAD_DIR:/workspace/triton/ --net host --shm-size=1g --ulimit memlock=-1 -p 8000:8000 -p 8001:8001 -p 8002:8002 --ulimit stack=67108864 -it  wespeaker_server:latest
+docker run --gpus all -v $PWD/model_repo:/workspace/model_repo -v $SAD_DIR:/workspace/triton/ --shm-size=1g --ulimit memlock=-1 -p 8000:8000 -p 8001:8001 -p 8002:8002 --ulimit stack=67108864 -it  wespeaker_server:latest
 
 # Inside the docker container
 tritonserver --model-repository=/workspace/model_repo

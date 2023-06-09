@@ -32,7 +32,8 @@ RUN pip3 install torch==1.10.0+cu113 torchvision==0.11.1+cu113 torchaudio==0.10.
 RUN pip3 install -v kaldifeat
 RUN python3 -m pip install cupy
 RUN python3 -m pip install soundfile
-RUN pip install cudf-cu11 dask-cudf-cu11 --extra-index-url=https://pypi.ngc.nvidia.com
-RUN pip install cuml-cu11 --extra-index-url=https://pypi.ngc.nvidia.com
-RUN pip install cugraph-cu11 --extra-index-url=https://pypi.ngc.nvidia.com
+RUN pip3 install --upgrade pip
+RUN pip install --extra-index-url https://pypi.nvidia.com cudf_cu11
+RUN pip install --extra-index-url https://pypi.nvidia.com cuml_cu11
+RUN pip install --extra-index-url https://pypi.nvidia.com cugraph_cu11
 WORKDIR /workspace

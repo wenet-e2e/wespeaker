@@ -196,8 +196,8 @@ class TritonPythonModel:
         new_sort = {}
         for i, subseg in enumerate(subseg_ids):
             (utt, seg_idx, begin_ms, end_ms, begin_frames, end_frames) = subseg
-            begin = (int(begin_ms) + int(begin_frames) * frame_shift) / 1000.0
-            end = (int(begin_ms) + int(end_frames) * frame_shift) / 1000.0
+            begin = (int(begin_ms * 1000) + int(begin_frames) * frame_shift) / 1000.0
+            end = (int(begin_ms * 1000) + int(end_frames) * frame_shift) / 1000.0
             new_sort[seg_idx] = (begin, end, label[i])
         utt_to_subseg_labels = list(dict(sorted(new_sort.items())).values())
         return utt_to_subseg_labels
