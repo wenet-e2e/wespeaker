@@ -96,7 +96,7 @@ docker build . -f Dockerfile/dockerfile.server -t wespeaker_server:latest --netw
 
 You can also directly use the pre-built image:
 ```
-dpcker pull wd929/wespeaker_server:v1
+docker pull wd929/wespeaker_server:v1
 ```
 
 Build the client docker image:
