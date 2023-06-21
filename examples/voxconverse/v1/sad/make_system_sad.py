@@ -51,7 +51,7 @@ def read_scp(scp):
 
 
 def silero_vad(utt_wav_pair, repo_path, min_duration,
-               sampling_rate=16000, threshold=0.36):
+               sampling_rate=16000, threshold=0.25):
 
     def module_from_file(module_name, file_path):
         spec = importlib.util.spec_from_file_location(module_name, file_path)

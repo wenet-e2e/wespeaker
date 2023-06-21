@@ -27,7 +27,6 @@ import kaldiio
 
 import numpy as np
 import scipy.linalg
-
 from sklearn.cluster._kmeans import k_means
 from wespeaker.utils.utils import validate_path
 
@@ -132,6 +131,4 @@ def main():
 
 
 if __name__ == '__main__':
-    scipy.random.seed(1)
-
     main()

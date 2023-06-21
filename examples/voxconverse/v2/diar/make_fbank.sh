@@ -38,7 +38,7 @@ for suffix in `seq 0 $[$nj-1]`;do
     suffix=`printf '%03d' $suffix`
     scp_subfile=${split_dir}/${prefix}_scp_${suffix}
     write_ark=$store_dir/fbank_${suffix}.ark
-    python diar/make_fbank.py \
+    python3 diar/make_fbank.py \
             --scp ${scp_subfile} \
             --segments ${segments} \
             --ark-path ${write_ark} \
