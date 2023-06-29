@@ -61,8 +61,10 @@ def run_epoch(dataloader,
                 outputs = model(features)  # (embed_a,embed_b) in most cases
                 embeds = outputs[-1] if isinstance(outputs, tuple) else outputs
                 outputs = model.module.projection(embeds, targets)
-
-                loss = criterion(outputs, targets)
+                if isinstance(outputs, tuple):
+                    outputs, loss = outputs
+                else:
+                    loss = criterion(outputs, targets)
 
             # loss, acc
             loss_meter.add(loss.item())
