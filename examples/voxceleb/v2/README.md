@@ -13,6 +13,7 @@
 | ResNet34-TSTP-emb256 | 6.63M | × | 0.941 | 1.114 | 2.026 |
 |                      |       | √ | 0.899 | 1.064 | 1.856 |
 
+* 🔥 UPDATE 2023.6.30: We support SphereFace2 loss function and obtain better and robust performance, see [#173](https://github.com/wenet-e2e/wespeaker/pull/173).
 
 * 🔥 UPDATE 2022.07.19: We apply the same setups as the winning system of CNSRC 2022 (see [cnceleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/cnceleb/v2) recipe for details), and obtain significant performance improvement compared with our previous implementation.
     * LR scheduler warmup from 0
@@ -50,7 +51,7 @@
 
 
 * 🔥 UPDATE 2022.11.30: We support arc_margin_intertopk_subcenter loss function and Multi-query Multi-head Attentive Statistics Pooling, and obtain better performance especially on hard trials [VoxSRC](https://www.robots.ox.ac.uk/~vgg/data/voxceleb/competition2021.html).
-    * See [#103](https://github.com/wenet-e2e/wespeaker/pull/103).
+    * See [#115](https://github.com/wenet-e2e/wespeaker/pull/115).
 
 
 ## PLDA results
