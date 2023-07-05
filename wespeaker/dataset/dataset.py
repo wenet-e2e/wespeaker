@@ -159,8 +159,7 @@ def Dataset(data_type,
     filter_conf = configs.get('filter_args', {})
     dataset = Processor(dataset,
                         processor.filter,
-                        frame_shift=1.0 *
-                        configs['fbank_args'].get('frame_shift', 10) / 1000,
+                        frame_shift=configs['fbank_args'].get('frame_shift', 10),
                         data_type=data_type,
                         **filter_conf
                         )

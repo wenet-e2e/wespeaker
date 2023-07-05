@@ -305,7 +305,7 @@ def get_random_chunk(data, chunk_len):
 def filter(data,
            min_num_frames=100,
            max_num_frames=800,
-           frame_shift=0.01,
+           frame_shift=10,
            data_type='shard/raw/feat'
            ):
     """ Filter the utterance with very short duration and random chunk the
@@ -336,8 +336,8 @@ def filter(data,
             sample_rate = sample['sample_rate']
             wav = sample['wav'][0]
 
-            min_len = int(frame_shift * min_num_frames * sample_rate)
-            max_len = int(frame_shift * max_num_frames * sample_rate)
+            min_len = int(frame_shift / 1000 * min_num_frames * sample_rate)
+            max_len = int(frame_shift / 1000 * max_num_frames * sample_rate)
 
             if len(wav) < min_len:
                 continue
