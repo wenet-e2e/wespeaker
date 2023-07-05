@@ -1,6 +1,7 @@
 # Copyright (c) 2021 Mobvoi Inc. (authors: Binbin Zhang)
 #               2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
 #               2022 Hongji Wang (jijijiang77@gmail.com)
+#               2023 Zhengyang Chen (chenzhengyang117@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -153,6 +154,16 @@ def Dataset(data_type,
         dataset = Processor(dataset, processor.parse_raw)
     else:
         dataset = Processor(dataset, processor.parse_feat)
+
+    # Filter the data with unwanted length
+    filter_conf = configs.get('filter_args', {})
+    dataset = Processor(dataset,
+                        processor.filter,
+                        frame_shift=1.0 * configs['fbank_args'].get('frame_shift', 10) / 1000,
+                        data_type=data_type,
+                        **filter_conf
+                        )
+
     # Local shuffle
     if shuffle:
         dataset = Processor(dataset, processor.shuffle, **configs['shuffle_args'])
@@ -183,11 +194,12 @@ def Dataset(data_type,
             chunk_len = (num_frms - 1) * frame_shift + frame_length
             dataset = Processor(dataset, processor.random_chunk, chunk_len, data_type)
         # add reverb & noise
-        if reverb_lmdb_file and noise_lmdb_file:
+        aug_prob = configs.get('aug_prob', 0.6)
+        if (reverb_lmdb_file and noise_lmdb_file) and (aug_prob > 0.0):
             reverb_data = LmdbData(reverb_lmdb_file)
             noise_data = LmdbData(noise_lmdb_file)
             dataset = Processor(dataset, processor.add_reverb_noise, reverb_data,
-                                noise_data, resample_rate, configs.get('aug_prob', 0.6))
+                                noise_data, resample_rate, aug_prob)
         # compute fbank
         dataset = Processor(dataset, processor.compute_fbank, **configs['fbank_args'])
 
