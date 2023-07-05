@@ -187,11 +187,9 @@ def Dataset(data_type,
         if not whole_utt:
             # random chunk
             num_frms = configs.get('num_frms', 200)
-            frame_shift = configs['fbank_args'].get('frame_shift',
-                                                    10) * resample_rate // 1000
-            frame_length = configs['fbank_args'].get('frame_length',
-                                                     25) * resample_rate // 1000
-            chunk_len = (num_frms - 1) * frame_shift + frame_length
+            frame_shift = configs['fbank_args'].get('frame_shift', 10)
+            frame_length = configs['fbank_args'].get('frame_length', 25)
+            chunk_len = ((num_frms - 1) * frame_shift + frame_length) * resample_rate // 1000
             dataset = Processor(dataset, processor.random_chunk, chunk_len, data_type)
         # add reverb & noise
         aug_prob = configs.get('aug_prob', 0.6)
