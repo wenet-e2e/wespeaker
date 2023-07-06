@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Copyright (c) 2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
+#               2023 Zhengyang Chen (chenhzhengyang117@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +16,7 @@
 # limitations under the License.
 
 exp_dir=
-trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
+trials="trials trials_tgl trials_yue"
 data=data
 
 stage=-1
@@ -27,14 +28,14 @@ stop_stage=-1
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "apply cosine scoring ..."
   mkdir -p ${exp_dir}/scores
-  trials_dir=${data}/vox1/trials
+  trials_dir=${data}/trials
   for x in $trials; do
     echo $x
     python wespeaker/bin/score.py \
       --exp_dir ${exp_dir} \
-      --eval_scp_path ${exp_dir}/embeddings/vox1/xvector.scp \
+      --eval_scp_path ${exp_dir}/embeddings/eval/xvector.scp \
       --cal_mean True \
-      --cal_mean_dir ${exp_dir}/embeddings/vox2_dev \
+      --cal_mean_dir ${exp_dir}/embeddings/sre16_major \
       ${trials_dir}/${x}
   done
 fi
@@ -48,7 +49,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
         --c_fa 1 \
         --c_miss 1 \
         ${scores_dir}/${x}.score \
-        2>&1 | tee -a ${scores_dir}/vox1_cos_result
+        2>&1 | tee -a ${scores_dir}/sre16_cos_result
 
     echo "compute DET curve ..."
     python wespeaker/bin/compute_det.py \

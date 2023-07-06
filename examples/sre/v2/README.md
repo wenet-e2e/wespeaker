@@ -1,7 +1,7 @@
 ## Results
 
-* Setup: fbank80, num_frms200, epoch150, ArcMargin, aug_prob0.6, speed_perturb (no spec_aug)
-* Scoring: cosine (sub mean of vox2_dev)
+* Setup: fbank40, num_frms200, epoch150, Softmax, aug_prob0.6
+* Scoring: cosine & PLDA & PLDA Adaptation
 * Metric: EER(%)
 
 | Model | Params | AS-Norm(300) | vox1-O-clean | vox1-E-clean | vox1-H-clean |

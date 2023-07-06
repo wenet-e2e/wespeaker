@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2022 Hongji Wang (jijijiang77@gmail.com)
+# Copyright (c) 2023 Zhengyang Chen (chenzhengyang117@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,96 +16,77 @@
 
 stage=-1
 stop_stage=-1
+sre_data_dir=
 data=data
 
 . tools/parse_options.sh || exit 1
 
-data=`realpath ${data}`
-download_dir=${data}/download_data
-rawdata_dir=${data}/raw_data
-
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
-  echo "Download musan.tar.gz, rirs_noises.zip, vox1_test_wav.zip, vox1_dev_wav.zip, and vox2_aac.zip."
-  echo "This may take a long time. Thus we recommand you to download all archives above in your own way first."
-
-  ./local/download_data.sh --download_dir ${download_dir}
+    mkdir -p external_tools
+    # Download voice activity detection model pretrained by Silero Team
+    wget -c https://github.com/snakers4/silero-vad/archive/refs/tags/v4.0.zip -O external_tools/silero-vad-v4.0.zip
+    unzip -o external_tools/silero-vad-v4.0.zip -d external_tools
 fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
-  echo "Decompress all archives ..."
-  echo "This could take some time ..."
-
-  for archive in musan.tar.gz rirs_noises.zip vox1_test_wav.zip vox1_dev_wav.zip vox2_aac.zip; do
-    [ ! -f ${download_dir}/$archive ] && echo "Archive $archive not exists !!!" && exit 1
-  done
-  [ ! -d ${rawdata_dir} ] && mkdir -p ${rawdata_dir}
-
-  if [ ! -d ${rawdata_dir}/musan ]; then
-    tar -xzvf ${download_dir}/musan.tar.gz -C ${rawdata_dir}
-  fi
-
-  if [ ! -d ${rawdata_dir}/RIRS_NOISES ]; then
-    unzip ${download_dir}/rirs_noises.zip -d ${rawdata_dir}
-  fi
-
-  if [ ! -d ${rawdata_dir}/voxceleb1 ]; then
-    mkdir -p ${rawdata_dir}/voxceleb1/test ${rawdata_dir}/voxceleb1/dev
-    unzip ${download_dir}/vox1_test_wav.zip -d ${rawdata_dir}/voxceleb1/test
-    unzip ${download_dir}/vox1_dev_wav.zip -d ${rawdata_dir}/voxceleb1/dev
-  fi
-
-  if [ ! -d ${rawdata_dir}/voxceleb2_m4a ]; then
-    mkdir -p ${rawdata_dir}/voxceleb2_m4a
-    unzip ${download_dir}/vox2_aac.zip -d ${rawdata_dir}/voxceleb2_m4a
-  fi
-
-  echo "Decompress success !!!"
+    # The meta data for SRE16 should be pre-prepared using Kaldi recipe:
+    # https://github.com/kaldi-asr/kaldi/tree/master/egs/sre16/v2
+    for dset in swbd_sre sre sre16_major sre16_eval_enroll sre16_eval_test; do
+        mkdir -p ${data}/${dset}
+        cp ${sre_data_dir}/${dset}/wav.scp ${data}/${dset}/wav.scp
+        [ -f ${sre_data_dir}/${dset}/utt2spk ] && cp ${sre_data_dir}/${dset}/utt2spk ${data}/${dset}/utt2spk
+        [ -f ${sre_data_dir}/${dset}/spk2utt ] && cp ${sre_data_dir}/${dset}/spk2utt ${data}/${dset}/spk2utt
+    done
 fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
-  echo "Convert voxceleb2 wav format from m4a to wav using ffmpeg."
-  echo "This could also take some time ..."
+    echo "Get vad segmentation for dataset."
+    # Set VAD min duration
+    min_duration=0.255
+    for dset in swbd_sre sre16_major sre16_eval_enroll sre16_eval_test; do
+        python3 local/make_system_sad.py \
+               --repo-path external_tools/silero-vad-4.0 \
+               --scp ${data}/${dset}/wav.scp \
+               --min-duration $min_duration > ${data}/${dset}/vad
+    done
+    local/filter_scp.pl -f 2 ${data}/sre/wav.scp ${data}/swbd_sre/vad > ${data}/sre/vad
 
-  if [ ! -d ${rawdata_dir}/voxceleb2_wav ]; then
-    ./local/m4a2wav.pl ${rawdata_dir}/voxceleb2_m4a dev ${rawdata_dir}/voxceleb2_wav
-    # Here we use 8 parallel jobs
-    cat ${rawdata_dir}/voxceleb2_wav/dev/m4a2wav_dev.sh | xargs -P 8 -i sh -c "{}"
-  fi
+    # For PLDA training, it is better to augment the training data
+    python3 local/generate_sre_aug.py --ori_dir ${data}/sre \
+                                    --aug_dir ${data}/sre_aug \
+                                    --aug_copy_num 2
+    tools/utt2spk_to_spk2utt.pl ${data}/sre_aug/utt2spk > ${data}/sre_aug/spk2utt
 
-  echo "Convert m4a2wav success !!!"
 fi
 
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
-  echo "Prepare wav.scp for each dataset ..."
-  export LC_ALL=C # kaldi config
+    for dset in swbd_sre; do
+        python3 local/utt2voice_duration.py \
+            --vad_file ${data}/${dset}/vad \
+            --utt2voice_dur ${data}/${dset}/utt2voice_dur
+    done
+fi
 
-  mkdir -p ${data}/musan ${data}/rirs ${data}/vox1 ${data}/vox2_dev
-  # musan
-  find ${rawdata_dir}/musan -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' >${data}/musan/wav.scp
-  # rirs
-  find ${rawdata_dir}/RIRS_NOISES/simulated_rirs -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' >${data}/rirs/wav.scp
-  # vox1
-  find ${rawdata_dir}/voxceleb1 -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' | sort >${data}/vox1/wav.scp
-  awk '{print $1}' ${data}/vox1/wav.scp | awk -F "/" '{print $0,$1}' >${data}/vox1/utt2spk
-  ./tools/utt2spk_to_spk2utt.pl ${data}/vox1/utt2spk >${data}/vox1/spk2utt
-  if [ ! -d ${data}/vox1/trials ]; then
-    echo "Download trials for vox1 ..."
-    mkdir -p ${data}/vox1/trials
-    #wget --no-check-certificate https://www.robots.ox.ac.uk/~vgg/data/voxceleb/meta/veri_test.txt -O ${data}/vox1/trials/vox1-O.txt
-    #wget --no-check-certificate https://www.robots.ox.ac.uk/~vgg/data/voxceleb/meta/list_test_hard.txt -O ${data}/vox1/trials/vox1-H.txt
-    #wget --no-check-certificate https://www.robots.ox.ac.uk/~vgg/data/voxceleb/meta/list_test_all.txt -O ${data}/vox1/trials/vox1-E.txt
-    wget --no-check-certificate https://www.robots.ox.ac.uk/~vgg/data/voxceleb/meta/veri_test2.txt -O ${data}/vox1/trials/vox1-O\(cleaned\).txt
-    wget --no-check-certificate https://www.robots.ox.ac.uk/~vgg/data/voxceleb/meta/list_test_hard2.txt -O ${data}/vox1/trials/vox1-H\(cleaned\).txt
-    wget --no-check-certificate https://www.robots.ox.ac.uk/~vgg/data/voxceleb/meta/list_test_all2.txt -O ${data}/vox1/trials/vox1-E\(cleaned\).txt
-    # transform them into kaldi trial format
-    awk '{if($1==0)label="nontarget";else{label="target"}; print $2,$3,label}' ${data}/vox1/trials/vox1-O\(cleaned\).txt >${data}/vox1/trials/vox1_O_cleaned.kaldi
-    awk '{if($1==0)label="nontarget";else{label="target"}; print $2,$3,label}' ${data}/vox1/trials/vox1-H\(cleaned\).txt >${data}/vox1/trials/vox1_H_cleaned.kaldi
-    awk '{if($1==0)label="nontarget";else{label="target"}; print $2,$3,label}' ${data}/vox1/trials/vox1-E\(cleaned\).txt >${data}/vox1/trials/vox1_E_cleaned.kaldi
-  fi
-  # vox2
-  find ${rawdata_dir}/voxceleb2_wav -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' | sort >${data}/vox2_dev/wav.scp
-  awk '{print $1}' ${data}/vox2_dev/wav.scp | awk -F "/" '{print $0,$1}' >${data}/vox2_dev/utt2spk
-  ./tools/utt2spk_to_spk2utt.pl ${data}/vox2_dev/utt2spk >${data}/vox2_dev/spk2utt
+if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
+    # Following the Kaldi recipe: https://github.com/kaldi-asr/kaldi/blob/71f38e62cad01c3078555bfe78d0f3a527422d75/egs/sre16/v2/run.sh#L189
+    # We filter out the utterances with duration less than 5s 
+    for dset in swbd_sre; do
+        python3 local/filter_utt_accd_dur.py \
+            --wav_scp ${data}/${dset}/wav.scp \
+            --utt2voice_dur ${data}/${dset}/utt2voice_dur \
+            --filter_wav_scp ${data}/${dset}/filter_wav.scp \
+            --dur_thres 5.0
+        mv ${data}/${dset}/wav.scp ${data}/${dset}/wav.scp.bak
+        mv ${data}/${dset}/filter_wav.scp ${data}/${dset}/wav.scp
+    done
 
-  echo "Success !!!"
+    # Similarly, following the Kaldi recipe,
+    # we throw out speakers with fewer than 3 utterances.
+    for dset in swbd_sre; do
+        local/fix_data_dir.sh ${data}/${dset}
+        cp ${data}/${dset}/spk2utt ${data}/${dset}/spk2utt.bak
+        awk '{if(NF>2){print $0}}' ${data}/${dset}/spk2utt.bak > ${data}/${dset}/spk2utt
+        local/spk2utt_to_utt2spk.pl ${data}/${dset}/spk2utt > ${data}/${dset}/utt2spk
+        local/fix_data_dir.sh ${data}/${dset}
+    done
 fi
