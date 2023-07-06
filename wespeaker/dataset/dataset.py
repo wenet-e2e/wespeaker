@@ -155,14 +155,15 @@ def Dataset(data_type,
     else:
         dataset = Processor(dataset, processor.parse_feat)
 
-    # Filter the data with unwanted length
-    filter_conf = configs.get('filter_args', {})
-    dataset = Processor(dataset,
-                        processor.filter,
-                        frame_shift=configs['fbank_args'].get('frame_shift', 10),
-                        data_type=data_type,
-                        **filter_conf
-                        )
+    if not whole_utt:
+        # Filter the data with unwanted length
+        filter_conf = configs.get('filter_args', {})
+        dataset = Processor(dataset,
+                            processor.filter,
+                            frame_shift=configs['fbank_args'].get('frame_shift', 10),
+                            data_type=data_type,
+                            **filter_conf
+                            )
 
     # Local shuffle
     if shuffle:
