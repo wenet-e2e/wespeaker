@@ -16,19 +16,12 @@
 # limitations under the License.
 
 import io
-import kaldiio
-import json
-import logging
 import random
-import tarfile
-from subprocess import PIPE, Popen
-from urllib.parse import urlparse
 
 import numpy as np
 from scipy import signal
 from scipy.io import wavfile
 import torch
-import torchaudio
 import torchaudio.compliance.kaldi as kaldi
 from wespeaker.dataset.processor import (
     get_random_chunk,

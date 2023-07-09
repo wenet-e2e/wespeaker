@@ -20,7 +20,7 @@ import tableprint as tp
 import torch
 import torchnet as tnt
 from functools import partial
-from local.dino_utils import (
+from wespeaker.ssl.utils.dino_utils import (
     cancel_gradients_last_layer,
     clip_gradients,
 )

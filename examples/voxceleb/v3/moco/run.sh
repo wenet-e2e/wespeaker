@@ -8,7 +8,7 @@
 
 stage=-1
 stop_stage=-1
-use_slurm=1
+use_slurm=0
 
 data=data
 data_type="shard"  # shard/raw

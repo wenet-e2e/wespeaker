@@ -54,9 +54,9 @@ def get_model_encoder_state_dict(state_dict):
         # for simclr model
         elif key.startswith('encoder.'):
             query_dict[key[8:]] = val
-    
+
     return query_dict
-    
+
 
 def main():
     args = get_args()

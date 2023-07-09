@@ -50,9 +50,9 @@ def get_t_model_state_dict(state_dict):
     for key, val in state_dict.items():
         if key.startswith('t_model.'):
             query_dict[key[8:]] = val
-    
+
     return query_dict
-    
+
 
 def main():
     args = get_args()
