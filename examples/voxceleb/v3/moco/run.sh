@@ -3,22 +3,22 @@
 # Copyright 2022 Hongji Wang (jijijiang77@gmail.com)
 #           2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
 #           2023 Zhengyang Chen (chenzhengyang117@gmail.com)
+#           2023 Bing Han (hanbing97@sjtu.edu.cn)
 
 . ./path.sh || exit 1
 
-stage=-1
-stop_stage=-1
+stage=3
+stop_stage=6
 use_slurm=0
 
 data=data
 data_type="shard"  # shard/raw
 
-config=conf/ecapa_tdnn.yaml
-exp_dir=exp/contrastive_debug
-gpus="[0]"
+config=conf/ecapa_tdnn_moco.yaml # simclr for conf/ecapa_tdnn_simclr.yaml
+exp_dir=exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-fbank80-num_frms200-aug1.0-spTrue-saFalse-MoCo-SGD-epoch150
+gpus="[0,1,2,3]"
 num_avg=10
 checkpoint=
-contrastive_type="moco"  # moco/simclr
 
 trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
 score_norm_method="asnorm"  # asnorm/snorm
@@ -30,7 +30,7 @@ if [ $use_slurm -eq 1 ];then
     python_cmd="srun /mnt/lustre/sjtu/home/czy97/.conda/envs/pytorch1_12/bin/python"
 else
     num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
-    python_cmd="torchrun --standalone --nnodes=1 --nproc_per_node=$num_gpus"
+    python_cmd="torchrun --master_addr=localhost --master_port=16888 --nnodes=1 --nproc_per_node=$num_gpus"
 fi
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
@@ -61,7 +61,7 @@ fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   echo "Start training ..."
-  $python_cmd wespeaker/ssl/bin/train_contrastive.py --config $config \
+  $python_cmd local/train_contrastive.py --config $config \
       --exp_dir ${exp_dir} \
       --gpus $gpus \
       --num_avg ${num_avg} \
@@ -76,7 +76,7 @@ fi
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   echo "Do model average ..."
   avg_model=$exp_dir/models/avg_model.pt
-  python wespeaker/ssl/bin/average_contrastive_model.py \
+  python local/average_contrastive_model.py \
     --dst_model $avg_model \
     --src_path $exp_dir/models \
     --num ${num_avg}
@@ -105,6 +105,7 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
     --exp_dir $exp_dir \
     --trials "$trials"
 fi
+
 
 if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
   echo "Export the best model ..."

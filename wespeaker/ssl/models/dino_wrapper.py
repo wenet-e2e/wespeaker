@@ -1,5 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates.
 #               2023 Zhengyang Chen (chenzhengyang117@gmail.com)
+#               2023 Bing Han (hanbing97@sjtu.edu.cn)
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -305,12 +306,20 @@ class DINO(nn.Module):
         Output:
             loss: a scalar value
         """
-        s_output = torch.cat([self.s_model(global_feats), self.s_model(local_feats)])
+        # feed global and local features into student model
+        g_outputs = self.s_model(global_feats)
+        l_outputs = self.s_model(local_feats)
+        g_output = g_outputs[-1] if isinstance(g_outputs, tuple) else g_outputs
+        l_output = l_outputs[-1] if isinstance(l_outputs, tuple) else l_outputs
+        s_output = torch.cat([g_output, l_output])
         s_output = self.s_model.projection_head(s_output)
+        # feed global features into teacher model
         with torch.no_grad():
-            t_output = self.t_model(global_feats)
+            t_outputs = self.t_model(global_feats)
+            t_output = t_outputs[-1] if isinstance(t_outputs, tuple) else t_outputs
             t_output = self.t_model.projection_head(t_output)
 
+        # compute CE loss
         loss = self.dino_loss_calculator(s_output, t_output, epoch)
 
         return loss
