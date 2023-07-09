@@ -20,7 +20,7 @@ import torch
 from wespeaker.utils.file_utils import read_lists
 from wespeaker.dataset.lmdb_data import LmdbData
 import wespeaker.dataset.processor as processor
-import wespeaker.dataset.ssl_processor as ssl_processor
+import wespeaker.ssl.dataset.processor as ssl_processor
 from wespeaker.dataset.dataset import Processor, DataList
 
 

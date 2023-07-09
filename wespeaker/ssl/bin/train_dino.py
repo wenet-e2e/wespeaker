@@ -28,11 +28,11 @@ from torch.utils.data import DataLoader
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.utils.utils import get_logger, parse_config_or_kwargs, set_seed
 from wespeaker.utils.checkpoint import load_checkpoint
-from wespeaker.dataset.ssl_dataset import SSLDataset, dino_collate_fn
+from wespeaker.ssl.dataset.dataset import SSLDataset, dino_collate_fn
 from wespeaker.utils.ddp_utils import init_ddp
-from wespeaker.models.dino_wrapper import DINO
-from local.dino_executor import run_epoch
-from local.dino_utils import (
+from wespeaker.ssl.models.dino_wrapper import DINO
+from wespeaker.ssl.utils.dino_executor import run_epoch
+from wespeaker.ssl.utils.dino_utils import (
                             restart_from_checkpoint,
                             get_params_groups,
                             save_checkpoint,

@@ -2,6 +2,7 @@
 
 # Copyright 2022 Hongji Wang (jijijiang77@gmail.com)
 #           2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
+#           2022 Zhengyang Chen (chenzhengyang117@gmail.com)
 #           2023 Bing Han (hanbing97@sjtu.edu.cn)
 
 . ./path.sh || exit 1
@@ -60,7 +61,7 @@ fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   echo "Start training ..."
-  $python_cmd local/train_dino.py --config $config \
+  $python_cmd wespeaker/ssl/bin/train_dino.py --config $config \
       --exp_dir ${exp_dir} \
       --gpus $gpus \
       --num_avg ${num_avg} \
@@ -75,7 +76,7 @@ fi
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   echo "Do model average ..."
   avg_model=$exp_dir/models/avg_model.pt
-  python local/average_dino_model.py \
+  python wespeaker/ssl/bin/average_dino_model.py \
     --dst_model $avg_model \
     --src_path $exp_dir/models \
     --num ${num_avg}
