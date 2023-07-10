@@ -24,6 +24,9 @@ dataloader_args:
   drop_last: True
 
 dataset_args:
+  # the sample number which will be traversed within one epoch, if the value equals to 0,
+  # the utterance number in the dataset will be used as the sample_num_per_epoch.
+  sample_num_per_epoch: 0
   shuffle: True
   shuffle_args:
     shuffle_size: 2500
