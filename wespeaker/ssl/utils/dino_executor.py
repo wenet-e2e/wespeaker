@@ -71,12 +71,14 @@ def run_epoch(dataloader,
 
                 # (B, chunk_num, T, F) --> (chunk_num, B, T, F) --> (chunk_num * B, T, F)
                 local_T, local_F = local_feats.shape[-2:]
-                local_feats = local_feats.transpose(0, 1).contiguous().view(-1, local_T, local_F)
+                local_feats = local_feats.transpose(0, 1).contiguous().view(
+                    -1, local_T, local_F)
                 global_T, global_F = global_feats.shape[-2:]
-                global_feats = global_feats.transpose(0, 1).contiguous().view(-1, global_T, global_F)
+                global_feats = global_feats.transpose(0, 1).contiguous().view(
+                    -1, global_T, global_F)
 
                 with torch.cuda.amp.autocast(enabled=enable_amp):
-                    loss = model(local_feats, global_feats, epoch-1)
+                    loss = model(local_feats, global_feats, epoch - 1)
 
                 # loss, acc
                 loss_meter.add(loss.item())
@@ -89,7 +91,8 @@ def run_epoch(dataloader,
                 # Unscales the gradients of optimizer's assigned params in-place
                 scaler.unscale_(optimizer)
                 clip_gradients(model, clip_grad)
-                cancel_gradients_last_layer(epoch-1, model.module.s_model, freeze_last_layer)
+                cancel_gradients_last_layer(epoch - 1, model.module.s_model,
+                                            freeze_last_layer)
 
                 scaler.step(optimizer)
                 scaler.update()
@@ -101,11 +104,19 @@ def run_epoch(dataloader,
                 # log
                 if (i + 1) % log_batch_interval == 0:
                     logger.info(
-                        tp.row((epoch, i + 1, lr_schedule[cur_iter], loss_meter.value()[0]),
+                        tp.row((epoch, i + 1, lr_schedule[cur_iter],
+                                loss_meter.value()[0]),
                                width=10,
                                style='grid'))
-    except RuntimeError:
-        pass
+    except RuntimeError as e:
+        if 'exhausted' in str(e):
+            # Detect the error that one process has exhausted the inputs,
+            # Because there is self-implemented multi-processing commutation operation in DINO,
+            # and the model.join() operation has no influence on such operation.
+            # We mush stop all the processes when one process has exhausted the inputs.
+            pass
+        else:
+            raise e
 
     logger.info(
         tp.row((epoch, i + 1, lr_schedule[cur_iter], loss_meter.value()[0]),

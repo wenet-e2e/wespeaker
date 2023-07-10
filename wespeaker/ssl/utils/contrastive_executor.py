@@ -48,7 +48,7 @@ def run_epoch(dataloader,
     try:
         with model_context():
             for i, batch in enumerate(dataloader):
-                
+
                 cur_iter = (epoch - 1) * loader_size + i
                 scheduler.step(cur_iter)
 
@@ -58,13 +58,13 @@ def run_epoch(dataloader,
                 keys = batch['keys'].squeeze(1).float().to(device)
 
                 with torch.cuda.amp.autocast(enabled=enable_amp):
-                    logits, labels = model(queries, keys)  
+                    logits, labels = model(queries, keys)
                     loss = criterion(logits, labels)
 
                 # loss, acc
                 loss_meter.add(loss.item())
                 acc_meter.add(logits.cpu().detach().numpy(),
-                            labels.cpu().numpy())
+                              labels.cpu().numpy())
 
                 # updata the model
                 optimizer.zero_grad()
@@ -77,11 +77,18 @@ def run_epoch(dataloader,
                 if (i + 1) % log_batch_interval == 0:
                     logger.info(
                         tp.row((epoch, i + 1, scheduler.get_lr()) +
-                            (loss_meter.value()[0], acc_meter.value()[0]),
-                            width=10,
-                            style='grid'))
-    except RuntimeError:
-        pass
+                               (loss_meter.value()[0], acc_meter.value()[0]),
+                               width=10,
+                               style='grid'))
+    except RuntimeError as e:
+        if 'exhausted' in str(e):
+            # Detect the error that one process has exhausted the inputs,
+            # Because there is self-implemented multi-processing commutation operation in moco,
+            # and the model.join() operation has no influence on such operation.
+            # We mush stop all the processes when one process has exhausted the inputs.
+            pass
+        else:
+            raise e
 
     logger.info(
         tp.row((epoch, i + 1, scheduler.get_lr()) +

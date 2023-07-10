@@ -87,12 +87,15 @@ def train(config='conf/config.yaml', **kwargs):
 
     # dataset and dataloader
     train_dataset = SSLDataset(configs['data_type'],
-                                configs['train_data'],
-                                configs['dataset_args'],
-                                None,
-                                reverb_lmdb_file=configs.get('reverb_data', None),
-                                noise_lmdb_file=configs.get('noise_data', None))
-    train_dataloader = DataLoader(train_dataset, **configs['dataloader_args'], collate_fn=contrastive_collate_fn)
+                               configs['train_data'],
+                               configs['dataset_args'],
+                               None,
+                               reverb_lmdb_file=configs.get(
+                                   'reverb_data', None),
+                               noise_lmdb_file=configs.get('noise_data', None))
+    train_dataloader = DataLoader(train_dataset,
+                                  **configs['dataloader_args'],
+                                  collate_fn=contrastive_collate_fn)
     batch_size = configs['dataloader_args']['batch_size']
     loader_size = data_num // world_size // batch_size
     if rank == 0:
@@ -120,7 +123,8 @@ def train(config='conf/config.yaml', **kwargs):
         script_model.save(os.path.join(model_dir, 'init.zip'))
 
     if configs['contrastive_type'] == "simclr":
-        configs['simclr_args']['embed_dim'] = configs['model_args']['embed_dim']
+        configs['simclr_args']['embed_dim'] = configs['model_args'][
+            'embed_dim']
         model = SimCLR(model, **configs['simclr_args'])
     else:
         configs['moco_args']['embed_dim'] = configs['model_args']['embed_dim']
@@ -130,7 +134,7 @@ def train(config='conf/config.yaml', **kwargs):
         # print model
         for line in pformat(model).split('\n'):
             logger.info(line)
-    
+
     # If specify checkpoint, load some info from checkpoint.
     if checkpoint is not None:
         load_checkpoint(model, checkpoint)

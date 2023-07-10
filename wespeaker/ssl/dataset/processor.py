@@ -24,8 +24,7 @@ from scipy.io import wavfile
 import torch
 import torchaudio.compliance.kaldi as kaldi
 from wespeaker.dataset.processor import (
-    get_random_chunk,
-)
+    get_random_chunk, )
 
 
 def spk_to_id(data, spk2id):
@@ -75,17 +74,21 @@ def random_chunk_for_dino(data,
             feat = sample['feat']
             sample['feat'] = {'local_chunks': [], 'global_chunks': []}
             for i in range(local_chunk_num):
-                sample['feat']['local_chunks'].append(get_random_chunk(feat, local_chunk_len))
+                sample['feat']['local_chunks'].append(
+                    get_random_chunk(feat, local_chunk_len))
             for i in range(global_chunk_num):
-                sample['feat']['global_chunks'].append(get_random_chunk(feat, global_chunk_len))
+                sample['feat']['global_chunks'].append(
+                    get_random_chunk(feat, global_chunk_len))
         else:
             assert 'wav' in sample
             wav = sample['wav'][0]
             sample['wav'] = {'local_chunks': [], 'global_chunks': []}
             for i in range(local_chunk_num):
-                sample['wav']['local_chunks'].append(get_random_chunk(wav, local_chunk_len).unsqueeze(0))
+                sample['wav']['local_chunks'].append(
+                    get_random_chunk(wav, local_chunk_len).unsqueeze(0))
             for i in range(global_chunk_num):
-                sample['wav']['global_chunks'].append(get_random_chunk(wav, global_chunk_len).unsqueeze(0))
+                sample['wav']['global_chunks'].append(
+                    get_random_chunk(wav, global_chunk_len).unsqueeze(0))
         yield sample
 
 
@@ -107,11 +110,9 @@ def add_reverb(audio, reverb_source, resample_rate=16000):
     rir_audio = rir_audio.astype(np.float32)
     if rir_sr != resample_rate:
         rir_audio = signal.resample(
-            rir_audio,
-            int(len(rir_audio) / rir_sr * resample_rate))
+            rir_audio, int(len(rir_audio) / rir_sr * resample_rate))
     rir_audio = rir_audio / np.sqrt(np.sum(rir_audio**2))
-    out_audio = signal.convolve(audio, rir_audio,
-                                mode='full')[:audio_len]
+    out_audio = signal.convolve(audio, rir_audio, mode='full')[:audio_len]
 
     return out_audio
 
@@ -145,8 +146,7 @@ def add_noise(audio, noise_source, resample_rate=16000):
         # Since the noise audio could be very long, it must be
         # chunked first before resampled (to save time)
         noise_audio = get_random_chunk(
-            noise_audio,
-            int(audio_len / resample_rate * noise_sr))
+            noise_audio, int(audio_len / resample_rate * noise_sr))
         noise_audio = signal.resample(noise_audio, audio_len)
     else:
         noise_audio = get_random_chunk(noise_audio, audio_len)
@@ -275,6 +275,7 @@ def apply_cmvn(data, norm_mean=True, norm_var=False):
         Returns:
             Iterable[{key, feat, label}]
     """
+
     def apply_cmvn_for_a_feat(mat):
         if norm_mean:
             mat = mat - torch.mean(mat, dim=0)
@@ -315,6 +316,7 @@ def spec_aug(data, num_t_mask=1, num_f_mask=1, max_t=10, max_f=8, prob=0.6):
         Returns
             Iterable[{key, feat, label}]
     """
+
     def spec_aug_for_a_feat(x):
         if random.random() < prob:
             assert isinstance(x, torch.Tensor)

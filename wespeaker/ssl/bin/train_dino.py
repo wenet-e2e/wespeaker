@@ -33,12 +33,12 @@ from wespeaker.utils.ddp_utils import init_ddp
 from wespeaker.ssl.models.dino_wrapper import DINO
 from wespeaker.ssl.utils.dino_executor import run_epoch
 from wespeaker.ssl.utils.dino_utils import (
-                            restart_from_checkpoint,
-                            get_params_groups,
-                            save_checkpoint,
-                            cosine_scheduler,
-                            LARS,
-                            )
+    restart_from_checkpoint,
+    get_params_groups,
+    save_checkpoint,
+    cosine_scheduler,
+    LARS,
+)
 
 
 def train(config='conf/config.yaml', **kwargs):
@@ -92,12 +92,15 @@ def train(config='conf/config.yaml', **kwargs):
 
     # dataset and dataloader
     train_dataset = SSLDataset(configs['data_type'],
-                                configs['train_data'],
-                                configs['dataset_args'],
-                                None,
-                                reverb_lmdb_file=configs.get('reverb_data', None),
-                                noise_lmdb_file=configs.get('noise_data', None))
-    train_dataloader = DataLoader(train_dataset, **configs['dataloader_args'], collate_fn=dino_collate_fn)
+                               configs['train_data'],
+                               configs['dataset_args'],
+                               None,
+                               reverb_lmdb_file=configs.get(
+                                   'reverb_data', None),
+                               noise_lmdb_file=configs.get('noise_data', None))
+    train_dataloader = DataLoader(train_dataset,
+                                  **configs['dataloader_args'],
+                                  collate_fn=dino_collate_fn)
     batch_size = configs['dataloader_args']['batch_size']
     loader_size = data_num // world_size // batch_size
     if rank == 0:
@@ -128,14 +131,16 @@ def train(config='conf/config.yaml', **kwargs):
     configs['dino_head_args']['in_dim'] = configs['model_args']['embed_dim']
     chunk_info_args = configs['dataset_args']['chunk_info_args']
     configs['dino_loss_args']['out_dim'] = configs['dino_head_args']['out_dim']
-    configs['dino_loss_args']['n_scrops'] = chunk_info_args['global_chunk_num'] + chunk_info_args['local_chunk_num']
+    configs['dino_loss_args']['n_scrops'] = chunk_info_args[
+        'global_chunk_num'] + chunk_info_args['local_chunk_num']
     configs['dino_loss_args']['n_tcrops'] = chunk_info_args['global_chunk_num']
     configs['dino_loss_args']['nepochs'] = configs['num_epochs']
-    model = DINO(model,
-                 dino_head_args=configs['dino_head_args'],
-                 dino_loss_args=configs['dino_loss_args'],
-                 sync_bn=configs.get('sync_bn', True),
-                 )
+    model = DINO(
+        model,
+        dino_head_args=configs['dino_head_args'],
+        dino_loss_args=configs['dino_loss_args'],
+        sync_bn=configs.get('sync_bn', True),
+    )
 
     if rank == 0:
         # print model
@@ -144,7 +149,8 @@ def train(config='conf/config.yaml', **kwargs):
 
     # ddp_model
     model.cuda()
-    ddp_model = torch.nn.parallel.DistributedDataParallel(model, broadcast_buffers=False)
+    ddp_model = torch.nn.parallel.DistributedDataParallel(
+        model, broadcast_buffers=False)
     device = torch.device("cuda")
 
     params_groups = get_params_groups(ddp_model)
@@ -157,10 +163,11 @@ def train(config='conf/config.yaml', **kwargs):
 
     # If specify checkpoint, load some info from checkpoint.
     if checkpoint is not None:
-        restart_from_checkpoint(checkpoint,
-                                model=model,
-                                optimizer=optimizer,
-                                )
+        restart_from_checkpoint(
+            checkpoint,
+            model=model,
+            optimizer=optimizer,
+        )
         start_epoch = int(re.findall(r"(?<=model_)\d*(?=.pt)",
                                      checkpoint)[0]) + 1
         logger.info('Load checkpoint: {}'.format(checkpoint))
@@ -171,21 +178,24 @@ def train(config='conf/config.yaml', **kwargs):
     # init all the schedulers
     scheduler_args = configs['scheduler_args']
     lr_scale_ratio = 1.0 * batch_size * world_size / 256.
-    lr_schedule = cosine_scheduler(base_value=scheduler_args['lr'] * lr_scale_ratio,
-                                   final_value=scheduler_args['min_lr'] * lr_scale_ratio,
-                                   epochs=configs['num_epochs'],
-                                   niter_per_ep=loader_size,
-                                   warmup_epochs=scheduler_args['warmup_epochs'],
+    lr_schedule = cosine_scheduler(
+        base_value=scheduler_args['lr'] * lr_scale_ratio,
+        final_value=scheduler_args['min_lr'] * lr_scale_ratio,
+        epochs=configs['num_epochs'],
+        niter_per_ep=loader_size,
+        warmup_epochs=scheduler_args['warmup_epochs'],
     )
-    wd_schedule = cosine_scheduler(base_value=scheduler_args['weight_decay'],
-                                   final_value=scheduler_args['weight_decay_end'],
-                                   epochs=configs['num_epochs'],
-                                   niter_per_ep=loader_size,
+    wd_schedule = cosine_scheduler(
+        base_value=scheduler_args['weight_decay'],
+        final_value=scheduler_args['weight_decay_end'],
+        epochs=configs['num_epochs'],
+        niter_per_ep=loader_size,
     )
-    mt_schedule = cosine_scheduler(base_value=scheduler_args['momentum_teacher'],
-                                   final_value=1,
-                                   epochs=configs['num_epochs'],
-                                   niter_per_ep=loader_size,
+    mt_schedule = cosine_scheduler(
+        base_value=scheduler_args['momentum_teacher'],
+        final_value=1,
+        epochs=configs['num_epochs'],
+        niter_per_ep=loader_size,
     )
 
     # save config.yaml
@@ -209,28 +219,27 @@ def train(config='conf/config.yaml', **kwargs):
 
         scaler = torch.cuda.amp.GradScaler(enabled=configs['enable_amp'])
         run_epoch(train_dataloader,
-                    loader_size,
-                    ddp_model,
-                    optimizer,
-                    lr_schedule,
-                    wd_schedule,
-                    mt_schedule,
-                    epoch,
-                    logger,
-                    scaler,
-                    clip_grad=configs['clip_grad'],
-                    freeze_last_layer=configs['freeze_last_layer'],
-                    enable_amp=configs['enable_amp'],
-                    log_batch_interval=configs['log_batch_interval'],
-                    device=device)
+                  loader_size,
+                  ddp_model,
+                  optimizer,
+                  lr_schedule,
+                  wd_schedule,
+                  mt_schedule,
+                  epoch,
+                  logger,
+                  scaler,
+                  clip_grad=configs['clip_grad'],
+                  freeze_last_layer=configs['freeze_last_layer'],
+                  enable_amp=configs['enable_amp'],
+                  log_batch_interval=configs['log_batch_interval'],
+                  device=device)
 
         if rank == 0:
             if epoch % configs['save_epoch_interval'] == 0 or epoch >= configs[
                     'num_epochs'] - configs['num_avg']:
-                save_checkpoint(model,
-                                optimizer,
-                                os.path.join(model_dir,
-                                        'model_{}.pt'.format(epoch)))
+                save_checkpoint(
+                    model, optimizer,
+                    os.path.join(model_dir, 'model_{}.pt'.format(epoch)))
 
     if rank == 0:
         os.symlink('model_{}.pt'.format(configs['num_epochs']),

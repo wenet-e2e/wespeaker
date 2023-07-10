@@ -25,41 +25,47 @@ from wespeaker.dataset.dataset import Processor, DataList
 
 
 def dino_collate_fn(batch):
-    key_list, label_list =  [], []
+    key_list, label_list = [], []
     local_chunks_list, global_chunks_list = [], []
 
     for sample_dict in batch:
         key_list.append(sample_dict['key'])
         label_list.append(sample_dict['label'])
-        local_chunks_list.append(torch.stack(sample_dict['feat']['local_chunks']))
-        global_chunks_list.append(torch.stack(sample_dict['feat']['global_chunks']))
+        local_chunks_list.append(
+            torch.stack(sample_dict['feat']['local_chunks']))
+        global_chunks_list.append(
+            torch.stack(sample_dict['feat']['global_chunks']))
 
-    return dict(key=key_list,
-                label=label_list,
-                local_chunks=torch.stack(local_chunks_list),
-                global_chunks=torch.stack(global_chunks_list),
-                )
+    return dict(
+        key=key_list,
+        label=label_list,
+        local_chunks=torch.stack(local_chunks_list),
+        global_chunks=torch.stack(global_chunks_list),
+    )
 
 
 def contrastive_collate_fn(batch):
     local_chunks_list, global_chunks_list = [], []
 
     for sample_dict in batch:
-        local_chunks_list.append(torch.stack(sample_dict['feat']['local_chunks']))
-        global_chunks_list.append(torch.stack(sample_dict['feat']['global_chunks']))
+        local_chunks_list.append(
+            torch.stack(sample_dict['feat']['local_chunks']))
+        global_chunks_list.append(
+            torch.stack(sample_dict['feat']['global_chunks']))
 
-    return dict(keys=torch.stack(local_chunks_list),
-                queries=torch.stack(global_chunks_list),
-                )
+    return dict(
+        keys=torch.stack(local_chunks_list),
+        queries=torch.stack(global_chunks_list),
+    )
 
 
 def SSLDataset(data_type,
-            data_list_file,
-            configs,
-            spk2id_dict,
-            whole_utt=False,
-            reverb_lmdb_file=None,
-            noise_lmdb_file=None):
+               data_list_file,
+               configs,
+               spk2id_dict,
+               whole_utt=False,
+               reverb_lmdb_file=None,
+               noise_lmdb_file=None):
     """ Construct dataset from arguments
 
         We have two shuffle stage in the Dataset. The first is global
@@ -110,7 +116,8 @@ def SSLDataset(data_type,
             # random chunk
             chunk_info_args = configs['chunk_info_args']
             chunk_info_args['data_type'] = 'feat'
-            dataset = Processor(dataset, ssl_processor.random_chunk_for_dino, **chunk_info_args)
+            dataset = Processor(dataset, ssl_processor.random_chunk_for_dino,
+                                **chunk_info_args)
     else:
         # resample
         resample_rate = configs.get('resample_rate', 16000)
@@ -127,19 +134,23 @@ def SSLDataset(data_type,
             chunk_info_args = configs['chunk_info_args']
             for key in chunk_info_args:
                 if 'chunk_len' in key:
-                    chunk_info_args[key] = ((chunk_info_args[key] - 1) * frame_shift
-                                            + frame_length) * resample_rate // 1000
+                    chunk_info_args[key] = (
+                        (chunk_info_args[key] - 1) * frame_shift +
+                        frame_length) * resample_rate // 1000
             chunk_info_args['data_type'] = data_type
-            dataset = Processor(dataset, ssl_processor.random_chunk_for_dino, **chunk_info_args)
+            dataset = Processor(dataset, ssl_processor.random_chunk_for_dino,
+                                **chunk_info_args)
         # add reverb & noise
         aug_prob = configs.get('aug_prob', 0.6)
         if (reverb_lmdb_file and noise_lmdb_file) and (aug_prob > 0.0):
             reverb_data = LmdbData(reverb_lmdb_file)
             noise_data = LmdbData(noise_lmdb_file)
-            dataset = Processor(dataset, ssl_processor.add_reverb_noise, reverb_data,
-                                noise_data, resample_rate, aug_prob)
+            dataset = Processor(dataset, ssl_processor.add_reverb_noise,
+                                reverb_data, noise_data, resample_rate,
+                                aug_prob)
         # compute fbank
-        dataset = Processor(dataset, ssl_processor.compute_fbank, **configs['fbank_args'])
+        dataset = Processor(dataset, ssl_processor.compute_fbank,
+                            **configs['fbank_args'])
 
     # apply cmvn
     dataset = Processor(dataset, ssl_processor.apply_cmvn)

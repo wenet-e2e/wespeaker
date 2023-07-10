@@ -1,7 +1,13 @@
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
 import torch
 import torch.nn as nn
 import copy
+"""
+Directly copied from https://github.com/facebookresearch/moco/blob/main/moco/builder.py
+"""
 
 
 class MoCo(nn.Module):
@@ -9,7 +15,14 @@ class MoCo(nn.Module):
     Build a MoCo model with: a query encoder, a key encoder, and a queue
     https://arxiv.org/abs/1911.05722
     """
-    def __init__(self, encoder, embed_dim=256, K=65536, m=0.999, T=0.07, mlp=False):
+
+    def __init__(self,
+                 encoder,
+                 embed_dim=256,
+                 K=65536,
+                 m=0.999,
+                 T=0.07,
+                 mlp=False):
         """
         K: queue size; number of negative keys (default: 65536)
         m: moco momentum of updating key encoder (default: 0.999)
@@ -27,17 +40,20 @@ class MoCo(nn.Module):
         self.encoder_k = copy.deepcopy(encoder)
 
         if mlp:
-            self.encoder_q.add_module("mlp", nn.Sequential(nn.Linear(embed_dim, embed_dim),
-                                                           nn.ReLU(),
-                                                           nn.Linear(embed_dim, embed_dim)))
-            self.encoder_k.add_module("mlp", nn.Sequential(nn.Linear(embed_dim, embed_dim),
-                                                           nn.ReLU(),
-                                                           nn.Linear(embed_dim, embed_dim)))
+            self.encoder_q.add_module(
+                "mlp",
+                nn.Sequential(nn.Linear(embed_dim, embed_dim), nn.ReLU(),
+                              nn.Linear(embed_dim, embed_dim)))
+            self.encoder_k.add_module(
+                "mlp",
+                nn.Sequential(nn.Linear(embed_dim, embed_dim), nn.ReLU(),
+                              nn.Linear(embed_dim, embed_dim)))
         else:
             self.encoder_q.add_module("mlp", nn.Sequential())
             self.encoder_k.add_module("mlp", nn.Sequential())
 
-        for param_q, param_k in zip(self.encoder_q.parameters(), self.encoder_k.parameters()):
+        for param_q, param_k in zip(self.encoder_q.parameters(),
+                                    self.encoder_k.parameters()):
             param_k.data.copy_(param_q.data)  # initialize
             param_k.requires_grad = False  # not update by gradient
 
@@ -52,8 +68,10 @@ class MoCo(nn.Module):
         """
         Momentum update of the key encoder
         """
-        for param_q, param_k in zip(self.encoder_q.parameters(), self.encoder_k.parameters()):
-            param_k.data = param_k.data * self.m + param_q.data * (1.0 - self.m)
+        for param_q, param_k in zip(self.encoder_q.parameters(),
+                                    self.encoder_k.parameters()):
+            param_k.data = param_k.data * self.m + param_q.data * (1.0 -
+                                                                   self.m)
 
     @torch.no_grad()
     def _dequeue_and_enqueue(self, keys):
@@ -160,7 +178,8 @@ class MoCo(nn.Module):
         logits /= self.T
 
         # labels: positive key indicators
-        labels = torch.zeros(logits.shape[0], dtype=torch.long).to(input_q.device)
+        labels = torch.zeros(logits.shape[0],
+                             dtype=torch.long).to(input_q.device)
 
         # dequeue and enqueue
         self._dequeue_and_enqueue(k)
@@ -175,8 +194,10 @@ def concat_all_gather(tensor):
     Performs all_gather operation on the provided tensors.
     *** Warning ***: torch.distributed.all_gather has no gradient.
     """
-    tensors_gather = [torch.ones_like(tensor)
-        for _ in range(torch.distributed.get_world_size())]
+    tensors_gather = [
+        torch.ones_like(tensor)
+        for _ in range(torch.distributed.get_world_size())
+    ]
     torch.distributed.all_gather(tensors_gather, tensor, async_op=False)
 
     output = torch.cat(tensors_gather, dim=0)
