@@ -11,4 +11,4 @@
 | ResNet34-TSTP-emb256 | 6.63M | 3.170 | 3.324 | 5.821 |
 
 
-* 🔥 UPDATE 2023.07: We support DINO based self-supervised speaker verification framework. 
+* 🔥 UPDATE 2023.07: We support DINO based self-supervised speaker verification framework.
