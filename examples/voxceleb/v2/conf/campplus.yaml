@@ -23,8 +23,8 @@ dataset_args:
     shuffle_size: 2500
   filter: True
   filter_args:
-    min_num_frames:100
-    max_num_frames:800
+    min_num_frames: 100
+    max_num_frames: 800
   resample_rate: 16000
   speed_perturb: True
   num_frms: 200
