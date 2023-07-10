@@ -2,14 +2,13 @@
 
 # Copyright 2022 Hongji Wang (jijijiang77@gmail.com)
 #           2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
-#           2022 Zhengyang Chen (chenzhengyang117@gmail.com)
+#           2023 Zhengyang Chen (chenzhengyang117@gmail.com)
 #           2023 Bing Han (hanbing97@sjtu.edu.cn)
 
 . ./path.sh || exit 1
 
-stage=3
-stop_stage=6
-use_slurm=0
+stage=-1
+stop_stage=-1
 
 data=data
 data_type="shard"  # shard/raw
@@ -25,13 +24,6 @@ score_norm_method="asnorm"  # asnorm/snorm
 top_n=300
 
 . tools/parse_options.sh || exit 1
-
-if [ $use_slurm -eq 1 ];then
-    python_cmd="srun /mnt/lustre/sjtu/home/czy97/.conda/envs/pytorch1_12/bin/python"
-else
-    num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
-    python_cmd="torchrun --master_addr=localhost --master_port=16888 --nnodes=1 --nproc_per_node=$num_gpus"
-fi
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "Prepare datasets ..."
@@ -61,7 +53,9 @@ fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   echo "Start training ..."
-  $python_cmd wespeaker/ssl/bin/train_dino.py --config $config \
+  num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
+  torchrun --master_addr=localhost --master_port=16888 --nnodes=1 --nproc_per_node=$num_gpus \
+    wespeaker/ssl/bin/train_dino.py --config $config \
       --exp_dir ${exp_dir} \
       --gpus $gpus \
       --num_avg ${num_avg} \
@@ -94,7 +88,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   echo "Extract embeddings ..."
   local/extract_vox.sh \
     --exp_dir $exp_dir --model_path $model_path \
-    --nj 8 --gpus $gpus --data_type $data_type --data ${data}
+    --nj 4 --gpus $gpus --data_type $data_type --data ${data}
 fi
 
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
@@ -107,7 +101,7 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
 fi
 
 
-if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 7 ]; then
+if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
   echo "Export the best model ..."
   python wespeaker/bin/export_jit.py \
     --config $exp_dir/config.yaml \

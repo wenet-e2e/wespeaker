@@ -33,7 +33,6 @@ from wespeaker.utils.utils import get_logger, parse_config_or_kwargs, set_seed
 from wespeaker.ssl.utils.contrastive_executor import run_epoch
 from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
 from wespeaker.ssl.dataset.dataset import SSLDataset, contrastive_collate_fn
-from wespeaker.utils.ddp_utils import init_ddp
 
 
 def train(config='conf/config.yaml', **kwargs):
@@ -46,10 +45,11 @@ def train(config='conf/config.yaml', **kwargs):
     configs = parse_config_or_kwargs(config, **kwargs)
     checkpoint = configs.get('checkpoint', None)
     # dist configs
-    gpu = init_ddp(configs['gpus'])
-    rank = dist.get_rank()
-    world_size = dist.get_world_size()
+    rank = int(os.environ['RANK'])
+    world_size = int(os.environ['WORLD_SIZE'])
+    gpu = int(configs['gpus'][rank])
     torch.cuda.set_device(gpu)
+    dist.init_process_group(backend='nccl')
 
     model_dir = os.path.join(configs['exp_dir'], "models")
     if rank == 0:

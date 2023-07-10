@@ -29,7 +29,6 @@ from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.utils.utils import get_logger, parse_config_or_kwargs, set_seed
 from wespeaker.utils.checkpoint import load_checkpoint
 from wespeaker.ssl.dataset.dataset import SSLDataset, dino_collate_fn
-from wespeaker.utils.ddp_utils import init_ddp
 from wespeaker.ssl.models.dino_wrapper import DINO
 from wespeaker.ssl.utils.dino_executor import run_epoch
 from wespeaker.ssl.utils.dino_utils import (
@@ -51,10 +50,11 @@ def train(config='conf/config.yaml', **kwargs):
     configs = parse_config_or_kwargs(config, **kwargs)
     checkpoint = configs.get('checkpoint', None)
     # dist configs
-    gpu = init_ddp(configs['gpus'])
-    rank = dist.get_rank()
-    world_size = dist.get_world_size()
+    rank = int(os.environ['RANK'])
+    world_size = int(os.environ['WORLD_SIZE'])
+    gpu = int(configs['gpus'][rank])
     torch.cuda.set_device(gpu)
+    dist.init_process_group(backend='nccl')
 
     model_dir = os.path.join(configs['exp_dir'], "models")
     if rank == 0:
