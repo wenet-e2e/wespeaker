@@ -125,7 +125,8 @@ def cosine_scheduler(base_value,
 
 class LARS(torch.optim.Optimizer):
     """
-    Almost copy-paste from https://github.com/facebookresearch/barlowtwins/blob/main/main.py
+    Almost copy-paste from
+       https://github.com/facebookresearch/barlowtwins/blob/main/main.py
     """
 
     def __init__(self,

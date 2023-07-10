@@ -199,7 +199,7 @@ class ECAPA_TDNN(nn.Module):
         self.bn = nn.BatchNorm1d(self.pool_out_dim)
         self.linear = nn.Linear(self.pool_out_dim, embed_dim)
         self.emb_bn = emb_bn
-        if emb_bn: # better in SSL for SV
+        if emb_bn:  # better in SSL for SV
             self.bn2 = nn.BatchNorm1d(embed_dim)
         else:
             self.bn2 = nn.Identity()

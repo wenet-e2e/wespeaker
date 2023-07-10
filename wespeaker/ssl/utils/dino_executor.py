@@ -57,19 +57,20 @@ def run_epoch(dataloader,
             for i, batch in enumerate(dataloader):
 
                 cur_iter = (epoch - 1) * loader_size + i
-                # --------------- Update dynamic hyper-parameter ----------------
+                # --------------- Update dynamic hyper-parameter ---------------
                 for k, param_group in enumerate(optimizer.param_groups):
                     param_group['lr'] = lr_schedule[cur_iter]
                     if k == 0:
                         param_group['weight_decay'] = wd_schedule[cur_iter]
-                # --------------- Update dynamic hyper-parameter ----------------
+                # --------------- Update dynamic hyper-parameter ---------------
 
                 # (B, chunk_num, T, F)
                 local_feats = batch['local_chunks'].float().to(device)
                 # (B, chunk_num', T, F)
                 global_feats = batch['global_chunks'].float().to(device)
 
-                # (B, chunk_num, T, F) --> (chunk_num, B, T, F) --> (chunk_num * B, T, F)
+                # (B, chunk_num, T, F) --> (chunk_num, B, T, F)
+                # --> (chunk_num * B, T, F)
                 local_T, local_F = local_feats.shape[-2:]
                 local_feats = local_feats.transpose(0, 1).contiguous().view(
                     -1, local_T, local_F)
@@ -111,9 +112,10 @@ def run_epoch(dataloader,
     except RuntimeError as e:
         if 'exhausted' in str(e):
             # Detect the error that one process has exhausted the inputs,
-            # Because there is self-implemented multi-processing commutation operation in DINO,
-            # and the model.join() operation has no influence on such operation.
-            # We mush stop all the processes when one process has exhausted the inputs.
+            # Because there is self-implemented multi-processing commutation
+            # operation in DINO, and the model.join() operation has no
+            # influence on such operation. We mush stop all the processes
+            # when one process has exhausted the inputs.
             pass
         else:
             raise e

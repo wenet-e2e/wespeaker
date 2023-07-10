@@ -83,9 +83,10 @@ def run_epoch(dataloader,
     except RuntimeError as e:
         if 'exhausted' in str(e):
             # Detect the error that one process has exhausted the inputs,
-            # Because there is self-implemented multi-processing commutation operation in moco,
-            # and the model.join() operation has no influence on such operation.
-            # We mush stop all the processes when one process has exhausted the inputs.
+            # Because there is self-implemented multi-processing commutation
+            # operation in MOCO, and the model.join() operation has no
+            # influence on such operation. We mush stop all the processes
+            # when one process has exhausted the inputs.
             pass
         else:
             raise e

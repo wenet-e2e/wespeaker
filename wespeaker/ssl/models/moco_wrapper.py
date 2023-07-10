@@ -6,7 +6,8 @@ import torch
 import torch.nn as nn
 import copy
 """
-Directly copied from https://github.com/facebookresearch/moco/blob/main/moco/builder.py
+Directly copied from
+  https://github.com/facebookresearch/moco/blob/main/moco/builder.py
 """
 
 

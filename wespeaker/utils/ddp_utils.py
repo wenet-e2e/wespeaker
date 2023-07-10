@@ -1,6 +1,5 @@
 import os
 import torch.distributed as dist
-import random
 
 
 def getoneNode():
@@ -8,7 +7,7 @@ def getoneNode():
     nodelist = os.environ['SLURM_JOB_NODELIST']
     nodelist = nodelist.strip().split(',')[0]
     import re
-    text = re.split('[-\[\]]', nodelist)
+    text = re.split('[-\\[\\]]', nodelist)
     if ('' in text):
         text.remove('')
     return text[0] + '-' + text[1] + '-' + text[2]
@@ -20,7 +19,12 @@ def init_ddp(gpu_list='[0]', port=23456):
 
     if 'WORLD_SIZE' in os.environ:
         # using torchrun to start:
-        # egs: torchrun --standalone --rdzv_endpoint=localhost:$PORT_k --nnodes=1 --nproc_per_node=2 train.py --config conf/config.yaml --gpu_list '[0,1]'
+        # egs: torchrun --standalone --rdzv_endpoint=localhost:$PORT_k \
+        #                            --nnodes=1 \
+        #                            --nproc_per_node=2 \
+        #                            train.py \
+        #                            --config conf/config.yaml 
+        #                            --gpu_list '[0,1]'
         rank = int(os.environ['RANK'])
         local_rank = int(os.environ['LOCAL_RANK'])
         world_size = int(os.environ['WORLD_SIZE'])
@@ -44,7 +48,11 @@ def init_ddp(gpu_list='[0]', port=23456):
         os.environ['MASTER_ADDR'] = 'localhost'
         os.environ['MASTER_PORT'] = str(port)
 
-    # env:// means we use the environment variables to set the host_addr and port
-    dist.init_process_group(backend='nccl', init_method='env://', world_size=world_size, rank=rank)
+    # env:// means we use the environment variables to
+    # set the host_addr and port
+    dist.init_process_group(backend='nccl',
+                            init_method='env://',
+                            world_size=world_size,
+                            rank=rank)
 
     return gpu_id
