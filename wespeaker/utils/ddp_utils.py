@@ -23,7 +23,7 @@ def init_ddp(gpu_list='[0]', port=23456):
         #                            --nnodes=1 \
         #                            --nproc_per_node=2 \
         #                            train.py \
-        #                            --config conf/config.yaml 
+        #                            --config conf/config.yaml \
         #                            --gpu_list '[0,1]'
         rank = int(os.environ['RANK'])
         local_rank = int(os.environ['LOCAL_RANK'])
