@@ -2,7 +2,7 @@ fire==0.4.0
 kaldiio==2.17.2
 numpy==1.22.4
 PyYAML==6.0
-scipy==1.7.3
+scipy==1.10.0
 tableprint==0.9.1
 torchnet==0.0.4
 tqdm==4.62.3
