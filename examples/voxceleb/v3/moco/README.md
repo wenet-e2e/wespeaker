@@ -8,4 +8,6 @@
 |:------|:------:|:------------:|:------------:|:------------:|:------------:|
 | ECAPA_TDNN_GLOB_c512-ASTP-emb192 | 6.19M | MoCo | 8.709 | 9.287 | 14.756 |
 
-* 🔥 UPDATE 2023.07: We support the MoCo based self-supervised speaker verification.
+* 🔥 UPDATE 2023.07: We support the MoCo based self-supervised speaker verification. Related papers:
+    * [Momentum Contrast for Unsupervised Visual Representation Learning](https://openaccess.thecvf.com/content_CVPR_2020/papers/He_Momentum_Contrast_for_Unsupervised_Visual_Representation_Learning_CVPR_2020_paper.pdf)
+    * [Self-supervised Text-independent Speaker Verification using Prototypical Momentum Contrastive Learning](https://arxiv.org/abs/2012.07178)
