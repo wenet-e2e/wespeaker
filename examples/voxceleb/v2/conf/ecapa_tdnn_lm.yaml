@@ -17,6 +17,9 @@ save_epoch_interval: 1 # save model per epoch
 log_batch_interval: 100 # log every 100 batchs
 
 dataloader_args:
+  # the sample number which will be traversed within one epoch, if the value equals to 0,
+  # the utterance number in the dataset will be used as the sample_num_per_epoch.
+  sample_num_per_epoch: 0
   batch_size: 64
   num_workers: 16
   pin_memory: False
