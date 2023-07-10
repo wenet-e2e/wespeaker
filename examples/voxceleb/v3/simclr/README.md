@@ -6,6 +6,6 @@
 
 | Model | Params | Methods | vox1-O-clean | vox1-E-clean | vox1-H-clean |
 |:------|:------:|:------------:|:------------:|:------------:|:------------:|
-| ECAPA_TDNN_GLOB_c512-ASTP-emb192 | 6.19M | MoCo | 8.709 | 9.287 | 14.756 |
+| ECAPA_TDNN_GLOB_c512-ASTP-emb192 | 6.19M | SimCLR | 8.523 | 9.417 | 14.907 |
 
-* 🔥 UPDATE 2023.07: We support the MoCo based self-supervised speaker verification.
+* 🔥 UPDATE 2023.07: We support the SimCLR based self-supervised speaker verification.

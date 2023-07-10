@@ -14,7 +14,7 @@ data=data
 data_type="shard"  # shard/raw
 
 config=conf/ecapa_tdnn.yaml
-exp_dir=exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-fbank80-num_frms200-aug1.0-spTrue-saFalse-MoCo-SGD-epoch150
+exp_dir=exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-fbank80-num_frms200-aug1.0-spTrue-saFalse-SimCLR-SGD-epoch150
 gpus="[0,1,2,3]"
 num_avg=10
 checkpoint=
