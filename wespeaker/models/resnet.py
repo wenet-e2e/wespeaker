@@ -1,5 +1,6 @@
 # Copyright (c) 2021 Shuai Wang (wsstriving@gmail.com)
 #               2022 Zhengyang Chen (chenzhengyang117@gmail.com)
+#               2023 Bing Han (hanbing97@sjtu.edu.cn)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -251,8 +252,7 @@ if __name__ == '__main__':
     x = torch.zeros(10, 200, 80)
     model = ResNet34(feat_dim=80,
                      embed_dim=256,
-                     pooling_func='TSTP',
-                     two_emb_layer=False)
+                     pooling_func='MQMHASTP')
     model.eval()
     out = model(x)
     print(out[-1].size())

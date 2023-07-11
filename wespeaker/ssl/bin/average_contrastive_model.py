@@ -1,6 +1,7 @@
 # Copyright (c) 2020 Mobvoi Inc (Di Wu)
 #               2021 Hongji Wang (jijijiang77@gmail.com)
 #               2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
+#               2023 Zhengyang Chen (chenzhengyang117@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,6 +45,19 @@ def get_args():
     return args
 
 
+def get_model_encoder_state_dict(state_dict):
+    query_dict = {}
+    for key, val in state_dict.items():
+        # for moco model
+        if key.startswith('encoder_q.'):
+            query_dict[key[10:]] = val
+        # for simclr model
+        elif key.startswith('encoder.'):
+            query_dict[key[8:]] = val
+
+    return query_dict
+
+
 def main():
     args = get_args()
 
@@ -59,7 +73,7 @@ def main():
     for path in path_list:
         print('Processing {}'.format(path))
         states = torch.load(path, map_location=torch.device('cpu'))
-        states = states['model'] if 'model' in states else states
+        states = get_model_encoder_state_dict(states)
         if avg is None:
             avg = states
         else:
