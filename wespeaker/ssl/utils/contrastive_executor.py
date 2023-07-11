@@ -14,16 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from contextlib import nullcontext
 import tableprint as tp
 
 import torch
 import torchnet as tnt
-from functools import partial
 
 
 def run_epoch(dataloader,
-              loader_size,
+              epoch_iter,
               model,
               criterion,
               optimizer,
@@ -39,57 +37,42 @@ def run_epoch(dataloader,
     loss_meter = tnt.meter.AverageValueMeter()
     acc_meter = tnt.meter.ClassErrorMeter(accuracy=True)
 
-    # https://github.com/wenet-e2e/wenet/blob/main/wenet/utils/executor.py#L40
-    if isinstance(model, torch.nn.parallel.DistributedDataParallel):
-        model_context = partial(model.join, throw_on_early_termination=True)
-    else:
-        model_context = nullcontext
+    for i, batch in enumerate(dataloader):
 
-    try:
-        with model_context():
-            for i, batch in enumerate(dataloader):
+        cur_iter = (epoch - 1) * epoch_iter + i
+        scheduler.step(cur_iter)
 
-                cur_iter = (epoch - 1) * loader_size + i
-                scheduler.step(cur_iter)
+        # queries: (B, T, F)
+        queries = batch['queries'].squeeze(1).float().to(device)
+        # keys: (B, T, F)
+        keys = batch['keys'].squeeze(1).float().to(device)
 
-                # queries: (B, T, F)
-                queries = batch['queries'].squeeze(1).float().to(device)
-                # keys: (B, T, F)
-                keys = batch['keys'].squeeze(1).float().to(device)
+        with torch.cuda.amp.autocast(enabled=enable_amp):
+            logits, labels = model(queries, keys)
+            loss = criterion(logits, labels)
 
-                with torch.cuda.amp.autocast(enabled=enable_amp):
-                    logits, labels = model(queries, keys)
-                    loss = criterion(logits, labels)
+        # loss, acc
+        loss_meter.add(loss.item())
+        acc_meter.add(logits.cpu().detach().numpy(),
+                      labels.cpu().numpy())
 
-                # loss, acc
-                loss_meter.add(loss.item())
-                acc_meter.add(logits.cpu().detach().numpy(),
-                              labels.cpu().numpy())
+        # updata the model
+        optimizer.zero_grad()
+        # scaler does nothing here if enable_amp=False
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
 
-                # updata the model
-                optimizer.zero_grad()
-                # scaler does nothing here if enable_amp=False
-                scaler.scale(loss).backward()
-                scaler.step(optimizer)
-                scaler.update()
+        # log
+        if (i + 1) % log_batch_interval == 0:
+            logger.info(
+                tp.row((epoch, i + 1, scheduler.get_lr()) +
+                       (loss_meter.value()[0], acc_meter.value()[0]),
+                       width=10,
+                       style='grid'))
 
-                # log
-                if (i + 1) % log_batch_interval == 0:
-                    logger.info(
-                        tp.row((epoch, i + 1, scheduler.get_lr()) +
-                               (loss_meter.value()[0], acc_meter.value()[0]),
-                               width=10,
-                               style='grid'))
-    except RuntimeError as e:
-        if 'exhausted' in str(e):
-            # Detect the error that one process has exhausted the inputs,
-            # Because there is self-implemented multi-processing commutation
-            # operation in MOCO, and the model.join() operation has no
-            # influence on such operation. We mush stop all the processes
-            # when one process has exhausted the inputs.
-            pass
-        else:
-            raise e
+        if (i + 1) == epoch_iter:
+            break
 
     logger.info(
         tp.row((epoch, i + 1, scheduler.get_lr()) +

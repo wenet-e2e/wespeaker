@@ -97,11 +97,15 @@ def train(config='conf/config.yaml', **kwargs):
                                   **configs['dataloader_args'],
                                   collate_fn=contrastive_collate_fn)
     batch_size = configs['dataloader_args']['batch_size']
-    loader_size = data_num // world_size // batch_size
+    if configs['dataset_args'].get('sample_num_per_epoch', 0) > 0:
+        sample_num_per_epoch = configs['dataset_args']['sample_num_per_epoch']
+    else:
+        sample_num_per_epoch = data_num
+    epoch_iter = sample_num_per_epoch // world_size // batch_size
     if rank == 0:
         logger.info("<== Dataloaders ==>")
         logger.info("train dataloaders created")
-        logger.info('loader size: {}'.format(loader_size))
+        logger.info('loader size: {}'.format(epoch_iter))
 
     # model
     logger.info("<== Model ==>")
@@ -161,7 +165,7 @@ def train(config='conf/config.yaml', **kwargs):
 
     # scheduler
     configs['scheduler_args']['num_epochs'] = configs['num_epochs']
-    configs['scheduler_args']['epoch_iter'] = loader_size
+    configs['scheduler_args']['epoch_iter'] = epoch_iter
     # here, we consider the batch_size 64 as the base, the learning rate will be
     # adjusted according to the batchsize and world_size used in different setup
     configs['scheduler_args']['scale_ratio'] = 1.0 * world_size * configs[
@@ -189,13 +193,12 @@ def train(config='conf/config.yaml', **kwargs):
             logger.info(line)
     dist.barrier(device_ids=[gpu])  # synchronize here
 
-    # scaler = torch.cuda.amp.GradScaler(enabled=configs['enable_amp'])
+    scaler = torch.cuda.amp.GradScaler(enabled=configs['enable_amp'])
     for epoch in range(start_epoch, configs['num_epochs'] + 1):
         train_dataset.set_epoch(epoch)
 
-        scaler = torch.cuda.amp.GradScaler(enabled=configs['enable_amp'])
         run_epoch(train_dataloader,
-                  loader_size,
+                  epoch_iter,
                   ddp_model,
                   criterion,
                   optimizer,

@@ -14,12 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from contextlib import nullcontext
 import tableprint as tp
 
 import torch
 import torchnet as tnt
-from functools import partial
 from wespeaker.ssl.utils.dino_utils import (
     cancel_gradients_last_layer,
     clip_gradients,
@@ -27,7 +25,7 @@ from wespeaker.ssl.utils.dino_utils import (
 
 
 def run_epoch(dataloader,
-              loader_size,
+              epoch_iter,
               model,
               optimizer,
               lr_schedule,
@@ -46,79 +44,64 @@ def run_epoch(dataloader,
     # By default use average pooling
     loss_meter = tnt.meter.AverageValueMeter()
 
-    # https://github.com/wenet-e2e/wenet/blob/main/wenet/utils/executor.py#L40
-    if isinstance(model, torch.nn.parallel.DistributedDataParallel):
-        model_context = partial(model.join, throw_on_early_termination=True)
-    else:
-        model_context = nullcontext
+    for i, batch in enumerate(dataloader):
 
-    try:
-        with model_context():
-            for i, batch in enumerate(dataloader):
+        cur_iter = (epoch - 1) * epoch_iter + i
+        # --------------- Update dynamic hyper-parameter ---------------
+        for k, param_group in enumerate(optimizer.param_groups):
+            param_group['lr'] = lr_schedule[cur_iter]
+            if k == 0:
+                param_group['weight_decay'] = wd_schedule[cur_iter]
+        # --------------- Update dynamic hyper-parameter ---------------
 
-                cur_iter = (epoch - 1) * loader_size + i
-                # --------------- Update dynamic hyper-parameter ---------------
-                for k, param_group in enumerate(optimizer.param_groups):
-                    param_group['lr'] = lr_schedule[cur_iter]
-                    if k == 0:
-                        param_group['weight_decay'] = wd_schedule[cur_iter]
-                # --------------- Update dynamic hyper-parameter ---------------
+        # (B, chunk_num, T, F)
+        local_feats = batch['local_chunks'].float().to(device)
+        # (B, chunk_num', T, F)
+        global_feats = batch['global_chunks'].float().to(device)
 
-                # (B, chunk_num, T, F)
-                local_feats = batch['local_chunks'].float().to(device)
-                # (B, chunk_num', T, F)
-                global_feats = batch['global_chunks'].float().to(device)
+        # (B, chunk_num, T, F) --> (chunk_num, B, T, F)
+        # --> (chunk_num * B, T, F)
+        local_T, local_F = local_feats.shape[-2:]
+        local_feats = local_feats.transpose(0, 1).contiguous().view(
+            -1, local_T, local_F)
+        global_T, global_F = global_feats.shape[-2:]
+        global_feats = global_feats.transpose(0, 1).contiguous().view(
+            -1, global_T, global_F)
 
-                # (B, chunk_num, T, F) --> (chunk_num, B, T, F)
-                # --> (chunk_num * B, T, F)
-                local_T, local_F = local_feats.shape[-2:]
-                local_feats = local_feats.transpose(0, 1).contiguous().view(
-                    -1, local_T, local_F)
-                global_T, global_F = global_feats.shape[-2:]
-                global_feats = global_feats.transpose(0, 1).contiguous().view(
-                    -1, global_T, global_F)
+        with torch.cuda.amp.autocast(enabled=enable_amp):
+            loss = model(local_feats, global_feats, epoch - 1)
 
-                with torch.cuda.amp.autocast(enabled=enable_amp):
-                    loss = model(local_feats, global_feats, epoch - 1)
+        # loss, acc
+        loss_meter.add(loss.item())
 
-                # loss, acc
-                loss_meter.add(loss.item())
+        # update the model
+        optimizer.zero_grad()
+        # scaler does nothing here if enable_amp=False
+        scaler.scale(loss).backward()
 
-                # update the model
-                optimizer.zero_grad()
-                # scaler does nothing here if enable_amp=False
-                scaler.scale(loss).backward()
+        # Unscales the gradients of optimizer's assigned params in-place
+        scaler.unscale_(optimizer)
+        clip_gradients(model, clip_grad)
+        cancel_gradients_last_layer(epoch - 1, model.module.s_model,
+                                    freeze_last_layer)
 
-                # Unscales the gradients of optimizer's assigned params in-place
-                scaler.unscale_(optimizer)
-                clip_gradients(model, clip_grad)
-                cancel_gradients_last_layer(epoch - 1, model.module.s_model,
-                                            freeze_last_layer)
+        scaler.step(optimizer)
+        scaler.update()
 
-                scaler.step(optimizer)
-                scaler.update()
+        # EMA update for teacher
+        m = mt_schedule[cur_iter]  # momentum parameter
+        model.module.ema_update(m)
 
-                # EMA update for teacher
-                m = mt_schedule[cur_iter]  # momentum parameter
-                model.module.ema_update(m)
+        # log
+        if (i + 1) % log_batch_interval == 0:
+            logger.info(
+                tp.row((epoch, i + 1, lr_schedule[cur_iter],
+                        loss_meter.value()[0]),
+                       width=10,
+                       style='grid'))
 
-                # log
-                if (i + 1) % log_batch_interval == 0:
-                    logger.info(
-                        tp.row((epoch, i + 1, lr_schedule[cur_iter],
-                                loss_meter.value()[0]),
-                               width=10,
-                               style='grid'))
-    except RuntimeError as e:
-        if 'exhausted' in str(e):
-            # Detect the error that one process has exhausted the inputs,
-            # Because there is self-implemented multi-processing commutation
-            # operation in DINO, and the model.join() operation has no
-            # influence on such operation. We mush stop all the processes
-            # when one process has exhausted the inputs.
-            pass
-        else:
-            raise e
+        if (i + 1) == epoch_iter:
+            break
 
     logger.info(
         tp.row((epoch, i + 1, lr_schedule[cur_iter], loss_meter.value()[0]),

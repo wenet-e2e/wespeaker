@@ -102,11 +102,15 @@ def train(config='conf/config.yaml', **kwargs):
                                   **configs['dataloader_args'],
                                   collate_fn=dino_collate_fn)
     batch_size = configs['dataloader_args']['batch_size']
-    loader_size = data_num // world_size // batch_size
+    if configs['dataset_args'].get('sample_num_per_epoch', 0) > 0:
+        sample_num_per_epoch = configs['dataset_args']['sample_num_per_epoch']
+    else:
+        sample_num_per_epoch = data_num
+    epoch_iter = sample_num_per_epoch // world_size // batch_size
     if rank == 0:
         logger.info("<== Dataloaders ==>")
         logger.info("train dataloaders created")
-        logger.info('loader size: {}'.format(loader_size))
+        logger.info('loader size: {}'.format(epoch_iter))
 
     # model
     logger.info("<== Model ==>")
@@ -182,20 +186,20 @@ def train(config='conf/config.yaml', **kwargs):
         base_value=scheduler_args['lr'] * lr_scale_ratio,
         final_value=scheduler_args['min_lr'] * lr_scale_ratio,
         epochs=configs['num_epochs'],
-        niter_per_ep=loader_size,
+        niter_per_ep=epoch_iter,
         warmup_epochs=scheduler_args['warmup_epochs'],
     )
     wd_schedule = cosine_scheduler(
         base_value=scheduler_args['weight_decay'],
         final_value=scheduler_args['weight_decay_end'],
         epochs=configs['num_epochs'],
-        niter_per_ep=loader_size,
+        niter_per_ep=epoch_iter,
     )
     mt_schedule = cosine_scheduler(
         base_value=scheduler_args['momentum_teacher'],
         final_value=1,
         epochs=configs['num_epochs'],
-        niter_per_ep=loader_size,
+        niter_per_ep=epoch_iter,
     )
 
     # save config.yaml
@@ -214,12 +218,12 @@ def train(config='conf/config.yaml', **kwargs):
             logger.info(line)
     dist.barrier(device_ids=[gpu])  # synchronize here
 
+    scaler = torch.cuda.amp.GradScaler(enabled=configs['enable_amp'])
     for epoch in range(start_epoch, configs['num_epochs'] + 1):
         train_dataset.set_epoch(epoch)
 
-        scaler = torch.cuda.amp.GradScaler(enabled=configs['enable_amp'])
         run_epoch(train_dataloader,
-                  loader_size,
+                  epoch_iter,
                   ddp_model,
                   optimizer,
                   lr_schedule,
