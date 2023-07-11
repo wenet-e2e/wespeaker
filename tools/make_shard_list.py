@@ -48,7 +48,8 @@ def write_wav_to_bytesio(audio_data, sample_rate):
         wav_stream.write(struct.pack('<H', 1))  # Audio format (PCM)
         wav_stream.write(struct.pack('<H', num_channels))
         wav_stream.write(struct.pack('<I', sample_rate))
-        wav_stream.write(struct.pack('<I', sample_rate * num_channels * bytes_per_sample))
+        wav_stream.write(
+            struct.pack('<I', sample_rate * num_channels * bytes_per_sample))
         wav_stream.write(struct.pack('<H', num_channels * bytes_per_sample))
         wav_stream.write(struct.pack('<H', bytes_per_sample * 8))
 

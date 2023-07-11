@@ -14,13 +14,17 @@ dataloader_args:
   batch_size: 256
   num_workers: 16
   pin_memory: False
-  prefetch_factor: 2
+  prefetch_factor: 8
   drop_last: True
 
 dataset_args:
+  # the sample number which will be traversed within one epoch, if the value equals to 0,
+  # the utterance number in the dataset will be used as the sample_num_per_epoch.
+  sample_num_per_epoch: 780000
   shuffle: True
   shuffle_args:
-    shuffle_size: 5000
+    shuffle_size: 1500
+  filter: True
   filter_args:
     min_num_frames: 100
     max_num_frames: 300

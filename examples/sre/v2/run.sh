@@ -19,7 +19,6 @@ aug_plda_data=0
 
 config=conf/resnet.yaml
 exp_dir=exp/ResNet34-TSTP-emb256-fbank40-num_frms200-aug0.6-spFalse-saFalse-Softmax-SGD-epoch150
-exp_dir=exp/debug
 gpus="[0,1]"
 num_avg=10
 checkpoint=
@@ -44,10 +43,6 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
             ${data}/$dset/shards ${data}/$dset/shard.list \
             ${data}/$dset/vad
   done
-
-  # we repeat the shard.list here to ensure we can cover enough speech within one epoch
-  mv ${data}/swbd_sre/shard.list ${data}/swbd_sre/shard.list.bak
-  for i in {1..10}; do cat ${data}/swbd_sre/shard.list.bak; done > ${data}/swbd_sre/shard.list
 
   echo "Convert data for PLDA backend training and evaluation to raw format..."
   if [ $aug_plda_data = 0 ];then
