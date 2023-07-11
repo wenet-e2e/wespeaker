@@ -69,7 +69,7 @@ fi
 
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
     # Following the Kaldi recipe: https://github.com/kaldi-asr/kaldi/blob/71f38e62cad01c3078555bfe78d0f3a527422d75/egs/sre16/v2/run.sh#L189
-    # We filter out the utterances with duration less than 5s 
+    # We filter out the utterances with duration less than 5s
     for dset in swbd_sre; do
         python3 local/filter_utt_accd_dur.py \
             --wav_scp ${data}/${dset}/wav.scp \
