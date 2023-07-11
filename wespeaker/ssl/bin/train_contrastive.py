@@ -26,12 +26,12 @@ import torch.distributed as dist
 from torch.utils.data import DataLoader
 
 import wespeaker.utils.schedulers as schedulers
+from wespeaker.utils.utils import get_logger, parse_config_or_kwargs, set_seed
+from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.ssl.models.moco_wrapper import MoCo
 from wespeaker.ssl.models.simclr_wrapper import SimCLR
-from wespeaker.utils.utils import get_logger, parse_config_or_kwargs, set_seed
 from wespeaker.ssl.utils.contrastive_executor import run_epoch
-from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
 from wespeaker.ssl.dataset.dataset import SSLDataset, contrastive_collate_fn
 
 

@@ -5,7 +5,7 @@
 
 [**Roadmap**](ROADMAP.md)
 | [**Paper**](https://arxiv.org/abs/2210.17016)
-| [**Runtime (x86_gpu)**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/server/x86_gpu)
+| [**Runtime**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime)
 | [**Python binding**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/binding/python)
 | [**Pretrained Models**](docs/pretrained.md)
 | [**Huggingface Demo**](https://huggingface.co/spaces/wenet/wespeaker_demo)
@@ -40,10 +40,6 @@ pip3 install wespeakerruntime
 * 2023.06.30: Support the [SphereFace2](https://ieeexplore.ieee.org/abstract/document/10094954) loss function, with better performance and noisy robust in comparison with the ArcMargin Softmax, see [#173](https://github.com/wenet-e2e/wespeaker/pull/173).
 
 * 2023.04.27: Support the [CAM++](https://arxiv.org/abs/2303.00332) model, with better performance and single-thread inference rtf in comparison with the ResNet34 model, see [#153](https://github.com/wenet-e2e/wespeaker/pull/153).
-
-* 2023.02.27: Update onnxruntime (C++), see [onnxruntime](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/onnxruntime), [#135](https://github.com/wenet-e2e/wespeaker/pull/135).
-
-* 2023.02.15: Update the code for multi-node training. For how to setup multi-node training, please refer to [#131](https://github.com/wenet-e2e/wespeaker/pull/131).
 
 ## Recipes
 
@@ -99,6 +95,10 @@ pip3 install wespeakerruntime
     - [x] Python Binding
     - [x] Triton Inference Server on verification && diarization in GPU deployment
     - [x] C++ Onnxruntime
+* Self-Supervised Learning (SSL)
+    - [x] [DINO](https://openaccess.thecvf.com/content/ICCV2021/papers/Caron_Emerging_Properties_in_Self-Supervised_Vision_Transformers_ICCV_2021_paper.pdf)
+    - [x] [MoCo](https://openaccess.thecvf.com/content_CVPR_2020/papers/He_Momentum_Contrast_for_Unsupervised_Visual_Representation_Learning_CVPR_2020_paper.pdf)
+    - [x] [SimCLR](http://proceedings.mlr.press/v119/chen20j/chen20j.pdf)
 * Literature
     - [x] [Awesome Speaker Papers](docs/speaker_recognition_papers.md)
 
