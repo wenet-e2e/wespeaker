@@ -113,8 +113,11 @@ class DataList(IterableDataset):
     def __iter__(self):
         sampler_info = self.sampler.update()
         indexes = self.sampler.sample(self.lists)
-        for index in indexes:
-            # yield dict(src=src)
+        indexes_len = len(indexes)
+        counter = 0
+        while True:
+            index = indexes[counter % indexes_len]
+            counter += 1
             data = dict(src=self.lists[index])
             data.update(sampler_info)
             yield data
@@ -155,7 +158,7 @@ def Dataset(data_type,
     else:
         dataset = Processor(dataset, processor.parse_feat)
 
-    if not whole_utt:
+    if configs.get('filter', True):
         # Filter the data with unwanted length
         filter_conf = configs.get('filter_args', {})
         dataset = Processor(dataset,

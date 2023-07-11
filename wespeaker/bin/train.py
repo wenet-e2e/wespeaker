@@ -92,11 +92,15 @@ def train(config='conf/config.yaml', **kwargs):
                             noise_lmdb_file=configs.get('noise_data', None))
     train_dataloader = DataLoader(train_dataset, **configs['dataloader_args'])
     batch_size = configs['dataloader_args']['batch_size']
-    loader_size = len(train_utt_spk_list) // world_size // batch_size
+    if configs['dataset_args'].get('sample_num_per_epoch', 0) > 0:
+        sample_num_per_epoch = configs['dataset_args']['sample_num_per_epoch']
+    else:
+        sample_num_per_epoch = len(train_utt_spk_list)
+    epoch_iter = sample_num_per_epoch // world_size // batch_size
     if rank == 0:
         logger.info("<== Dataloaders ==>")
         logger.info("train dataloaders created")
-        logger.info('loader size: {}'.format(loader_size))
+        logger.info('loader size: {}'.format(epoch_iter))
 
     # model
     logger.info("<== Model ==>")
@@ -161,7 +165,7 @@ def train(config='conf/config.yaml', **kwargs):
 
     # scheduler
     configs['scheduler_args']['num_epochs'] = configs['num_epochs']
-    configs['scheduler_args']['epoch_iter'] = loader_size
+    configs['scheduler_args']['epoch_iter'] = epoch_iter
     # here, we consider the batch_size 64 as the base, the learning rate will be
     # adjusted according to the batchsize and world_size used in different setup
     configs['scheduler_args']['scale_ratio'] = 1.0 * world_size * configs[
@@ -174,7 +178,7 @@ def train(config='conf/config.yaml', **kwargs):
         logger.info("scheduler is: " + configs['scheduler'])
 
     # margin scheduler
-    configs['margin_update']['epoch_iter'] = loader_size
+    configs['margin_update']['epoch_iter'] = epoch_iter
     margin_scheduler = getattr(schedulers, configs['margin_scheduler'])(
         model=model, **configs['margin_update'])
     if rank == 0:
@@ -196,14 +200,12 @@ def train(config='conf/config.yaml', **kwargs):
             logger.info(line)
     dist.barrier(device_ids=[gpu])  # synchronize here
 
-    # scaler = torch.cuda.amp.GradScaler(enabled=configs['enable_amp'])
+    scaler = torch.cuda.amp.GradScaler(enabled=configs['enable_amp'])
     for epoch in range(start_epoch, configs['num_epochs'] + 1):
-        # train_sampler.set_epoch(epoch)
         train_dataset.set_epoch(epoch)
 
-        scaler = torch.cuda.amp.GradScaler(enabled=configs['enable_amp'])
         run_epoch(train_dataloader,
-                  loader_size,
+                  epoch_iter,
                   ddp_model,
                   criterion,
                   optimizer,

@@ -18,9 +18,16 @@ dataloader_args:
   drop_last: True
 
 dataset_args:
+  # the sample number which will be traversed within one epoch, if the value equals to 0,
+  # the utterance number in the dataset will be used as the sample_num_per_epoch.
+  sample_num_per_epoch: 0
   shuffle: True
   shuffle_args:
     shuffle_size: 2500
+  filter: True
+  filter_args:
+    min_num_frames: 100
+    max_num_frames: 800
   resample_rate: 16000
   speed_perturb: True
   num_frms: 200
@@ -46,7 +53,7 @@ model_args:
   pooling_func: "TSTP" # TSTP, ASTP, MQMHASTP
   two_emb_layer: False
 projection_args:
-  project_type: "arc_margin" # add_margin, arc_margin, sphere, softmax, arc_margin_intertopk_subcenter
+  project_type: "arc_margin" # add_margin, arc_margin, sphere, sphereface2, softmax, arc_margin_intertopk_subcenter
   scale: 32.0
   easy_margin: False
 

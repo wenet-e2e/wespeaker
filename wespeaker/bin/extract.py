@@ -55,6 +55,7 @@ def extract(config='conf/config.yaml', **kwargs):
     test_conf['spec_aug'] = False
     test_conf['shuffle'] = False
     test_conf['aug_prob'] = configs.get('aug_prob', 0.0)
+    test_conf['filter'] = False
 
     dataset = Dataset(configs['data_type'],
                       configs['data_list'],

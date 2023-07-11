@@ -35,6 +35,7 @@ pip3 install wespeakerruntime
 ```
 
 ## 🔥 News
+* 2023.06.30: Support the [SphereFace2](https://ieeexplore.ieee.org/abstract/document/10094954) loss function, with better performance and noisy robust in comparison with the ArcMargin Softmax, see [#173](https://github.com/wenet-e2e/wespeaker/pull/173).
 
 * 2023.04.27: Support the [CAM++](https://arxiv.org/abs/2303.00332) model, with better performance and single-thread inference rtf in comparison with the ResNet34 model, see [#153](https://github.com/wenet-e2e/wespeaker/pull/153).
 
@@ -75,6 +76,7 @@ pip3 install wespeakerruntime
     - [x] [Add_Margin (AM-Softmax)](https://arxiv.org/pdf/1801.05599.pdf)
     - [x] [Arc_Margin (AAM-Softmax)](https://arxiv.org/pdf/1801.07698v1.pdf)
     - [x] [Arc_Margin+Inter-topk+Sub-center](https://arxiv.org/pdf/2110.05042.pdf)
+    - [x] [SphereFace2](https://ieeexplore.ieee.org/abstract/document/10094954)
 * Scoring
     - [x] Cosine
     - [x] PLDA
