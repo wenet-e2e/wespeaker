@@ -103,8 +103,9 @@ class DistributedSampler:
 
 class DataList(IterableDataset):
 
-    def __init__(self, lists, shuffle=True, partition=True):
+    def __init__(self, lists, shuffle=True, partition=True, repeat_dataset=True):
         self.lists = lists
+        self.repeat_dataset = repeat_dataset
         self.sampler = DistributedSampler(shuffle, partition)
 
     def set_epoch(self, epoch):
@@ -113,14 +114,20 @@ class DataList(IterableDataset):
     def __iter__(self):
         sampler_info = self.sampler.update()
         indexes = self.sampler.sample(self.lists)
-        indexes_len = len(indexes)
-        counter = 0
-        while True:
-            index = indexes[counter % indexes_len]
-            counter += 1
-            data = dict(src=self.lists[index])
-            data.update(sampler_info)
-            yield data
+        if not self.repeat_dataset:
+            for index in indexes:
+                data = dict(src=self.lists[index])
+                data.update(sampler_info)
+                yield data
+        else:
+            indexes_len = len(indexes)
+            counter = 0
+            while True:
+                index = indexes[counter % indexes_len]
+                counter += 1
+                data = dict(src=self.lists[index])
+                data.update(sampler_info)
+                yield data
 
 
 def Dataset(data_type,
@@ -129,7 +136,8 @@ def Dataset(data_type,
             spk2id_dict,
             whole_utt=False,
             reverb_lmdb_file=None,
-            noise_lmdb_file=None):
+            noise_lmdb_file=None,
+            repeat_dataset=True):
     """ Construct dataset from arguments
 
         We have two shuffle stage in the Dataset. The first is global
@@ -149,7 +157,7 @@ def Dataset(data_type,
     lists = read_lists(data_list_file)
     shuffle = configs.get('shuffle', False)
     # Global shuffle
-    dataset = DataList(lists, shuffle=shuffle)
+    dataset = DataList(lists, shuffle=shuffle, repeat_dataset=repeat_dataset)
     if data_type == 'shard':
         dataset = Processor(dataset, processor.url_opener)
         dataset = Processor(dataset, processor.tar_file_and_group)

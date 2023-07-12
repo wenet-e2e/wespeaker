@@ -62,7 +62,8 @@ def extract(config='conf/config.yaml', **kwargs):
                       spk2id_dict={},
                       whole_utt=(batch_size == 1),
                       reverb_lmdb_file=None,
-                      noise_lmdb_file=None)
+                      noise_lmdb_file=None,
+                      repeat_dataset=False)
     dataloader = DataLoader(dataset,
                             shuffle=False,
                             batch_size=batch_size,
