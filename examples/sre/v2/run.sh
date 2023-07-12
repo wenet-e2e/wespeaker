@@ -101,7 +101,8 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
     --exp_dir $exp_dir --model_path $model_path \
     --nj 32 --gpus $gpus --data_type raw --data ${data} \
     --reverb_data ${data}/rirs/lmdb \
-    --noise_data ${data}/musan/lmdb
+    --noise_data ${data}/musan/lmdb \
+    --aug_plda_data ${aug_plda_data}
 fi
 
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then

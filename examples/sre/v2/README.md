@@ -7,13 +7,13 @@
 Without PLDA training data augmentation:
 | Model | Params | Backend | Pooled | Tagalog | Cantonese |
 |:------|:------:|:------------:|:------------:|:------------:|:------------:|
-| ResNet34-TSTP-emb256 | 6.63M | Cosine | 15.65 | 20.38 | 10.38 |
-|                      |       | PLDA | 9.506 | 14.73 | 4.363 |
-|                      |       | Adapt PLDA | 6.802 | 10.4 | 3.14 |
+| ResNet34-TSTP-emb256 | 6.63M | Cosine | 15.4 | 19.82 | 10.39 |
+|                      |       | PLDA | 9.36 | 14.26 | 4.513 |
+|                      |       | Adapt PLDA | 6.608 | 10.01 | 2.974 |
 
 With PLDA training data augmentation:
 | Model | Params | Backend | Pooled | Tagalog | Cantonese |
 |:------|:------:|:------------:|:------------:|:------------:|:------------:|
-| ResNet34-TSTP-emb256 | 6.63M | Cosine | 15.65 | 20.38 | 10.38 |
-|                      |       | PLDA | 9.476 | 14.81 | 4.28 |
-|                      |       | Adapt PLDA | 6.727 | 10.32 | 3.161 |
+| ResNet34-TSTP-emb256 | 6.63M | Cosine | 15.4 | 19.82 | 10.39 |
+|                      |       | PLDA | 8.944 | 13.54 | 4.462 |
+|                      |       | Adapt PLDA | 6.543 | 9.666 | 3.254 |
