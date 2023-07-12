@@ -1,0 +1,80 @@
+### train configuraton
+
+exp_dir: exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-fbank80-aug1.0-spFalse-saFalse-DINO-SGD-epoch150
+gpus: "[0,1]"
+num_avg: 10
+enable_amp: False # whether enable automatic mixed precision training
+
+seed: 42
+num_epochs: 150
+save_epoch_interval: 1 # save model every epoch
+log_batch_interval: 100 # log every 100 batchs
+
+dataloader_args:
+  batch_size: 64
+  num_workers: 12
+  pin_memory: False
+  prefetch_factor: 2
+  drop_last: True
+
+dataset_args:
+  # the sample number which will be traversed within one epoch, if the value equals to 0,
+  # the utterance number in the dataset will be used as the sample_num_per_epoch.
+  sample_num_per_epoch: 0
+  shuffle: True
+  shuffle_args:
+    shuffle_size: 2500
+  resample_rate: 16000
+  speed_perturb: False
+  chunk_info_args:
+    global_chunk_len: 300
+    global_chunk_num: 2
+    local_chunk_len: 200
+    local_chunk_num: 4
+  aug_prob: 1.0 # prob to add reverb & noise aug per sample
+  fbank_args:
+    num_mel_bins: 80
+    frame_shift: 10
+    frame_length: 25
+    dither: 1.0
+  spec_aug: False
+  spec_aug_args:
+    num_t_mask: 1
+    num_f_mask: 1
+    max_t: 10
+    max_f: 8
+    prob: 0.6
+
+model: ECAPA_TDNN_GLOB_c512 # ECAPA_TDNN_GLOB_c512, ECAPA_TDNN_GLOB_c1024
+model_init: null
+model_args:
+  feat_dim: 80
+  embed_dim: 192
+  pooling_func: "ASTP"
+  emb_bn: True
+
+dino_head_args:
+  out_dim: 65536
+  use_bn: True
+  norm_last_layer: True
+  nlayers: 3
+  normalize_input: False
+
+dino_loss_args:
+  warmup_teacher_temp: 0.04
+  teacher_temp: 0.07
+  warmup_teacher_temp_epochs_ratio: 0.2
+  student_temp: 0.1
+  center_momentum: 0.9
+
+optim_type: "sgd" # choose from sgd, adamw, lars
+clip_grad: 3.0
+freeze_last_layer: 1
+
+scheduler_args:
+  lr: 0.2
+  min_lr: 0.00005
+  warmup_epochs: 20
+  weight_decay: 0.00005
+  weight_decay_end: 0.00005
+  momentum_teacher: 0.996

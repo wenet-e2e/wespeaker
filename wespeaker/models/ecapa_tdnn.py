@@ -1,5 +1,6 @@
 # Copyright (c) 2021 Zhengyang Chen (chenzhengyang117@gmail.com)
 #               2022 Hongji Wang (jijijiang77@gmail.com)
+#               2023 Bing Han (hanbing97@sjtu.edu.cn)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -162,7 +163,8 @@ class ECAPA_TDNN(nn.Module):
                  feat_dim=80,
                  embed_dim=192,
                  pooling_func='ASTP',
-                 global_context_att=False):
+                 global_context_att=False,
+                 emb_bn=False):
         super().__init__()
 
         self.layer1 = Conv1dReluBn(feat_dim,
@@ -196,6 +198,11 @@ class ECAPA_TDNN(nn.Module):
         self.pool_out_dim = self.pool.get_out_dim()
         self.bn = nn.BatchNorm1d(self.pool_out_dim)
         self.linear = nn.Linear(self.pool_out_dim, embed_dim)
+        self.emb_bn = emb_bn
+        if emb_bn:  # better in SSL for SV
+            self.bn2 = nn.BatchNorm1d(embed_dim)
+        else:
+            self.bn2 = nn.Identity()
 
     def forward(self, x):
         x = x.permute(0, 2, 1)  # (B,T,F) -> (B,F,T)
@@ -209,38 +216,43 @@ class ECAPA_TDNN(nn.Module):
         out = F.relu(self.conv(out))
         out = self.bn(self.pool(out))
         out = self.linear(out)
-
+        if self.emb_bn:
+            out = self.bn2(out)
         return out
 
 
-def ECAPA_TDNN_c1024(feat_dim, embed_dim, pooling_func='ASTP'):
-    return ECAPA_TDNN(channels=1024,
-                      feat_dim=feat_dim,
-                      embed_dim=embed_dim,
-                      pooling_func=pooling_func)
-
-
-def ECAPA_TDNN_GLOB_c1024(feat_dim, embed_dim, pooling_func='ASTP'):
+def ECAPA_TDNN_c1024(feat_dim, embed_dim, pooling_func='ASTP', emb_bn=False):
     return ECAPA_TDNN(channels=1024,
                       feat_dim=feat_dim,
                       embed_dim=embed_dim,
                       pooling_func=pooling_func,
-                      global_context_att=True)
+                      emb_bn=emb_bn)
 
 
-def ECAPA_TDNN_c512(feat_dim, embed_dim, pooling_func='ASTP'):
-    return ECAPA_TDNN(channels=512,
+def ECAPA_TDNN_GLOB_c1024(feat_dim, embed_dim, pooling_func='ASTP', emb_bn=False):
+    return ECAPA_TDNN(channels=1024,
                       feat_dim=feat_dim,
                       embed_dim=embed_dim,
-                      pooling_func=pooling_func)
+                      pooling_func=pooling_func,
+                      global_context_att=True,
+                      emb_bn=emb_bn)
 
 
-def ECAPA_TDNN_GLOB_c512(feat_dim, embed_dim, pooling_func='ASTP'):
+def ECAPA_TDNN_c512(feat_dim, embed_dim, pooling_func='ASTP', emb_bn=False):
     return ECAPA_TDNN(channels=512,
                       feat_dim=feat_dim,
                       embed_dim=embed_dim,
                       pooling_func=pooling_func,
-                      global_context_att=True)
+                      emb_bn=emb_bn)
+
+
+def ECAPA_TDNN_GLOB_c512(feat_dim, embed_dim, pooling_func='ASTP', emb_bn=False):
+    return ECAPA_TDNN(channels=512,
+                      feat_dim=feat_dim,
+                      embed_dim=embed_dim,
+                      pooling_func=pooling_func,
+                      global_context_att=True,
+                      emb_bn=emb_bn)
 
 
 if __name__ == '__main__':
