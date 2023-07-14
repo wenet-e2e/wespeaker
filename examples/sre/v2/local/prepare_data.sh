@@ -49,7 +49,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
                --scp ${data}/${dset}/wav.scp \
                --min-duration $min_duration > ${data}/${dset}/vad
     done
-    local/filter_scp.pl -f 2 ${data}/sre/wav.scp ${data}/swbd_sre/vad > ${data}/sre/vad
+    tools/filter_scp.pl -f 2 ${data}/sre/wav.scp ${data}/swbd_sre/vad > ${data}/sre/vad
 
     # For PLDA training, it is better to augment the training data
     python3 local/generate_sre_aug.py --ori_dir ${data}/sre \
@@ -83,10 +83,10 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
     # Similarly, following the Kaldi recipe,
     # we throw out speakers with fewer than 3 utterances.
     for dset in swbd_sre; do
-        local/fix_data_dir.sh ${data}/${dset}
+        tools/fix_data_dir.sh ${data}/${dset}
         cp ${data}/${dset}/spk2utt ${data}/${dset}/spk2utt.bak
         awk '{if(NF>2){print $0}}' ${data}/${dset}/spk2utt.bak > ${data}/${dset}/spk2utt
-        local/spk2utt_to_utt2spk.pl ${data}/${dset}/spk2utt > ${data}/${dset}/utt2spk
-        local/fix_data_dir.sh ${data}/${dset}
+        tools/spk2utt_to_utt2spk.pl ${data}/${dset}/spk2utt > ${data}/${dset}/utt2spk
+        tools/fix_data_dir.sh ${data}/${dset}
     done
 fi

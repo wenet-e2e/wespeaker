@@ -25,7 +25,7 @@ batch_size=1
 num_workers=1
 nj=4
 reverb_data=data/rirs/lmdb
-noise_data=data/rirs/lmdb
+noise_data=data/musan/lmdb
 aug_prob=0.0
 gpus="[0,1]"
 

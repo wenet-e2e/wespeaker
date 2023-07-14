@@ -22,7 +22,7 @@ gpus="[0,1]"
 data_type="shard"  # shard/raw/feat
 data=data
 reverb_data=data/rirs/lmdb
-noise_data=data/rirs/lmdb
+noise_data=data/musan/lmdb
 aug_plda_data=0
 
 . tools/parse_options.sh
