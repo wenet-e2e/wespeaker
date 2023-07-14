@@ -17,3 +17,5 @@ With PLDA training data augmentation:
 | ResNet34-TSTP-emb256 | 6.63M | Cosine | 15.4 | 19.82 | 10.39 |
 |                      |       | PLDA | 8.944 | 13.54 | 4.462 |
 |                      |       | Adapt PLDA | 6.543 | 9.666 | 3.254 |
+
+* 🔥 UPDATE 2023.07.14: Support the [NIST SRE16 recipe](https://www.nist.gov/itl/iad/mig/speaker-recognition-evaluation-2016), see [#177](https://github.com/wenet-e2e/wespeaker/pull/177).
