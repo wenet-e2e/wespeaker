@@ -125,6 +125,24 @@ def parse_raw(data):
         Returns:
             Iterable[{key, wav, spk, sample_rate}]
     """
+    def read_audio(wav):
+        if wav.endswith('|'):
+            p = Popen(wav[:-1], shell=True, stdout=PIPE)
+            data = p.stdout.read()
+            waveform, sample_rate = torchaudio.load(io.BytesIO(data))
+        else:
+            waveform, sample_rate = torchaudio.load(wav)
+        return waveform, sample_rate
+
+    def apply_vad(waveform, sample_rate, vad):
+        voice_part_list = []
+        for start, end in vad:
+            start, end = float(start), float(end)
+            start, end = int(start * sample_rate), int(end * sample_rate)
+            voice_part_list.append(waveform[:, start:end])
+        waveform = torch.cat(voice_part_list, dim=1)
+        return waveform, sample_rate
+
     for sample in data:
         assert 'src' in sample
         json_line = sample['src']
@@ -136,7 +154,9 @@ def parse_raw(data):
         wav_file = obj['wav']
         spk = obj['spk']
         try:
-            waveform, sample_rate = torchaudio.load(wav_file)
+            waveform, sample_rate = read_audio(wav_file)
+            if 'vad' in obj:
+                waveform, sample_rate = apply_vad(waveform, sample_rate, obj['vad'])
             example = dict(key=key,
                            spk=spk,
                            wav=waveform,

@@ -100,7 +100,7 @@ def train(config='conf/config.yaml', **kwargs):
     if rank == 0:
         logger.info("<== Dataloaders ==>")
         logger.info("train dataloaders created")
-        logger.info('loader size: {}'.format(epoch_iter))
+        logger.info('epoch iteration number: {}'.format(epoch_iter))
 
     # model
     logger.info("<== Model ==>")

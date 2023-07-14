@@ -24,6 +24,9 @@ store_dir=
 batch_size=1
 num_workers=1
 nj=4
+reverb_data=data/rirs/lmdb
+noise_data=data/musan/lmdb
+aug_prob=0.0
 gpus="[0,1]"
 
 . tools/parse_options.sh
@@ -53,6 +56,9 @@ for suffix in $(seq 0 $(($nj - 1))); do
     --embed_ark ${embed_ark} \
     --batch-size ${batch_size} \
     --num-workers ${num_workers} \
+    --reverb_data ${reverb_data} \
+    --noise_data ${noise_data} \
+    --aug-prob ${aug_prob} \
     >${log_dir}/split_${suffix}.log 2>&1 &
 done
 
@@ -61,7 +67,7 @@ wait
 cat ${embed_dir}/xvector_*.scp >${embed_dir}/xvector.scp
 embed_num=$(wc -l ${embed_dir}/xvector.scp | awk '{print $1}')
 if [ $embed_num -eq $wavs_num ]; then
-  echo "Success" | tee ${embed_dir}/extract.result
+  echo "Successfully extract embedding for ${store_dir}" | tee ${embed_dir}/extract.result
 else
-  echo "Fail" | tee ${embed_dir}/extract.result
+  echo "Failed to extract embedding for ${store_dir}" | tee ${embed_dir}/extract.result
 fi

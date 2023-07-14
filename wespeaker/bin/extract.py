@@ -54,6 +54,7 @@ def extract(config='conf/config.yaml', **kwargs):
         test_conf['mfcc_args']['dither'] = 0.0
     test_conf['spec_aug'] = False
     test_conf['shuffle'] = False
+    test_conf['aug_prob'] = configs.get('aug_prob', 0.0)
     test_conf['filter'] = False
 
     dataset = Dataset(configs['data_type'],
@@ -61,8 +62,8 @@ def extract(config='conf/config.yaml', **kwargs):
                       test_conf,
                       spk2id_dict={},
                       whole_utt=(batch_size == 1),
-                      reverb_lmdb_file=None,
-                      noise_lmdb_file=None,
+                      reverb_lmdb_file=configs.get('reverb_data', None),
+                      noise_lmdb_file=configs.get('noise_data', None),
                       repeat_dataset=False)
     dataloader = DataLoader(dataset,
                             shuffle=False,
