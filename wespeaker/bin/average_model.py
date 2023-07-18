@@ -47,7 +47,8 @@ def get_args():
 def main():
     args = get_args()
 
-    path_list = glob.glob('{}/[!avg][!final][!convert]*.pt'.format(args.src_path))
+    path_list = glob.glob(
+        '{}/[!avg][!final][!convert]*.pt'.format(args.src_path))
     path_list = sorted(
         path_list,
         key=lambda p: int(re.findall(r"(?<=model_)\d*(?=.pt)", p)[0]))

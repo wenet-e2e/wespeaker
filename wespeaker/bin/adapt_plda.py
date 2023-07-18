@@ -1,10 +1,9 @@
-# Copyright (c) 2023 Brno University of Technology 
+# Copyright (c) 2023 Brno University of Technology
 #                    Shuai Wang (wsstriving@gmail.com)
 #
-# Python implementation of Kaldi unsupervised PLDA adaptation 
-# ( https://github.com/kaldi-asr/kaldi/blob/master/src/ivector/plda.cc#L613 ) 
+# Python implementation of Kaldi unsupervised PLDA adaptation
+# ( https://github.com/kaldi-asr/kaldi/blob/master/src/ivector/plda.cc#L613 )
 # by Daniel Povey.
-#
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,5 +53,6 @@ if __name__ == '__main__':
 
     kaldi_format = True if args.mdl_format == 'kaldi' else False
     plda = TwoCovPLDA.load_model(args.mdl_org, kaldi_format)
-    adapt_plda = plda.adapt(args.adp_scp, args.across_class_scale, args.within_class_scale)
+    adapt_plda = plda.adapt(args.adp_scp, args.across_class_scale,
+                            args.within_class_scale)
     adapt_plda.save_model(args.mdl_adp)

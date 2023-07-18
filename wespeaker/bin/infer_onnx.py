@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+
+import onnxruntime as ort
 import torch
 import torchaudio
-import argparse
-import onnxruntime as ort
 import torchaudio.compliance.kaldi as kaldi
 
 
