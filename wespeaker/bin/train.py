@@ -222,7 +222,7 @@ def train(config='conf/config.yaml', **kwargs):
 
         if rank == 0:
             if epoch % configs['save_epoch_interval'] == 0 or epoch >= configs[
-                     'num_epochs'] - configs['num_avg']:
+                    'num_epochs'] - configs['num_avg']:
                 save_checkpoint(
                     model, os.path.join(model_dir,
                                         'model_{}.pt'.format(epoch)))

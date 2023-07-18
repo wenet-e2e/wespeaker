@@ -30,7 +30,7 @@ if __name__ == '__main__':
                              'kaldi 2cov version currently')
     parser.add_argument('--scp_path',
                         type=str,
-                        help='the  plda training embedding.scp file')
+                        help='the plda training embedding.scp file')
     parser.add_argument('--utt2spk', type=str, help='utt2spk file')
     parser.add_argument('--indim',
                         type=int,

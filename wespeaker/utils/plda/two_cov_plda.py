@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 import math
-
 import h5py
 import numpy as np
 import scipy.linalg as spl
@@ -30,11 +30,7 @@ from wespeaker.utils.plda.plda_utils import sort_svd
 M_LOG_2PI = 1.8378770664093454835606594728112
 
 
-class ClassInfo(object):
-    def __init__(self, weight=0, num_example=0, mu=0):
-        self.weight = weight
-        self.num_example = num_example
-        self.mu = mu
+ClassInfo = collections.namedtuple('ClassInfo', ['weight', 'num_example', 'mu'])
 
 
 class PldaStats(object):
