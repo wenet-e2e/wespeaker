@@ -102,13 +102,11 @@ def main(score_norm_method,
                 enroll_idx = enroll_utt2idx[line[0]]
                 test_idx = test_utt2idx[line[1]]
                 score = float(line[2])
-
                 normed_score = 0.5 * (
-                        (score - enroll_mean[enroll_idx]) / enroll_std[
-                    enroll_idx]
-                        + (score - test_mean[test_idx]) / test_std[test_idx])
-                fout.write('{} {} {:.5f} {}\n'.format(line[0], line[1],
-                                                      normed_score, line[3]))
+                    (score - enroll_mean[enroll_idx]) / enroll_std[enroll_idx]
+                    + (score - test_mean[test_idx]) / test_std[test_idx])
+                fout.write('{} {} {:.5f} {}\n'.format(
+                    line[0], line[1], normed_score, line[3]))
     logging.info("Over!")
 
 

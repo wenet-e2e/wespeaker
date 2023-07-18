@@ -119,7 +119,7 @@ def train(config='conf/config.yaml', **kwargs):
     configs['projection_args']['num_class'] = len(spk2id_dict)
     configs['projection_args']['do_lm'] = configs.get('do_lm', False)
     if configs['data_type'] != 'feat' and configs['dataset_args'][
-        'speed_perturb']:
+            'speed_perturb']:
         # diff speed is regarded as diff spk
         configs['projection_args']['num_class'] *= 3
         if configs.get('do_lm', False):
@@ -222,7 +222,7 @@ def train(config='conf/config.yaml', **kwargs):
 
         if rank == 0:
             if epoch % configs['save_epoch_interval'] == 0 or epoch >= configs[
-                'num_epochs'] - configs['num_avg']:
+                     'num_epochs'] - configs['num_avg']:
                 save_checkpoint(
                     model, os.path.join(model_dir,
                                         'model_{}.pt'.format(epoch)))

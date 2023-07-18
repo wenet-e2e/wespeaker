@@ -26,7 +26,8 @@ if __name__ == '__main__':
     parser.add_argument('--type',
                         type=str,
                         default='2cov',
-                        help='which type of plda to use, we only support kaldi 2cov version currently')
+                        help='which type of plda to use, we only support '
+                             'kaldi 2cov version currently')
     parser.add_argument('--scp_path',
                         type=str,
                         help='the  plda training embedding.scp file')
