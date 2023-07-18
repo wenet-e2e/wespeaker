@@ -14,6 +14,7 @@
 
 import argparse
 import os
+
 from wespeaker.utils.plda.two_cov_plda import TwoCovPLDA
 
 if __name__ == '__main__':
@@ -25,7 +26,7 @@ if __name__ == '__main__':
     parser.add_argument('--type',
                         type=str,
                         default='2cov',
-                        help='which type of plda to use')
+                        help='which type of plda to use, we only support kaldi 2cov version currently')
     parser.add_argument('--scp_path',
                         type=str,
                         help='the  plda training embedding.scp file')
@@ -42,5 +43,5 @@ if __name__ == '__main__':
                           utt2spk_file=args.utt2spk,
                           embed_dim=args.indim)
         plda.train(args.iter)
-        model_path = os.path.join(args.exp_dir, '2cov.plda')
+        model_path = os.path.join(args.exp_dir, 'plda')
         plda.save_model(model_path)

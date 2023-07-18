@@ -1,4 +1,26 @@
 # Wespeaker Roadmap
+
+
+## Version 2.0 (Time: 2023.09)
+This is the roadmap for wespeaker version 2.0.
+
+
+- [ ] SSL support
+  - [ ] Algorithms
+    - [x] DINO
+    - [x] MOCO
+    - [x] SimCLR
+    - [ ] Iteratively psudo label prediction and supervised finetuning 
+  - [ ] Recipes
+    - [x] VoxCeleb
+    - [ ] WenetSpeech
+    
+- [ ] Recipes
+  - [ ] 3D-speaker
+  - [ ] NIST SRE
+    - [x] SRE16
+    - [ ] SRE18
+  
 ## Version 1.0 （Time: 2022.09)
 
 This is the roadmap for wespeaker version 1.0.
