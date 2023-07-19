@@ -14,8 +14,10 @@
 # limitations under the License.
 
 import os
-import numpy as np
+
 import fire
+import numpy as np
+
 from wespeaker.utils.score_metrics import (compute_pmiss_pfa_rbst, compute_eer,
                                            compute_c_norm)
 

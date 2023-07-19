@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import argparse
-import os
+
 from wespeaker.utils.plda.two_cov_plda import TwoCovPLDA
 
 if __name__ == '__main__':
@@ -21,18 +21,19 @@ if __name__ == '__main__':
     parser.add_argument('--type',
                         type=str,
                         default='2cov',
-                        help='which type of plda to use')
-    parser.add_argument('--enroll_scp_path', type=str)
-    parser.add_argument('--test_scp_path', type=str)
-    parser.add_argument('--utt2spk', type=str)
-    parser.add_argument('--exp_dir', type=str)
-    parser.add_argument('--trial', type=str)
+                        help='which type of plda to use, 2cov|kaldi')
+    parser.add_argument('--enroll_scp_path', type=str, help='enroll embeddings')
+    parser.add_argument('--indomain_scp_path', type=str,
+                        help='embeddings to compute meanvec')
+    parser.add_argument('--test_scp_path', type=str, help='test embeddings')
+    parser.add_argument('--utt2spk', type=str,
+                        help='utt2spk for the enroll speakers')
+    parser.add_argument('--model_path', type=str, help='pretrained plda path')
+    parser.add_argument('--score_path', type=str, help='score file to write to')
+    parser.add_argument('--trial', type=str, help='trial file to score upon')
     args = parser.parse_args()
 
-    if args.type == '2cov':
-        model_path = os.path.join(args.exp_dir, '2cov.plda')
-        score_path = os.path.join(args.exp_dir, 'scores',
-                                  os.path.basename(args.trial) + '.pldascore')
-        plda = TwoCovPLDA.load_model(model_path)
-        plda.eval_sv(args.enroll_scp_path, args.utt2spk, args.test_scp_path,
-                     args.trial, score_path)
+    kaldi_format = True if args.type == 'kaldi' else False
+    plda = TwoCovPLDA.load_model(args.model_path, kaldi_format)
+    plda.eval_sv(args.enroll_scp_path, args.utt2spk, args.test_scp_path,
+                 args.trial, args.score_path, args.indomain_scp_path)

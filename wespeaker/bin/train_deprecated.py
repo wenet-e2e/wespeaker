@@ -13,25 +13,26 @@
 # limitations under the License.
 
 import os
-from pprint import pformat
-import fire
-import yaml
-import tableprint as tp
 import re
+from pprint import pformat
 
+import fire
+import tableprint as tp
 import torch
 import torch.distributed as dist
+import yaml
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 
 import wespeaker.utils.schedulers as schedulers
-from wespeaker.models.speaker_model import get_speaker_model
-from wespeaker.models.projections import get_projection
-from wespeaker.utils.utils import get_logger, parse_config_or_kwargs, set_seed, spk2id
-from wespeaker.utils.file_utils import read_scp
-from wespeaker.utils.executor_deprecated import run_epoch
-from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
 from wespeaker.dataset.dataset_deprecated import FeatList_LableDict_Dataset
+from wespeaker.models.projections import get_projection
+from wespeaker.models.speaker_model import get_speaker_model
+from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
+from wespeaker.utils.executor_deprecated import run_epoch
+from wespeaker.utils.file_utils import read_scp
+from wespeaker.utils.utils import get_logger, parse_config_or_kwargs, set_seed, \
+    spk2id
 
 
 def train(config='conf/config.yaml', **kwargs):
@@ -120,7 +121,8 @@ def train(config='conf/config.yaml', **kwargs):
     # projection layer
     configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
     configs['projection_args']['num_class'] = len(spk2id_dict)
-    if configs['feature_args']['raw_wav'] and configs['dataset_args']['speed_perturb']:
+    if configs['feature_args']['raw_wav'] and configs['dataset_args'][
+            'speed_perturb']:
         # diff speed is regarded as diff spk
         configs['projection_args']['num_class'] *= 3
     configs['projection_args']['do_lm'] = configs.get('do_lm', False)

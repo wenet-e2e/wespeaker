@@ -13,12 +13,13 @@
 # limitations under the License.
 
 import os
-import kaldiio
-from tqdm import tqdm
-import numpy as np
 from pathlib import Path
+
 import fire
+import kaldiio
+import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+from tqdm import tqdm
 
 
 def calculate_mean_from_kaldi_vec(scp_path):

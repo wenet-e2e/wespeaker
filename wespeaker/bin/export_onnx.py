@@ -17,22 +17,25 @@ from __future__ import print_function
 
 import argparse
 
+import numpy as np
 import torch
+import torch.nn as nn
 import yaml
 
-from wespeaker.utils.checkpoint import load_checkpoint
 from wespeaker.models.speaker_model import get_speaker_model
-import torch.nn as nn
-import numpy as np
+from wespeaker.utils.checkpoint import load_checkpoint
+
 
 def get_args():
     parser = argparse.ArgumentParser(description='export your script model')
     parser.add_argument('--config', required=True, help='config file')
     parser.add_argument('--checkpoint', required=True, help='checkpoint model')
     parser.add_argument('--output_model', required=True, help='output file')
-    parser.add_argument('--mean_vec', required=False, default=None, help='mean vector')
+    parser.add_argument('--mean_vec', required=False, default=None,
+                        help='mean vector')
     args = parser.parse_args()
     return args
+
 
 def main():
     args = get_args()
@@ -91,6 +94,7 @@ def main():
     # --optShapes=feats:64x200x80 --maxShapes=feats:128x500x80 \
     # --fp16
     # If it is an model with QDQ nodes, please add --int8
+
 
 if __name__ == '__main__':
     main()

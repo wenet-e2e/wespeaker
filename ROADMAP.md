@@ -1,8 +1,28 @@
 # Wespeaker Roadmap
+
+## Version 2.0 (Time: 2023.09)
+
+This is the roadmap for wespeaker version 2.0.
+
+- [ ] SSL support
+    - [ ] Algorithms
+        - [x] DINO
+        - [x] MOCO
+        - [x] SimCLR
+        - [ ] Iteratively psudo label prediction and supervised finetuning
+    - [ ] Recipes
+        - [x] VoxCeleb
+        - [ ] WenetSpeech
+
+- [ ] Recipes
+    - [ ] 3D-speaker
+    - [ ] NIST SRE
+        - [x] SRE16
+        - [ ] SRE18
+
 ## Version 1.0 （Time: 2022.09)
 
 This is the roadmap for wespeaker version 1.0.
-
 
 - [x] Standard dataset support
     - [x] VoxCeleb
@@ -18,13 +38,14 @@ This is the roadmap for wespeaker version 1.0.
     - [x] PLDA
 - [x] UIO for effective industrial-scale dataset processing
     - [x] Online data augmentation
-        -  Noise && RIR
-        -  Speed Perturb
-        -  Specaug
+        - Noise && RIR
+        - Speed Perturb
+        - Specaug
 - [x] ONNX support
 - [x] Triton Server support (GPU)
 - [ ] ~~
-    - Training or finetuning big models such as WavLM might be too costly for current stage
+    - Training or finetuning big models such as WavLM might be too costly for
+      current stage
 - [x] Basic Speaker Diarization Recipe
     - Embedding based (more related with our speaker embedding learner toolkit)
 - [x] Interactive Demo

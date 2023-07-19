@@ -106,7 +106,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
 fi
 
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
-  echo "Score ..."
+  echo "Score using Cosine Distance..."
   local/score.sh \
     --stage 1 --stop-stage 2 \
     --data ${data} \
@@ -115,6 +115,16 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
 fi
 
 if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
+  echo "Score with adapted PLDA ..."
+  local/score_plda.sh \
+    --stage 1 --stop-stage 4 \
+    --data ${data} \
+    --exp_dir $exp_dir \
+    --aug_plda_data ${aug_plda_data} \
+    --trials "$trials"
+fi
+
+if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
   echo "Export the best model ..."
   python wespeaker/bin/export_jit.py \
     --config $exp_dir/config.yaml \

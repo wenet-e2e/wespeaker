@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
 import os
+
 import fire
 import kaldiio
 import torch
-import copy
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
