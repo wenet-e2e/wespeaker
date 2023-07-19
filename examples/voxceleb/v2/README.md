@@ -61,9 +61,8 @@ If you are interested in the PLDA scoring (which is inferior to the simple cosin
 local/score_plda.sh --stage 1 --stop-stage 3 --exp_dir exp_name
 ```
 
-The results on ResNet293 (large margin, no asnorm) are:
+The results on ResNet34 (large margin, no asnorm) are:
 
-|Scoring method| vox1-O-clean | vox1-E-clean | vox1-H-clean |
-| :---:|:------------:|:------------:|:------------:|
-|cosine| 0.532 | 0.707 | 1.311 |
-|plda | 0.744 | 0.794 | 1.374|
+| Scoring method | vox1-O-clean | vox1-E-clean | vox1-H-clean |
+|:--------------:|:------------:|:------------:|:------------:|
+|      PLDA      |    1.207     |    1.350     |    2.528     |

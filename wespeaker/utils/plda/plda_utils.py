@@ -74,11 +74,10 @@ def get_data_for_plda(scp_file, utt2spk_file):
 
 
 def compute_normalizing_transform(covar):
-    """
-    :param covar:
-    :return:
-    """
-    c = np.linalg.cholesky(covar)
+    try:
+        c = np.linalg.cholesky(covar)
+    except np.linalg.LinAlgError:
+        c = np.linalg.cholesky(covar + np.eye(covar.shape[0]) * 1e-6)
     c = np.linalg.inv(c)
     return c
 

@@ -35,20 +35,6 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "plda training finished"
 fi
 
-if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
-  echo "apply plda scoring ..."
-  mkdir -p ${exp_dir}/scores
-  trials_dir=${data}/vox1/trials
-  for x in $trials; do
-    echo $x
-    python wespeaker/bin/eval_plda.py \
-      --exp_dir ${exp_dir} \
-      --enroll_scp_path ${exp_dir}/embeddings/vox1/xvector.scp \
-      --test_scp_path ${exp_dir}/embeddings/vox1/xvector.scp \
-      --utt2spk <(cat ${data}/vox1/utt2spk | awk '{print $1, $1}') \
-      --trial ${trials_dir}/${x}
-  done
-fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
   echo "apply plda scoring ..."
