@@ -26,14 +26,12 @@ stop_stage=-1
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "train the plda model ..."
-  mkdir -p ${exp_dir}/scores
   python wespeaker/bin/train_plda.py \
     --exp_dir ${exp_dir} \
     --scp_path ${exp_dir}/embeddings/vox2_dev/xvector.scp \
     --utt2spk ${data}/vox2_dev/utt2spk \
     --indim 256 \
-    --iter 5 \
-    --type '2cov'
+    --iter 5
   echo "plda training finished"
 fi
 
@@ -49,6 +47,22 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
       --test_scp_path ${exp_dir}/embeddings/vox1/xvector.scp \
       --utt2spk <(cat ${data}/vox1/utt2spk | awk '{print $1, $1}') \
       --trial ${trials_dir}/${x}
+  done
+fi
+
+if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
+  echo "apply plda scoring ..."
+  mkdir -p ${exp_dir}/scores
+  trials_dir=${data}/vox1/trials
+  for x in $trials; do
+    echo "scoring on " $x
+    python wespeaker/bin/eval_plda.py \
+      --enroll_scp_path ${exp_dir}/embeddings/vox1/xvector.scp \
+      --test_scp_path ${exp_dir}/embeddings/vox1/xvector.scp \
+      --utt2spk <(cat ${data}/vox1/utt2spk | awk '{print $1, $1}') \
+      --trial ${trials_dir}/${x} \
+      --score_path ${exp_dir}/scores/${x}.pldascore \
+      --model_path ${exp_dir}/plda
   done
 fi
 
