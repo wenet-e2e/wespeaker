@@ -21,10 +21,10 @@ import os
 
 def get_args():
     parser = argparse.ArgumentParser(description='')
+    parser.add_argument('--vad_file', type=str, help='vad file', default='non_exist')
     parser.add_argument('wav_file', help='wav file')
     parser.add_argument('utt2spk_file', help='utt2spk file')
     parser.add_argument('raw_list', help='output raw list file')
-    parser.add_argument('vad_file', help='vad file', default='non_exist')
     args = parser.parse_args()
     return args
 
