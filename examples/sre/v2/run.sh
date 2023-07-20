@@ -39,9 +39,9 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
             --num_threads 16 \
             --prefix shards \
             --shuffle \
+            --vad_file ${data}/$dset/vad \
             ${data}/$dset/wav.scp ${data}/$dset/utt2spk \
-            ${data}/$dset/shards ${data}/$dset/shard.list \
-            ${data}/$dset/vad
+            ${data}/$dset/shards ${data}/$dset/shard.list
   done
 
   echo "Convert data for PLDA backend training and evaluation to raw format..."
@@ -51,9 +51,9 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
       sre_plda_data=sre_aug
   fi
   for dset in ${sre_plda_data} sre16_major sre16_eval_enroll sre16_eval_test; do
-        python tools/make_raw_list.py ${data}/$dset/wav.scp \
-            ${data}/$dset/utt2spk ${data}/$dset/raw.list \
-            ${data}/$dset/vad
+        python tools/make_raw_list.py --vad_file ${data}/$dset/vad \
+            ${data}/$dset/wav.scp \
+            ${data}/$dset/utt2spk ${data}/$dset/raw.list
 
   done
   # Convert all musan data to LMDB
