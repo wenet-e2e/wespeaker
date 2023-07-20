@@ -53,7 +53,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
   for dset in ${sre_plda_data} sre16_major sre16_eval_enroll sre16_eval_test; do
         python tools/make_raw_list.py --vad_file ${data}/$dset/vad \
             ${data}/$dset/wav.scp \
-            ${data}/$dset/utt2spk ${data}/$dset/raw.list \
+            ${data}/$dset/utt2spk ${data}/$dset/raw.list
 
   done
   # Convert all musan data to LMDB
