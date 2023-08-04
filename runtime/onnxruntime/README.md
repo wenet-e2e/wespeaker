@@ -25,6 +25,13 @@ cmake --build .
 ```
 
 * Step 3. Testing.
+
+> NOTE: If using GPU, you need to specify the cuda path.
+> ```bash
+> export PATH=/usr/local/cuda-11.1/bin${PATH:+:${PATH}}
+> export LD_LIBRARY_PATH=/usr/local/cuda-11.1/lib64:${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+> ```
+
 1. the RTF(real time factor) is shown in the console, and embedding will be written to the txt file.
 ``` sh
 export GLOG_logtostderr=1
