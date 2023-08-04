@@ -90,8 +90,6 @@ onnx_dir=your_model_dir
 | ------------------- | ------- | ---------- |
 | ResNet-34           | 6.63 M  | 0.00857436 |
 
-
-
 2. EER (%)
 > onnxruntime: SamplesPerChunk=-1.
 >
