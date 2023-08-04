@@ -17,11 +17,21 @@ python wespeaker/bin/export_onnx.py \
 
 ``` sh
 mkdir build && cd build
+# 1. no gpu
 cmake -DONNX=ON ..
+# 2. gpu
+# cmake -DONNX=ON -DGPU=ON ..
 cmake --build .
 ```
 
 * Step 3. Testing.
+
+> NOTE: If using GPU, you need to specify the cuda path.
+> ```bash
+> export PATH=/usr/local/cuda-11.1/bin${PATH:+:${PATH}}
+> export LD_LIBRARY_PATH=/usr/local/cuda-11.1/lib64:${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+> ```
+
 1. the RTF(real time factor) is shown in the console, and embedding will be written to the txt file.
 ``` sh
 export GLOG_logtostderr=1
@@ -74,6 +84,18 @@ onnx_dir=your_model_dir
 | ResNet-221          | 23.86 M | 0.267511 |
 | ResNet-293          | 28.69 M | 0.364011 |
 | CAM++               | 7.18 M  | 0.022978 |
+
+> num_threads = 1
+>
+> samplesPerChunk = 80000
+>
+> CPU: Intel(R) Xeon(R) Platinum 8160 CPU @ 2.10GHz
+>
+> GPU: NVIDIA 3090
+
+| Model               | Params  | RTF        |
+| ------------------- | ------- | ---------- |
+| ResNet-34           | 6.63 M  | 0.00857436 |
 
 2. EER (%)
 > onnxruntime: SamplesPerChunk=-1.

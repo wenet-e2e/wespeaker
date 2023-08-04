@@ -28,6 +28,9 @@ namespace wespeaker {
 class OnnxSpeakerModel : public SpeakerModel {
  public:
   static void InitEngineThreads(int num_threads = 1);
+#ifdef USE_GPU
+  static void SetGpuDeviceId(int gpu_id = 0);
+#endif
  public:
   explicit OnnxSpeakerModel(const std::string& model_path);
 

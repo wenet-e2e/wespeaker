@@ -29,6 +29,13 @@ void OnnxSpeakerModel::InitEngineThreads(int num_threads) {
   session_options_.SetIntraOpNumThreads(num_threads);
 }
 
+#ifdef USE_GPU
+void OnnxSpeakerModel::SetGpuDeviceId(int gpu_id) {
+  Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_CUDA(
+    session_options_, gpu_id));
+}
+#endif
+
 OnnxSpeakerModel::OnnxSpeakerModel(const std::string& model_path) {
   session_options_.SetGraphOptimizationLevel(
       GraphOptimizationLevel::ORT_ENABLE_EXTENDED);

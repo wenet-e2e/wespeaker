@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(wespeaker VERSION 0.1)
 
 option(ONNX "whether to build with ONNX" ON)
+option(GPU "whether to build with GPU" OFF)
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
