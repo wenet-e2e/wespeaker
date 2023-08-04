@@ -45,6 +45,10 @@ SpeakerEngine::SpeakerEngine(const std::string& model_path,
   feature_pipeline_->Reset();
 #ifdef USE_ONNX
   OnnxSpeakerModel::InitEngineThreads(kNumGemmThreads);
+  #ifdef USE_GPU
+  // NOTE(cdliang): default gpu_id = 0
+  OnnxSpeakerModel::SetGpuDeviceId(0);
+  #endif
   model_ = std::make_shared<OnnxSpeakerModel>(model_path);
 #endif
 }
