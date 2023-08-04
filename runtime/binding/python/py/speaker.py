@@ -174,4 +174,4 @@ class Speaker:
         x = x / xx[:, np.newaxis]
         yy = np.sum(emb2 ** 2, axis=1) ** 0.5
         y = y / yy[:, np.newaxis]
-        return  np.diagonal(np.dot(x, y.transpose()))
+        return np.diagonal(np.dot(x, y.transpose()))
