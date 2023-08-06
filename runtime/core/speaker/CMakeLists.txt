@@ -1,8 +1,8 @@
 set(speaker_srcs
   speaker_engine.cc)
 
-if(NOT ONNX)
-  message(FATAL_ERROR "Please build with ONNX!")
+if(NOT ONNX AND NOT BPU)
+  message(FATAL_ERROR "Please build with ONNX or BPU!")
 endif()
 if(ONNX)
   list(APPEND speaker_srcs onnx_speaker_model.cc)

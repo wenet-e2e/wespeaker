@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifdef ENABLE_BPU_PREDICTOR
+#ifdef USE_BPU
 
 #include "speaker/bpu_speaker_model.h"
 #include <vector>
@@ -149,4 +149,4 @@ void BpuSpeakerModel::Reset() {
 }
 }  // namespace wespeaker
 
-#endif  // ENABLE_BPU_PREDICTOR
+#endif  // USE_BPU

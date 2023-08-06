@@ -15,7 +15,7 @@
 #ifndef SPEAKER_BPU_SPEAKER_MODEL_H_
 #define SPEAKER_BPU_SPEAKER_MODEL_H_
 
-#ifdef ENABLE_BPU_PREDICTOR
+#ifdef USE_BPU
 
 #include <vector>
 #include <string>
@@ -52,5 +52,5 @@ class BpuSpeakerModel : public SpeakerModel {
 
 }  // namespace wespeaker
 
-#endif
+#endif  // USE_BPU
 #endif  // SPEAKER_BPU_SPEAKER_MODEL_H_

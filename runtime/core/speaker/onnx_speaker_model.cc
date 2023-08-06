@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifdef USE_ONNX
 
 #include <vector>
 
@@ -96,3 +97,5 @@ void OnnxSpeakerModel::ExtractEmbedding(
 }
 
 }  // namespace wespeaker
+
+#endif  // USE_ONNX
