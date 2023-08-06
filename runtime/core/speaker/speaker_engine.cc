@@ -50,6 +50,8 @@ SpeakerEngine::SpeakerEngine(const std::string& model_path,
   OnnxSpeakerModel::SetGpuDeviceId(0);
   #endif
   model_ = std::make_shared<OnnxSpeakerModel>(model_path);
+#elif USE_BPU_PREDICTOR
+  model_ = std::make_shared<BpuSpeakerModel>(model_path);
 #endif
 }
 
