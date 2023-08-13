@@ -31,10 +31,10 @@ cmake --build build
 # Send binary and libraries
 export BPUIP=xxx.xxx.xxx.xxx
 export DEMO_PATH_ON_BOARD=/path/to/demo
-scp -r build/bin/ sunrise@$BPUIP:$DEMO_PATH_ON_BOARD
-scp fc_base/easy_dnn-src/dnn/*j3*/*/*/lib/libdnn.so sunrise@$BPUIP:$DEMO_PATH_ON_BOARD
-scp fc_base/easy_dnn-src/easy_dnn/*j3*/*/*/lib/libeasy_dnn.so sunrise@$BPUIP:$DEMO_PATH_ON_BOARD
-scp fc_base/easy_dnn-src/hlog/*j3*/*/*/lib/libhlog.so sunrise@$BPUIP:$DEMO_PATH_ON_BOARD
+scp -r build/bin/ root@$BPUIP:$DEMO_PATH_ON_BOARD
+scp fc_base/easy_dnn-src/dnn/*j3*/*/*/lib/libdnn.so root@$BPUIP:$DEMO_PATH_ON_BOARD
+scp fc_base/easy_dnn-src/easy_dnn/*j3*/*/*/lib/libeasy_dnn.so root@$BPUIP:$DEMO_PATH_ON_BOARD
+scp fc_base/easy_dnn-src/hlog/*j3*/*/*/lib/libhlog.so root@$BPUIP:$DEMO_PATH_ON_BOARD
 ```
 
 * Step 3. Export model to ONNX and convert ONNX to Horizon .bin and Send the model/test_wav to Horizon X3PI.
@@ -78,9 +78,9 @@ python $WESPEAKER_DIR/tools/onnx2horizonbin.py \
 #   --input_shape "1x1x198x80"
 
 # scp test wav file
-scp test_wav.wav sunrise@$BPUIP:$DEMO_PATH_ON_BOARD
+scp test_wav.wav root@$BPUIP:$DEMO_PATH_ON_BOARD
 # scp bpu models
-scp ./output/hb_makertbin_output_speaker/speaker.bin sunrise@$BPUIP:$DEMO_PATH_ON_BOARD
+scp ./output/hb_makertbin_output_speaker/speaker.bin root@$BPUIP:$DEMO_PATH_ON_BOARD
 ```
 
 * Step 4. Testing on X3PI, the RTF(real time factor) is shown in Horizon X3PI's console.
