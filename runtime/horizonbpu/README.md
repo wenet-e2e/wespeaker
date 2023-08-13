@@ -87,7 +87,7 @@ scp ./output/hb_makertbin_output_speaker/speaker.bin sunrise@$BPUIP:$DEMO_PATH_O
 
 ```bash
 cd /path/to/demo
-sudo LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH \
+export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH \
 export GLOG_logtostderr=1
 export GLOG_v=2
 wav_scp=your_test_wav_scp
