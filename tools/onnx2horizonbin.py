@@ -19,20 +19,15 @@ import logging
 import os
 import sys
 import random
-import torch
 import yaml
-import numpy as np
-import onnxruntime as ort
 
 from torch.utils.data import DataLoader
 
 from wespeaker.dataset.dataset import Dataset
-from wespeaker.utils.checkpoint import load_checkpoint
 
 try:
     import hbdk  # noqa: F401
     import horizon_nn  # noqa: F401
-    from horizon_tc_ui import HB_ONNXRuntime
 except ImportError:
     print('Please install hbdk,horizon_nn,horizon_tc_ui !')
     sys.exit(1)
@@ -158,7 +153,8 @@ def get_args():
                         help='extra operations running on cpu.')
     parser.add_argument('--calibration_type', type=str, default='default',
                         help='kl / max / default.')
-    parser.add_argument('--onnx_path', type=str, required=True, help='onnx model (float)')
+    parser.add_argument('--onnx_path', type=str, required=True,
+                        help='onnx model (float)')
     parser.add_argument('--input_name', type=str, required=True, help='input name')
     parser.add_argument('--input_shape', type=str, required=True, help='input shape')
     return parser
@@ -200,4 +196,4 @@ if __name__ == '__main__':
         " && cd hb_makertbin_log_speaker &&" +
         " hb_mapper makertbin --model-type \"onnx\" --config \"{}\"".format(
             output_dir + "/config_speaker.yaml")
-        )
+    )
