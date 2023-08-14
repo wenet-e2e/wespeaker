@@ -20,6 +20,8 @@
 
 #ifdef USE_ONNX
   #include "speaker/onnx_speaker_model.h"
+#elif USE_BPU
+  #include "speaker/bpu_speaker_model.h"
 #endif
 
 namespace wespeaker {
@@ -50,6 +52,8 @@ SpeakerEngine::SpeakerEngine(const std::string& model_path,
   OnnxSpeakerModel::SetGpuDeviceId(0);
   #endif
   model_ = std::make_shared<OnnxSpeakerModel>(model_path);
+#elif USE_BPU
+  model_ = std::make_shared<BpuSpeakerModel>(model_path);
 #endif
 }
 

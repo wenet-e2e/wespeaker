@@ -1,0 +1,34 @@
+cmake_minimum_required(VERSION 3.14)
+project(wespeaker VERSION 0.1)
+
+option(ONNX "whether to build with ONNX" OFF)
+option(GPU "whether to build with GPU" OFF)
+option(BPU "whether to build with BPU" ON)
+
+set(CMAKE_VERBOSE_MAKEFILE OFF)
+
+include(FetchContent)
+set(FETCHCONTENT_QUIET OFF)
+get_filename_component(fc_base "fc_base" REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(FETCHCONTENT_BASE_DIR ${fc_base})
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -pthread -fPIC")
+
+# Include all dependency
+if(ONNX)
+  include(onnx)
+endif()
+if(BPU)
+  include(bpu)
+endif()
+include(glog)
+include(gflags)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+# build all libraries
+add_subdirectory(utils)
+add_subdirectory(frontend)
+add_subdirectory(speaker)
+add_subdirectory(bin)

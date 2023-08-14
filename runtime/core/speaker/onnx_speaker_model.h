@@ -15,6 +15,8 @@
 #ifndef SPEAKER_ONNX_SPEAKER_MODEL_H_
 #define SPEAKER_ONNX_SPEAKER_MODEL_H_
 
+#ifdef USE_ONNX
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -50,4 +52,5 @@ class OnnxSpeakerModel : public SpeakerModel {
 
 }  // namespace wespeaker
 
+#endif  // USE_ONNX
 #endif  // SPEAKER_ONNX_SPEAKER_MODEL_H_
