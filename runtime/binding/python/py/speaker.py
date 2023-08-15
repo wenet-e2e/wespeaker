@@ -159,10 +159,10 @@ class Speaker:
     def compute_cosine_score(self, emb1, emb2):
         """ Compute cosine score between emb1 and emb2.
         Args:
-            emb1(numpy.ndarray): embedding of speaker-1
-            emb2(numpy.ndarray): embedding of speaker-2
+            emb1(numpy.ndarray): embedding of speaker-1 [B, emb]
+            emb2(numpy.ndarray): embedding of speaker-2 [B, emb]
         Return:
-            score(float): cosine score
+            score(float): cosine score [B]
         """
         assert isinstance(emb1, np.ndarray) and isinstance(
             emb2, np.ndarray
@@ -170,5 +170,8 @@ class Speaker:
         assert len(emb1.shape) == len(
             emb2.shape
         ), "NOTE: the embedding size of emb1 and emb2 need to be equal"
-        return np.dot(emb1,
-                      emb2) / (np.linalg.norm(emb1) * np.linalg.norm(emb2))
+        xx = np.sum(emb1 ** 2, axis=1) ** 0.5
+        x = x / xx[:, np.newaxis]
+        yy = np.sum(emb2 ** 2, axis=1) ** 0.5
+        y = y / yy[:, np.newaxis]
+        return np.diagonal(np.dot(x, y.transpose()))
