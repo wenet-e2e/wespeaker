@@ -49,8 +49,8 @@ The parameters of `extract_embedding`
 ```python
 import wespeakerruntime as wespeaker
 speaker = wespeaker.Speaker(lang='chs')
-emb1 = speaker.extract_embedding_wav(wav1_path)
-emb2 = speaker.extract_embedding_wav(wav2_path)
+emb1 = speaker.extract_embedding(wav1_path)[0]
+emb2 = speaker.extract_embedding(wav2_path)[0]
 score = speaker.compute_cosine_score(emb1, emb2)
 ```
 The parameters of `compute_cosine_score`:
