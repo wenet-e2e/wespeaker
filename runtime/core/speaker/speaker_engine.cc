@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <functional>
 #include <limits>
+#include <numeric>
 #include "speaker/speaker_engine.h"
 
 

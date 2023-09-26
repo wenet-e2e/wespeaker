@@ -18,7 +18,7 @@
 
 #include "speaker/onnx_speaker_model.h"
 #include "glog/logging.h"
-
+#include "utils/utils.h"
 
 namespace wespeaker {
 
@@ -41,8 +41,13 @@ OnnxSpeakerModel::OnnxSpeakerModel(const std::string& model_path) {
   session_options_.SetGraphOptimizationLevel(
       GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
   // 1. Load sessions
-  speaker_session_ = std::make_shared<Ort::Session>(env_, model_path.c_str(),
-                                                      session_options_);
+  #ifdef _MSC_VER
+  speaker_session_ = std::make_shared<Ort::Session>(
+                     env_, ToWString(model_path).c_str(), session_options_);
+  #else
+  speaker_session_ = std::make_shared<Ort::Session>(
+                     env_, model_path.c_str(), session_options_);
+  #endif
   // 2. Model info
   Ort::AllocatorWithDefaultOptions allocator;
   // 2.1. input info

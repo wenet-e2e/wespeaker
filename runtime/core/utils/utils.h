@@ -35,6 +35,10 @@ void SplitStringToVector(const std::string& full, const char* delim,
                          bool omit_empty_strings,
                          std::vector<std::string>* out);
 
+#ifdef _MSC_VER
+std::wstring ToWString(const std::string& str);
+#endif
+
 }  // namespace wespeaker
 
 #endif  // UTILS_UTILS_H_
