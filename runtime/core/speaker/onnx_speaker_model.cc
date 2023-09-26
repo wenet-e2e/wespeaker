@@ -43,10 +43,10 @@ OnnxSpeakerModel::OnnxSpeakerModel(const std::string& model_path) {
   // 1. Load sessions
   #ifdef _MSC_VER
   speaker_session_ = std::make_shared<Ort::Session>(
-                     env_, ToWString(model_path).c_str(),session_options_);
+                     env_, ToWString(model_path).c_str(), session_options_);
   #else
   speaker_session_ = std::make_shared<Ort::Session>(
-                     env_, model_path.c_str(),session_options_);
+                     env_, model_path.c_str(), session_options_);
   #endif
   // 2. Model info
   Ort::AllocatorWithDefaultOptions allocator;
