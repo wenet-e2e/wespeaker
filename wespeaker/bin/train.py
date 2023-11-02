@@ -34,7 +34,9 @@ from wespeaker.utils.file_utils import read_table
 from wespeaker.utils.utils import get_logger, parse_config_or_kwargs, set_seed, \
     spk2id
 
+from torch.distributed.elastic.multiprocessing.errors import record
 
+@record
 def train(config='conf/config.yaml', **kwargs):
     """Trains a model on the given features and spk labels.
 

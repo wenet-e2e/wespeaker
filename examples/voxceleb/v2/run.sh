@@ -5,24 +5,25 @@
 
 . ./path.sh || exit 1
 
-stage=-1
-stop_stage=-1
+stage=1
+stop_stage=1
 
 data=data
 data_type="shard"  # shard/raw
 
-config=conf/campplus.yaml
-exp_dir=exp/CAMPPlus-TSTP-emb512-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
-gpus="[0,1]"
+config=conf/resnet.yaml
+exp_dir=exp/ResNet18-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
+gpus="[0]"
 num_avg=10
 checkpoint=
+# checkpoint=$exp_dir/models/checkpoint_model.pt
 
 trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
 score_norm_method="asnorm"  # asnorm/snorm
 top_n=300
 
 # setup for large margin fine-tuning
-lm_config=conf/campplus_lm.yaml
+lm_config=conf/resnet_lm.yaml
 
 . tools/parse_options.sh || exit 1
 
@@ -33,6 +34,7 @@ fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
   echo "Covert train and test data to ${data_type}..."
+
   for dset in vox2_dev vox1; do
     if [ $data_type == "shard" ]; then
       python tools/make_shard_list.py --num_utts_per_shard 1000 \
@@ -46,10 +48,12 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
           ${data}/$dset/utt2spk ${data}/$dset/raw.list
     fi
   done
+
   # Convert all musan data to LMDB
   python tools/make_lmdb.py ${data}/musan/wav.scp ${data}/musan/lmdb
   # Convert all rirs data to LMDB
   python tools/make_lmdb.py ${data}/rirs/wav.scp ${data}/rirs/lmdb
+
 fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then

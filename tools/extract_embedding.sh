@@ -43,7 +43,10 @@ split -l ${subfile_num} -d -a 3 ${data_list} ${log_dir}/split_
 num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
 gpus=(`echo $gpus | cut -d '[' -f2 | cut -d ']' -f1 | tr ',' ' '`)
 
+echo "Extract embedding for ${store_dir} ..."
+
 for suffix in $(seq 0 $(($nj - 1))); do
+  echo "Extract embedding for split_${suffix} ..."
   idx=$[$suffix % $num_gpus]
   suffix=$(printf '%03d' $suffix)
   data_list_subfile=${log_dir}/split_${suffix}

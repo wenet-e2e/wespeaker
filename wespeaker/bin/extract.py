@@ -90,6 +90,7 @@ def extract(config='conf/config.yaml', **kwargs):
 
                 for i, utt in enumerate(utts):
                     embed = embeds[i]
+
                     writer(utt, embed)
 
 

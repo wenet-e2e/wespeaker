@@ -1,7 +1,7 @@
 ### train configuraton
 
-exp_dir: exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
-gpus: "[0,1]"
+exp_dir: exp/ResNet18-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
+gpus: "[0]"
 num_avg: 10
 enable_amp: False # whether enable automatic mixed precision training
 
@@ -45,7 +45,7 @@ dataset_args:
     max_f: 8
     prob: 0.6
 
-model: ResNet34 # ResNet18, ResNet34, ResNet50, ResNet101, ResNet152
+model: ResNet18 # ResNet18, ResNet34, ResNet50, ResNet101, ResNet152
 model_init: null
 model_args:
   feat_dim: 80
@@ -60,7 +60,7 @@ projection_args:
 margin_scheduler: MarginScheduler
 margin_update:
   initial_margin: 0.0
-  final_margin: 0.2
+  final_margin: 0.0 # Good for LID tasks: final_margin: 0.0
   increase_start_epoch: 20
   fix_start_epoch: 40
   update_margin: True

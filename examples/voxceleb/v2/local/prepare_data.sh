@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-stage=-1
-stop_stage=-1
+stage=3
+stop_stage=4
 data=data
 
 . tools/parse_options.sh || exit 1
@@ -23,6 +23,8 @@ data=data
 data=`realpath ${data}`
 download_dir=${data}/download_data
 rawdata_dir=${data}/raw_data
+
+stage=1
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "Download musan.tar.gz, rirs_noises.zip, vox1_test_wav.zip, vox1_dev_wav.zip, and vox2_aac.zip."

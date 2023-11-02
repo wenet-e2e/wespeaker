@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+echo "in $0"
 download_dir=data/download_data
 
 . tools/parse_options.sh || exit 1
