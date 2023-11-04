@@ -29,9 +29,9 @@ weseaker --language chinese audio.wav
 **Python programming usage**:
 
 ``` python
-import wenet
+import wespeaker
 
-model = wenet.load_model('chinese')
+model = wespeaker.load_model('chinese')
 result = model.extract_embeding('audio.wav')
 print(result)
 ```
