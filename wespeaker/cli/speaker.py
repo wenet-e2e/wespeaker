@@ -29,6 +29,7 @@ class Speaker:
     def __init__(self, model_path: str, resample_rate: int = 16000):
         self.session = ort.InferenceSession(model_path)
         self.resample_rate = resample_rate
+        self.table = {}
 
     def extract_embedding(self, audio_path: str):
         sample_rate, pcm = wav.read(audio_path)
@@ -55,16 +56,30 @@ class Speaker:
     def compute_similarity(self, audio_path1: str, audio_path2) -> float:
         e1 = self.extract_embedding(audio_path1)
         e2 = self.extract_embedding(audio_path2)
-        s = np.dot(e1, e2) / (norm(e1) * norm(e2))
-        return s
+        return self.cosine_distance(e1, e2)
 
-    # TODO(Chengdong Liang): Add implementation
-    def register(self, audio_path: str):
-        pass
+    def cosine_distance(self, e1, e2):
+        return np.dot(e1, e2) / (norm(e1) * norm(e2))
 
-    # TODO(Chengdong Liang): Add implementation
+    def register(self, name: str, audio_path: str):
+        if name in self.table:
+            print('Speaker {} already registered, ignore'.format(name))
+        else:
+            self.table[name] = self.extract_embedding(audio_path)
+
     def recognize(self, audio_path: str):
-        pass
+        q = self.extract_embedding(audio_path)
+        best_score = 0.0
+        best_name = ''
+        for name, e in self.table.items():
+            score = self.cosine_distance(q, e)
+            if best_score < score:
+                best_score = score
+                best_name = name
+        result = {}
+        result['name'] = name
+        result['confidence'] = best_score
+        return result
 
 
 def load_model(language: str, resample_rate: int) -> Speaker:
