@@ -23,7 +23,9 @@ pip install git+https://github.com/wenet-e2e/wespeaker.git
 **Command-line usage** (use `-h` for parameters):
 
 ``` sh
-weseaker --language chinese audio.wav
+$ wespeaker --task embedding --audio_file audio.wav
+$ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav
+$ wespeaker --task diarization --audio_file audio.wav # TODO
 ```
 
 **Python programming usage**:
@@ -32,8 +34,8 @@ weseaker --language chinese audio.wav
 import wespeaker
 
 model = wespeaker.load_model('chinese')
-result = model.extract_embeding('audio.wav')
-print(result)
+embedding = model.extract_embeding('audio.wav')
+similarity = model.compute_similarity('audio1.wav', 'audio2.wav')
 ```
 
 ### Install for development & deployment

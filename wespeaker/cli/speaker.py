@@ -67,7 +67,7 @@ def get_args():
     parser.add_argument('-t',
                         '--task',
                         choices=[
-                            'embeding',
+                            'embedding',
                             'similarity',
                             'diarization',
                         ],
