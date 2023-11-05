@@ -16,6 +16,29 @@ online feature extraction or loading pre-extracted features in kaldi-format.
 
 ## Installation
 
+### Install python package
+``` sh
+pip install git+https://github.com/wenet-e2e/wespeaker.git
+```
+**Command-line usage** (use `-h` for parameters):
+
+``` sh
+$ wespeaker --task embedding --audio_file audio.wav
+$ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav
+$ wespeaker --task diarization --audio_file audio.wav # TODO
+```
+
+**Python programming usage**:
+
+``` python
+import wespeaker
+
+model = wespeaker.load_model('chinese')
+embedding = model.extract_embeding('audio.wav')
+similarity = model.compute_similarity('audio1.wav', 'audio2.wav')
+```
+
+### Install for development & deployment
 * Clone this repo
 ``` sh
 git clone https://github.com/wenet-e2e/wespeaker.git
