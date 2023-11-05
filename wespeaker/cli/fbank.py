@@ -1,4 +1,5 @@
-# calculate filterbank features. Provides e.g. fbank and mfcc features for use in ASR applications
+# calculate filterbank features.
+# Provides e.g. fbank and mfcc features for use in ASR applications
 # Author: James Lyons 2012
 # GitHub: https://github.com/ZitengWang/python_kaldi_features.git
 from __future__ import division
@@ -329,7 +330,8 @@ def deframesig(frames,
     indices = numpy.array(indices, dtype=numpy.int32)
     padlen = (numframes - 1) * frame_step + frame_len
 
-    if siglen <= 0: siglen = padlen
+    if siglen <= 0:
+        siglen = padlen
 
     rec_signal = numpy.zeros((padlen, ))
     window_correction = numpy.zeros((padlen, ))
