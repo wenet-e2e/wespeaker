@@ -66,7 +66,10 @@ class Speaker:
     def compute_similarity(self, audio_path1: str, audio_path2) -> float:
         e1 = self.extract_embedding(audio_path1, True)
         e2 = self.extract_embedding(audio_path2, True)
-        return self.cosine_distance(e1, e2)
+        if e1 is None or e2 is None:
+            return 0.0
+        else:
+            return self.cosine_distance(e1, e2)
 
     def cosine_distance(self, e1, e2):
         return np.dot(e1, e2) / (norm(e1) * norm(e2))
