@@ -32,6 +32,7 @@ class Speaker:
 
     def extract_embedding(self, audio_path: str):
         pcm, sample_rate = librosa.load(audio_path, sr=self.resample_rate)
+        pcm = pcm * (1 << 15)
         # NOTE: produce the same results as with torchaudio.compliance.kaldi
         feats = logfbank(
             pcm,
