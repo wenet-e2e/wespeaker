@@ -129,6 +129,8 @@ def get_args():
     parser.add_argument('--vad',
                         action='store_true',
                         help='whether to do VAD or not')
+    parser.add_argument('--output_file',
+                        help='output file to save speaker embedding')
     args = parser.parse_args()
     return args
 
@@ -137,7 +139,12 @@ def main():
     args = get_args()
     model = load_model(args.language, args.resample_rate)
     if args.task == 'embedding':
-        print(model.extract_embedding(args.audio_file, args.vad))
+        embedding = model.extract_embedding(args.audio_file, args.vad)
+        if embedding is not None:
+            np.savetxt(args.output_file, embedding)
+            print('Succeed, see {}'.format(args.output_file))
+        else:
+            print('Fails to extract embedding')
     elif args.task == 'similarity':
         print(model.compute_similarity(args.audio_file, args.audio_file2))
     elif args.task == 'diarization':
