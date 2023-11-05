@@ -31,7 +31,7 @@ class Speaker:
         self.vad_model = vad.OnnxWrapper()
         self.table = {}
         self.resample_rate = 16000
-        self.apply_vad = False
+        self.apply_vad = True
 
     def set_resample_rate(self, resample_rate: int):
         self.resample_rate = resample_rate
