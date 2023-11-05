@@ -25,20 +25,20 @@ def mfcc(signal,
          wintype='povey'):
     """Compute MFCC features from an audio signal.
 
-    :param signal: the audio signal from which to compute features. Should be an N*1 array
+    :param signal: the audio signal from which to compute features. Should be an N*1 array  # noqa
     :param samplerate: the samplerate of the signal we are working with.
-    :param winlen: the length of the analysis window in seconds. Default is 0.025s (25 milliseconds)
-    :param winstep: the step between successive windows in seconds. Default is 0.01s (10 milliseconds)
+    :param winlen: the length of the analysis window in seconds. Default is 0.025s (25 milliseconds)  # noqa
+    :param winstep: the step between successive windows in seconds. Default is 0.01s (10 milliseconds)  # noqa
     :param numcep: the number of cepstrum to return, default 13
     :param nfilt: the number of filters in the filterbank, default 26.
     :param nfft: the FFT size. Default is 512.
     :param lowfreq: lowest band edge of mel filters. In Hz, default is 0.
-    :param highfreq: highest band edge of mel filters. In Hz, default is samplerate/2
-    :param preemph: apply preemphasis filter with preemph as coefficient. 0 is no filter. Default is 0.97.
-    :param ceplifter: apply a lifter to final cepstral coefficients. 0 is no lifter. Default is 22.
-    :param appendEnergy: if this is true, the zeroth cepstral coefficient is replaced with the log of the total frame energy.
-    :param winfunc: the analysis window to apply to each frame. By default no window is applied. You can use numpy window functions here e.g. winfunc=numpy.hamming
-    :returns: A numpy array of size (NUMFRAMES by numcep) containing features. Each row holds 1 feature vector.
+    :param highfreq: highest band edge of mel filters. In Hz, default is samplerate/2  # noqa
+    :param preemph: apply preemphasis filter with preemph as coefficient. 0 is no filter. Default is 0.97.  # noqa
+    :param ceplifter: apply a lifter to final cepstral coefficients. 0 is no lifter. Default is 22.  # noqa
+    :param appendEnergy: if this is true, the zeroth cepstral coefficient is replaced with the log of the total frame energy.  # noqa
+    :param winfunc: the analysis window to apply to each frame. By default no window is applied. You can use numpy window functions here e.g. winfunc=numpy.hamming  # noqa
+    :returns: A numpy array of size (NUMFRAMES by numcep) containing features. Each row holds 1 feature vector.  # noqa
     """
     feat, energy = fbank(signal, samplerate, winlen, winstep, nfilt, nfft,
                          lowfreq, highfreq, dither, remove_dc_offset, preemph,
@@ -67,19 +67,19 @@ def fbank(signal,
           wintype='hamming'):
     """Compute Mel-filterbank energy features from an audio signal.
 
-    :param signal: the audio signal from which to compute features. Should be an N*1 array
+    :param signal: the audio signal from which to compute features. Should be an N*1 array  # noqa
     :param samplerate: the samplerate of the signal we are working with.
-    :param winlen: the length of the analysis window in seconds. Default is 0.025s (25 milliseconds)
-    :param winstep: the step between successive windows in seconds. Default is 0.01s (10 milliseconds)
+    :param winlen: the length of the analysis window in seconds. Default is 0.025s (25 milliseconds)  # noqa
+    :param winstep: the step between successive windows in seconds. Default is 0.01s (10 milliseconds)  # noqa
     :param nfilt: the number of filters in the filterbank, default 26.
     :param nfft: the FFT size. Default is 512.
     :param lowfreq: lowest band edge of mel filters. In Hz, default is 0.
-    :param highfreq: highest band edge of mel filters. In Hz, default is samplerate/2
-    :param preemph: apply preemphasis filter with preemph as coefficient. 0 is no filter. Default is 0.97.
-    :param winfunc: the analysis window to apply to each frame. By default no window is applied. You can use numpy window functions here e.g. winfunc=numpy.hamming
+    :param highfreq: highest band edge of mel filters. In Hz, default is samplerate/2  # noqa
+    :param preemph: apply preemphasis filter with preemph as coefficient. 0 is no filter. Default is 0.97.  # noqa
+    :param winfunc: the analysis window to apply to each frame. By default no window is applied. You can use numpy window functions here e.g. winfunc=numpy.hamming  # noqa
      winfunc=lambda x:numpy.ones((x,))
-    :returns: 2 values. The first is a numpy array of size (NUMFRAMES by nfilt) containing features. Each row holds 1 feature vector. The
-        second return value is the energy in each frame (total energy, unwindowed)
+    :returns: 2 values. The first is a numpy array of size (NUMFRAMES by nfilt) containing features. Each row holds 1 feature vector. The  # noqa
+        second return value is the energy in each frame (total energy, unwindowed)  # noqa
     """
     highfreq = highfreq or samplerate / 2
     frames, raw_frames = framesig(signal, winlen * samplerate,
@@ -115,16 +115,16 @@ def logfbank(signal,
              wintype='hamming'):
     """Compute log Mel-filterbank energy features from an audio signal.
 
-    :param signal: the audio signal from which to compute features. Should be an N*1 array
+    :param signal: the audio signal from which to compute features. Should be an N*1 array  # noqa
     :param samplerate: the samplerate of the signal we are working with.
-    :param winlen: the length of the analysis window in seconds. Default is 0.025s (25 milliseconds)
-    :param winstep: the step between successive windows in seconds. Default is 0.01s (10 milliseconds)
+    :param winlen: the length of the analysis window in seconds. Default is 0.025s (25 milliseconds)  # noqa
+    :param winstep: the step between successive windows in seconds. Default is 0.01s (10 milliseconds)  # noqa
     :param nfilt: the number of filters in the filterbank, default 26.
     :param nfft: the FFT size. Default is 512.
     :param lowfreq: lowest band edge of mel filters. In Hz, default is 0.
-    :param highfreq: highest band edge of mel filters. In Hz, default is samplerate/2
-    :param preemph: apply preemphasis filter with preemph as coefficient. 0 is no filter. Default is 0.97.
-    :returns: A numpy array of size (NUMFRAMES by nfilt) containing features. Each row holds 1 feature vector.
+    :param highfreq: highest band edge of mel filters. In Hz, default is samplerate/2  # noqa
+    :param preemph: apply preemphasis filter with preemph as coefficient. 0 is no filter. Default is 0.97.  # noqa
+    :returns: A numpy array of size (NUMFRAMES by nfilt) containing features. Each row holds 1 feature vector.  # noqa
     """
     feat, energy = fbank(signal, samplerate, winlen, winstep, nfilt, nfft,
                          lowfreq, highfreq, dither, remove_dc_offset, preemph,
@@ -135,8 +135,8 @@ def logfbank(signal,
 def hz2mel(hz):
     """Convert a value in Hertz to Mels
 
-    :param hz: a value in Hz. This can also be a numpy array, conversion proceeds element-wise.
-    :returns: a value in Mels. If an array was passed in, an identical sized array is returned.
+    :param hz: a value in Hz. This can also be a numpy array, conversion proceeds element-wise.  # noqa
+    :returns: a value in Mels. If an array was passed in, an identical sized array is returned.  # noqa
     """
     return 1127 * numpy.log(1 + hz / 700.0)
 
@@ -144,8 +144,8 @@ def hz2mel(hz):
 def mel2hz(mel):
     """Convert a value in Mels to Hertz
 
-    :param mel: a value in Mels. This can also be a numpy array, conversion proceeds element-wise.
-    :returns: a value in Hertz. If an array was passed in, an identical sized array is returned.
+    :param mel: a value in Mels. This can also be a numpy array, conversion proceeds element-wise.  # noqa
+    :returns: a value in Hertz. If an array was passed in, an identical sized array is returned.  # noqa
     """
     return 700 * (numpy.exp(mel / 1127.0) - 1)
 
@@ -155,15 +155,15 @@ def get_filterbanks(nfilt=26,
                     samplerate=16000,
                     lowfreq=0,
                     highfreq=None):
-    """Compute a Mel-filterbank. The filters are stored in the rows, the columns correspond
-    to fft bins. The filters are returned as an array of size nfilt * (nfft/2 + 1)
+    """Compute a Mel-filterbank. The filters are stored in the rows, the columns correspond  # noqa
+    to fft bins. The filters are returned as an array of size nfilt * (nfft/2 + 1)  # noqa
 
     :param nfilt: the number of filters in the filterbank, default 20.
     :param nfft: the FFT size. Default is 512.
-    :param samplerate: the samplerate of the signal we are working with. Affects mel spacing.
+    :param samplerate: the samplerate of the signal we are working with. Affects mel spacing.  # noqa
     :param lowfreq: lowest band edge of mel filters, default 0 Hz
     :param highfreq: highest band edge of mel filters, default samplerate/2
-    :returns: A numpy array of size nfilt * (nfft/2 + 1) containing filterbank. Each row holds 1 filter.
+    :returns: A numpy array of size nfilt * (nfft/2 + 1) containing filterbank. Each row holds 1 filter.  # noqa
     """
     highfreq = highfreq or samplerate / 2
     assert highfreq <= samplerate / 2, "highfreq is greater than samplerate/2"
@@ -190,11 +190,11 @@ def get_filterbanks(nfilt=26,
 
 
 def lifter(cepstra, L=22):
-    """Apply a cepstral lifter the the matrix of cepstra. This has the effect of increasing the
+    """Apply a cepstral lifter the the matrix of cepstra. This has the effect of increasing the  # noqa
     magnitude of the high frequency DCT coeffs.
 
-    :param cepstra: the matrix of mel-cepstra, will be numframes * numcep in size.
-    :param L: the liftering coefficient to use. Default is 22. L <= 0 disables lifter.
+    :param cepstra: the matrix of mel-cepstra, will be numframes * numcep in size.  # noqa
+    :param L: the liftering coefficient to use. Default is 22. L <= 0 disables lifter.  # noqa
     """
     if L > 0:
         nframes, ncoeff = numpy.shape(cepstra)
@@ -209,9 +209,9 @@ def lifter(cepstra, L=22):
 def delta(feat, N):
     """Compute delta features from a feature vector sequence.
 
-    :param feat: A numpy array of size (NUMFRAMES by number of features) containing features. Each row holds 1 feature vector.
-    :param N: For each frame, calculate delta features based on preceding and following N frames
-    :returns: A numpy array of size (NUMFRAMES by number of features) containing delta features. Each row holds 1 delta feature vector.
+    :param feat: A numpy array of size (NUMFRAMES by number of features) containing features. Each row holds 1 feature vector.  # noqa
+    :param N: For each frame, calculate delta features based on preceding and following N frames  # noqa
+    :returns: A numpy array of size (NUMFRAMES by number of features) containing delta features. Each row holds 1 delta feature vector.  # noqa
     """
     if N < 1:
         raise ValueError('N must be an integer >= 1')
@@ -254,9 +254,9 @@ def framesig(sig,
 
     :param sig: the audio signal to frame.
     :param frame_len: length of each frame measured in samples.
-    :param frame_step: number of samples after the start of the previous frame that the next frame should begin.
-    :param winfunc: the analysis window to apply to each frame. By default no window is applied.
-    :param stride_trick: use stride trick to compute the rolling window and window multiplication faster
+    :param frame_step: number of samples after the start of the previous frame that the next frame should begin.  # noqa
+    :param winfunc: the analysis window to apply to each frame. By default no window is applied.  # noqa
+    :param stride_trick: use stride trick to compute the rolling window and window multiplication faster  # noqa
     :returns: an array of frames. Size is NUMFRAMES by frame_len.
     """
     slen = len(sig)
@@ -309,10 +309,10 @@ def deframesig(frames,
     """Does overlap-add procedure to undo the action of framesig.
 
     :param frames: the array of frames.
-    :param siglen: the length of the desired signal, use 0 if unknown. Output will be truncated to siglen samples.
+    :param siglen: the length of the desired signal, use 0 if unknown. Output will be truncated to siglen samples.  # noqa
     :param frame_len: length of each frame measured in samples.
-    :param frame_step: number of samples after the start of the previous frame that the next frame should begin.
-    :param winfunc: the analysis window to apply to each frame. By default no window is applied.
+    :param frame_step: number of samples after the start of the previous frame that the next frame should begin.  # noqa
+    :param winfunc: the analysis window to apply to each frame. By default no window is applied.  # noqa
     :returns: a 1-D signal.
     """
     frame_len = round_half_up(frame_len)
@@ -320,7 +320,7 @@ def deframesig(frames,
     numframes = numpy.shape(frames)[0]
     assert numpy.shape(
         frames
-    )[1] == frame_len, '"frames" matrix is wrong size, 2nd dim is not equal to frame_len'
+    )[1] == frame_len, '"frames" matrix is wrong size, 2nd dim is not equal to frame_len'  # noqa
 
     indices = numpy.tile(numpy.arange(
         0, frame_len), (numframes, 1)) + numpy.tile(
@@ -345,37 +345,37 @@ def deframesig(frames,
 
 
 def magspec(frames, NFFT):
-    """Compute the magnitude spectrum of each frame in frames. If frames is an NxD matrix, output will be Nx(NFFT/2+1).
+    """Compute the magnitude spectrum of each frame in frames. If frames is an NxD matrix, output will be Nx(NFFT/2+1).  # noqa
 
     :param frames: the array of frames. Each row is a frame.
-    :param NFFT: the FFT length to use. If NFFT > frame_len, the frames are zero-padded.
-    :returns: If frames is an NxD matrix, output will be Nx(NFFT/2+1). Each row will be the magnitude spectrum of the corresponding frame.
+    :param NFFT: the FFT length to use. If NFFT > frame_len, the frames are zero-padded.  # noqa
+    :returns: If frames is an NxD matrix, output will be Nx(NFFT/2+1). Each row will be the magnitude spectrum of the corresponding frame.  # noqa
     """
     if numpy.shape(frames)[1] > NFFT:
         logging.warn(
-            'frame length (%d) is greater than FFT size (%d), frame will be truncated. Increase NFFT to avoid.',
+            'frame length (%d) is greater than FFT size (%d), frame will be truncated. Increase NFFT to avoid.',  # noqa
             numpy.shape(frames)[1], NFFT)
     complex_spec = numpy.fft.rfft(frames, NFFT)
     return numpy.absolute(complex_spec)
 
 
 def powspec(frames, NFFT):
-    """Compute the power spectrum of each frame in frames. If frames is an NxD matrix, output will be Nx(NFFT/2+1).
+    """Compute the power spectrum of each frame in frames. If frames is an NxD matrix, output will be Nx(NFFT/2+1).  # noqa
 
     :param frames: the array of frames. Each row is a frame.
-    :param NFFT: the FFT length to use. If NFFT > frame_len, the frames are zero-padded.
-    :returns: If frames is an NxD matrix, output will be Nx(NFFT/2+1). Each row will be the power spectrum of the corresponding frame.
+    :param NFFT: the FFT length to use. If NFFT > frame_len, the frames are zero-padded.  # noqa
+    :returns: If frames is an NxD matrix, output will be Nx(NFFT/2+1). Each row will be the power spectrum of the corresponding frame.  # noqa
     """
     return numpy.square(magspec(frames, NFFT))
 
 
 def logpowspec(frames, NFFT, norm=1):
-    """Compute the log power spectrum of each frame in frames. If frames is an NxD matrix, output will be Nx(NFFT/2+1).
+    """Compute the log power spectrum of each frame in frames. If frames is an NxD matrix, output will be Nx(NFFT/2+1).  # noqa
 
     :param frames: the array of frames. Each row is a frame.
-    :param NFFT: the FFT length to use. If NFFT > frame_len, the frames are zero-padded.
-    :param norm: If norm=1, the log power spectrum is normalised so that the max value (across all frames) is 0.
-    :returns: If frames is an NxD matrix, output will be Nx(NFFT/2+1). Each row will be the log power spectrum of the corresponding frame.
+    :param NFFT: the FFT length to use. If NFFT > frame_len, the frames are zero-padded.  # noqa
+    :param norm: If norm=1, the log power spectrum is normalised so that the max value (across all frames) is 0.  # noqa
+    :returns: If frames is an NxD matrix, output will be Nx(NFFT/2+1). Each row will be the log power spectrum of the corresponding frame.  # noqa
     """
     ps = powspec(frames, NFFT)
     ps[ps <= 1e-30] = 1e-30
