@@ -19,21 +19,38 @@ import librosa
 import numpy as np
 import onnxruntime as ort
 from numpy.linalg import norm
+from silero_vad import vad
 
 from wespeaker.cli.hub import Hub
 from wespeaker.cli.fbank import logfbank
 
 
 class Speaker:
-    def __init__(self, model_path: str, resample_rate: int = 16000):
+    def __init__(self,
+                 model_path: str,
+                 resample_rate: int = 16000,
+                 apply_vad: bool = False):
         self.session = ort.InferenceSession(model_path)
         self.resample_rate = resample_rate
+        self.vad_model = vad.OnnxWrapper() if apply_vad else None
         self.table = {}
 
     def extract_embedding(self, audio_path: str):
         pcm, sample_rate = librosa.load(audio_path, sr=self.resample_rate)
         pcm = pcm * (1 << 15)
-        # NOTE: produce the same results as with torchaudio.compliance.kaldi
+        if self.vad_model:
+            # TODO(Binbin Zhang): Refine the segments logic, here we just
+            # suppose there is only silence at the start/end of the speech
+            segments = vad.get_speech_timestamps(self.vad_model,
+                                                 audio_path,
+                                                 return_seconds=True)
+            if len(segments) > 0:  # remove head and tail silence
+                start = int(segments[0]['start'] * sample_rate)
+                end = int(segments[-1]['end'] * sample_rate)
+                pcm = pcm[start:end]
+            else:  # all silence, nospeech
+                return None
+
         feats = logfbank(
             pcm,
             sample_rate,
@@ -78,9 +95,11 @@ class Speaker:
         return result
 
 
-def load_model(language: str, resample_rate: int) -> Speaker:
+def load_model(language: str,
+               resample_rate: int,
+               apply_vad: bool = False) -> Speaker:
     model_path = Hub.get_model(language)
-    return Speaker(model_path, resample_rate)
+    return Speaker(model_path, resample_rate, apply_vad)
 
 
 def get_args():
@@ -109,13 +128,16 @@ def get_args():
                         type=int,
                         default=16000,
                         help='resampling rate')
+    parser.add_argument('--vad',
+                        action='store_true',
+                        help='whether to do VAD or not')
     args = parser.parse_args()
     return args
 
 
 def main():
     args = get_args()
-    model = load_model(args.language, args.resample_rate)
+    model = load_model(args.language, args.resample_rate, args.vad)
     if args.task == 'embedding':
         print(model.extract_embedding(args.audio_file))
     elif args.task == 'similarity':
