@@ -6,7 +6,6 @@
 [**Roadmap**](ROADMAP.md)
 | [**Paper**](https://arxiv.org/abs/2210.17016)
 | [**Runtime**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime)
-| [**Python binding**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/binding/python)
 | [**Pretrained Models**](docs/pretrained.md)
 | [**Huggingface Demo**](https://huggingface.co/spaces/wenet/wespeaker_demo)
 
