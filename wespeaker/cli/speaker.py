@@ -19,9 +19,9 @@ import numpy as np
 import onnxruntime as ort
 import scipy.io.wavfile as wav
 from numpy.linalg import norm
-from python_speech_features import fbank
 
 from wespeaker.cli.hub import Hub
+from wespeaker.cli.fbank import logfbank
 
 
 class Speaker:
@@ -30,13 +30,16 @@ class Speaker:
 
     def extract_embedding(self, audio_path: str):
         sample_rate, pcm = wav.read(audio_path)
-        # TODO(Binbin Zhang): verify the feat
-        feats, _ = fbank(pcm,
+        # NOTE: produce the same results as with torchaudio.compliance.kaldi
+        feats = logfbank(pcm,
                          sample_rate,
                          nfilt=80,
                          lowfreq=20,
-                         winfunc=np.hamming)
-        feats = np.log(feats)
+                         winlen=0.025,  # 25 ms
+                         winstep=0.01,  # 10 ms
+                         dither=0,
+                         wintype='hamming')
+        feats = feats - np.mean(feats, axis=0)  # CMN
         feats = np.expand_dims(feats, axis=0).astype(np.float32)
         outputs = self.session.run(None, {"feats": feats})
         embedding = outputs[0][0]
