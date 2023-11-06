@@ -30,7 +30,6 @@ class Speaker:
 
     def extract_embedding(self, audio_path: str):
         sample_rate, pcm = wav.read(audio_path)
-        # TODO(Binbin Zhang): verify the feat
         # NOTE: produce the same results as with torchaudio.compliance.kaldi
         feats = logfbank(pcm,
                          sample_rate,
