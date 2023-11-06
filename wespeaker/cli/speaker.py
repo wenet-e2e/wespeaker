@@ -18,6 +18,7 @@ import sys
 import numpy as np
 import onnxruntime as ort
 import scipy.io.wavfile as wav
+import scipy.signal as sps
 from numpy.linalg import norm
 
 from wespeaker.cli.hub import Hub
@@ -25,11 +26,17 @@ from wespeaker.cli.fbank import logfbank
 
 
 class Speaker:
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: str, resample_rate: int = 16000):
         self.session = ort.InferenceSession(model_path)
+        self.resample_rate = resample_rate
 
     def extract_embedding(self, audio_path: str):
         sample_rate, pcm = wav.read(audio_path)
+        if sample_rate != self.resample_rate:
+            # resample
+            number_of_samples = round(
+                len(pcm) * float(self.resample_rate) / sample_rate)
+            pcm = sps.resample(pcm, number_of_samples)
         # NOTE: produce the same results as with torchaudio.compliance.kaldi
         feats = logfbank(pcm,
                          sample_rate,
@@ -60,9 +67,9 @@ class Speaker:
         pass
 
 
-def load_model(language: str) -> Speaker:
+def load_model(language: str, resample_rate: int) -> Speaker:
     model_path = Hub.get_model(language)
-    return Speaker(model_path)
+    return Speaker(model_path, resample_rate)
 
 
 def get_args():
@@ -87,13 +94,15 @@ def get_args():
     parser.add_argument('--audio_file', help='audio file')
     parser.add_argument('--audio_file2',
                         help='audio file2, for similarity task')
+    parser.add_argument('--resample_rate', type=int, default=16000,
+                        help='resampling rate')
     args = parser.parse_args()
     return args
 
 
 def main():
     args = get_args()
-    model = load_model(args.language)
+    model = load_model(args.language, args.resample_rate)
     if args.task == 'embedding':
         print(model.extract_embedding(args.audio_file))
     elif args.task == 'similarity':
