@@ -15,10 +15,9 @@
 import argparse
 import sys
 
+import librosa
 import numpy as np
 import onnxruntime as ort
-import scipy.io.wavfile as wav
-import scipy.signal as sps
 from numpy.linalg import norm
 
 from wespeaker.cli.hub import Hub
@@ -32,21 +31,18 @@ class Speaker:
         self.table = {}
 
     def extract_embedding(self, audio_path: str):
-        sample_rate, pcm = wav.read(audio_path)
-        if sample_rate != self.resample_rate:
-            # resample
-            number_of_samples = round(
-                len(pcm) * float(self.resample_rate) / sample_rate)
-            pcm = sps.resample(pcm, number_of_samples)
+        pcm, sample_rate = librosa.load(audio_path, sr=self.resample_rate)
+        pcm = pcm * (1 << 15)
         # NOTE: produce the same results as with torchaudio.compliance.kaldi
-        feats = logfbank(pcm,
-                         sample_rate,
-                         nfilt=80,
-                         lowfreq=20,
-                         winlen=0.025,  # 25 ms
-                         winstep=0.01,  # 10 ms
-                         dither=0,
-                         wintype='hamming')
+        feats = logfbank(
+            pcm,
+            sample_rate,
+            nfilt=80,
+            lowfreq=20,
+            winlen=0.025,  # 25 ms
+            winstep=0.01,  # 10 ms
+            dither=0,
+            wintype='hamming')
         feats = feats - np.mean(feats, axis=0)  # CMN
         feats = np.expand_dims(feats, axis=0).astype(np.float32)
         outputs = self.session.run(None, {"feats": feats})
@@ -109,7 +105,9 @@ def get_args():
     parser.add_argument('--audio_file', help='audio file')
     parser.add_argument('--audio_file2',
                         help='audio file2, for similarity task')
-    parser.add_argument('--resample_rate', type=int, default=16000,
+    parser.add_argument('--resample_rate',
+                        type=int,
+                        default=16000,
                         help='resampling rate')
     args = parser.parse_args()
     return args
