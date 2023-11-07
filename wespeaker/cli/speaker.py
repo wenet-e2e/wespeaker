@@ -19,6 +19,7 @@ import librosa
 import numpy as np
 import onnxruntime as ort
 from numpy.linalg import norm
+from silero_vad import vad
 
 from wespeaker.cli.hub import Hub
 from wespeaker.cli.fbank import logfbank
@@ -28,12 +29,25 @@ class Speaker:
     def __init__(self, model_path: str, resample_rate: int = 16000):
         self.session = ort.InferenceSession(model_path)
         self.resample_rate = resample_rate
+        self.vad_model = vad.OnnxWrapper()
         self.table = {}
 
-    def extract_embedding(self, audio_path: str):
+    def extract_embedding(self, audio_path: str, apply_vad: bool = False):
         pcm, sample_rate = librosa.load(audio_path, sr=self.resample_rate)
         pcm = pcm * (1 << 15)
-        # NOTE: produce the same results as with torchaudio.compliance.kaldi
+        if apply_vad:
+            # TODO(Binbin Zhang): Refine the segments logic, here we just
+            # suppose there is only silence at the start/end of the speech
+            segments = vad.get_speech_timestamps(self.vad_model,
+                                                 audio_path,
+                                                 return_seconds=True)
+            if len(segments) > 0:  # remove head and tail silence
+                start = int(segments[0]['start'] * sample_rate)
+                end = int(segments[-1]['end'] * sample_rate)
+                pcm = pcm[start:end]
+            else:  # all silence, nospeech
+                return None
+
         feats = logfbank(
             pcm,
             sample_rate,
@@ -50,9 +64,12 @@ class Speaker:
         return embedding
 
     def compute_similarity(self, audio_path1: str, audio_path2) -> float:
-        e1 = self.extract_embedding(audio_path1)
-        e2 = self.extract_embedding(audio_path2)
-        return self.cosine_distance(e1, e2)
+        e1 = self.extract_embedding(audio_path1, True)
+        e2 = self.extract_embedding(audio_path2, True)
+        if e1 is None or e2 is None:
+            return 0.0
+        else:
+            return self.cosine_distance(e1, e2)
 
     def cosine_distance(self, e1, e2):
         return np.dot(e1, e2) / (norm(e1) * norm(e2))
@@ -109,6 +126,9 @@ def get_args():
                         type=int,
                         default=16000,
                         help='resampling rate')
+    parser.add_argument('--vad',
+                        action='store_true',
+                        help='whether to do VAD or not')
     args = parser.parse_args()
     return args
 
@@ -117,7 +137,7 @@ def main():
     args = get_args()
     model = load_model(args.language, args.resample_rate)
     if args.task == 'embedding':
-        print(model.extract_embedding(args.audio_file))
+        print(model.extract_embedding(args.audio_file, args.vad))
     elif args.task == 'similarity':
         print(model.compute_similarity(args.audio_file, args.audio_file2))
     elif args.task == 'diarization':

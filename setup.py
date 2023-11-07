@@ -4,6 +4,7 @@ requirements = [
     "tqdm",
     "onnxruntime>=1.12.0",
     "librosa>=0.8.0",
+    "silero-vad @ git+https://github.com/pengzhendong/silero-vad.git",
 ]
 
 setup(
