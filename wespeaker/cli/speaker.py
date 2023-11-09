@@ -70,7 +70,7 @@ class Speaker:
         embedding = outputs[0][0]
         return embedding
 
-    def compute_similarity(self, audio_path1: str, audio_path2) -> float:
+    def compute_similarity(self, audio_path1: str, audio_path2: str) -> float:
         e1 = self.extract_embedding(audio_path1)
         e2 = self.extract_embedding(audio_path2)
         if e1 is None or e2 is None:
@@ -102,6 +102,11 @@ class Speaker:
         result['confidence'] = best_score
         return result
 
+    def diarize(self, audio_path: str):
+        #  TODO
+        pcm, sample_rate = librosa.load(audio_path, sr=self.resample_rate)
+        return [[0.0, len(pcm)/sample_rate, 0]]
+
 
 def load_model(language: str) -> Speaker:
     model_path = Hub.get_model(language)
@@ -129,7 +134,7 @@ def get_args():
                         help='language type')
     parser.add_argument('--audio_file', help='audio file')
     parser.add_argument('--audio_file2',
-                        help='audio file2, for similarity task')
+                        help='audio file2, specifically for similarity task')
     parser.add_argument('--resample_rate',
                         type=int,
                         default=16000,
@@ -138,7 +143,7 @@ def get_args():
                         action='store_true',
                         help='whether to do VAD or not')
     parser.add_argument('--output_file',
-                        help='output file to save speaker embedding')
+                        help='output file to save speaker embedding or diarization result')
     args = parser.parse_args()
     return args
 
@@ -159,7 +164,11 @@ def main():
         print(model.compute_similarity(args.audio_file, args.audio_file2))
     elif args.task == 'diarization':
         # TODO(Chengdong Liang): Add diarization surport
-        pass
+        diar_result = model.diarize(args.audio_file)
+        with open(args.output_file, "w") as fout:
+            for (start, end, spkid) in diar_result:
+                fout.write("{:.3f}\t{:.3f}\t{:d}\n".format(start, end, spkid))
+        print('Succeed, see {}'.format(args.output_file))
     else:
         print('Unsupported task {}'.format(args.task))
         sys.exit(-1)
