@@ -76,10 +76,11 @@ class Speaker:
         if e1 is None or e2 is None:
             return 0.0
         else:
-            return self.cosine_distance(e1, e2)
+            return self.cosine_similarity(e1, e2)
 
-    def cosine_distance(self, e1, e2):
-        return np.dot(e1, e2) / (norm(e1) * norm(e2))
+    def cosine_similarity(self, e1, e2):
+        cosine_score = np.dot(e1, e2) / (norm(e1) * norm(e2))
+        return (cosine_score + 1.0) / 2  # normalize: [-1, 1] => [0, 1]
 
     def register(self, name: str, audio_path: str):
         if name in self.table:
@@ -92,8 +93,8 @@ class Speaker:
         best_score = 0.0
         best_name = ''
         for name, e in self.table.items():
-            score = self.cosine_distance(q, e)
-            if best_score < score:
+            score = self.cosine_similarity(q, e)
+            if best_score > score:
                 best_score = score
                 best_name = name
         result = {}
