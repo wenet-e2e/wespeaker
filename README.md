@@ -38,7 +38,7 @@ similarity = model.compute_similarity('audio1.wav', 'audio2.wav')
 diar_result = model.diarize('audio.wav')  # TODO
 ```
 
-Please refer [python usage](docs/python_package.md) for more command line and python programming usage.
+Please refer to [python usage](docs/python_package.md) for more command line and python programming usage.
 
 ### Install for development & deployment
 * Clone this repo
