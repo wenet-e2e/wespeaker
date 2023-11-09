@@ -105,7 +105,7 @@ class Speaker:
     def diarize(self, audio_path: str):
         #  TODO
         pcm, sample_rate = librosa.load(audio_path, sr=self.resample_rate)
-        return [[0.0, len(pcm)/sample_rate, 0]]
+        return [[0.0, len(pcm) / sample_rate, 0]]
 
 
 def load_model(language: str) -> Speaker:
@@ -142,8 +142,9 @@ def get_args():
     parser.add_argument('--vad',
                         action='store_true',
                         help='whether to do VAD or not')
-    parser.add_argument('--output_file',
-                        help='output file to save speaker embedding or diarization result')
+    parser.add_argument(
+        '--output_file',
+        help='output file to save speaker embedding or diarization result')
     args = parser.parse_args()
     return args
 
