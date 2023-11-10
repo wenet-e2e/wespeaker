@@ -20,7 +20,7 @@ pip install -e .
 ``` sh
 $ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt
 $ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav
-$ wespeaker --task diarization --audio_file audio.wav --output_file diarization.txt  # TODO
+$ wespeaker --task diarization --audio_file audio.wav  # TODO
 ```
 
 You can specify the following parameters. (use `-h` for details)
@@ -34,7 +34,7 @@ You can specify the following parameters. (use `-h` for details)
 * `--audio_file2`: input audio file2 path, spicifically for the similarity task
 * `--resample_rate`: resample rate (default: 16000)
 * `--vad`: apply vad or not for the input audios (default: true)
-* `--output_file`: output file to save speaker embedding or diarization result
+* `--output_file`: output file to save speaker embedding
 
 ## Python Programming Usage
 

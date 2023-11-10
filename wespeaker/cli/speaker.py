@@ -142,9 +142,8 @@ def get_args():
     parser.add_argument('--vad',
                         action='store_true',
                         help='whether to do VAD or not')
-    parser.add_argument(
-        '--output_file',
-        help='output file to save speaker embedding or diarization result')
+    parser.add_argument('--output_file',
+                        help='output file to save speaker embedding')
     args = parser.parse_args()
     return args
 
@@ -166,10 +165,8 @@ def main():
     elif args.task == 'diarization':
         # TODO(Chengdong Liang): Add diarization surport
         diar_result = model.diarize(args.audio_file)
-        with open(args.output_file, "w") as fout:
-            for (start, end, spkid) in diar_result:
-                fout.write("{:.3f}\t{:.3f}\t{:d}\n".format(start, end, spkid))
-        print('Succeed, see {}'.format(args.output_file))
+        for (start, end, spkid) in diar_result:
+            print("{:.3f}\t{:.3f}\t{:d}".format(start, end, spkid))
     else:
         print('Unsupported task {}'.format(args.task))
         sys.exit(-1)

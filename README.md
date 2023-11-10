@@ -24,7 +24,7 @@ pip install git+https://github.com/wenet-e2e/wespeaker.git
 ``` sh
 $ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt
 $ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav
-$ wespeaker --task diarization --audio_file audio.wav --output_file diarization.txt  # TODO
+$ wespeaker --task diarization --audio_file audio.wav  # TODO
 ```
 
 **Python programming usage**:
