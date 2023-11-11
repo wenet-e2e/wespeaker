@@ -24,7 +24,7 @@ pip install git+https://github.com/wenet-e2e/wespeaker.git
 ``` sh
 $ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt
 $ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav
-$ wespeaker --task diarization --audio_file audio.wav # TODO
+$ wespeaker --task diarization --audio_file audio.wav  # TODO
 ```
 
 **Python programming usage**:
@@ -33,9 +33,12 @@ $ wespeaker --task diarization --audio_file audio.wav # TODO
 import wespeaker
 
 model = wespeaker.load_model('chinese')
-embedding = model.extract_embeding('audio.wav')
+embedding = model.extract_embedding('audio.wav')
 similarity = model.compute_similarity('audio1.wav', 'audio2.wav')
+diar_result = model.diarize('audio.wav')  # TODO
 ```
+
+Please refer to [python usage](docs/python_package.md) for more command line and python programming usage.
 
 ### Install for development & deployment
 * Clone this repo
@@ -49,11 +52,6 @@ conda create -n wespeaker python=3.9
 conda activate wespeaker
 conda install pytorch=1.12.1 torchaudio=0.12.1 cudatoolkit=11.3 -c pytorch -c conda-forge
 pip install -r requirements.txt
-```
-
-* If you just want to use the pretrained model, try the [python binding](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/binding/python)!
-```shell
-pip3 install wespeakerruntime
 ```
 
 ## 🔥 News

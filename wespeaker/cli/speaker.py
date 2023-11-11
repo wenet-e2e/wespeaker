@@ -77,16 +77,17 @@ class Speaker:
         embedding = outputs[0]
         return embedding
 
-    def compute_similarity(self, audio_path1: str, audio_path2) -> float:
+    def compute_similarity(self, audio_path1: str, audio_path2: str) -> float:
         e1 = self.extract_embedding(audio_path1)
         e2 = self.extract_embedding(audio_path2)
         if e1 is None or e2 is None:
             return 0.0
         else:
-            return self.cosine_distance(e1, e2)
+            return self.cosine_similarity(e1, e2)
 
-    def cosine_distance(self, e1, e2):
-        return torch.dot(e1, e2) / (torch.norm(e1) * torch.norm(e2))
+    def cosine_similarity(self, e1, e2):
+        cosine_score = np.dot(e1, e2) / (norm(e1) * norm(e2))
+        return (cosine_score + 1.0) / 2  # normalize: [-1, 1] => [0, 1]
 
     def register(self, name: str, audio_path: str):
         if name in self.table:
@@ -99,14 +100,19 @@ class Speaker:
         best_score = 0.0
         best_name = ''
         for name, e in self.table.items():
-            score = self.cosine_distance(q, e)
-            if best_score < score:
+            score = self.cosine_similarity(q, e)
+            if best_score > score:
                 best_score = score
                 best_name = name
         result = {}
         result['name'] = name
         result['confidence'] = best_score
         return result
+
+    def diarize(self, audio_path: str):
+        #  TODO
+        pcm, sample_rate = librosa.load(audio_path, sr=self.resample_rate)
+        return [[0.0, len(pcm) / sample_rate, 0]]
 
 
 def load_model(language: str) -> Speaker:
@@ -135,7 +141,7 @@ def get_args():
                         help='language type')
     parser.add_argument('--audio_file', help='audio file')
     parser.add_argument('--audio_file2',
-                        help='audio file2, for similarity task')
+                        help='audio file2, specifically for similarity task')
     parser.add_argument('--resample_rate',
                         type=int,
                         default=16000,
@@ -165,7 +171,9 @@ def main():
         print(model.compute_similarity(args.audio_file, args.audio_file2))
     elif args.task == 'diarization':
         # TODO(Chengdong Liang): Add diarization surport
-        pass
+        diar_result = model.diarize(args.audio_file)
+        for (start, end, spkid) in diar_result:
+            print("{:.3f}\t{:.3f}\t{:d}".format(start, end, spkid))
     else:
         print('Unsupported task {}'.format(args.task))
         sys.exit(-1)
