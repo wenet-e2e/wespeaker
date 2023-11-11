@@ -86,7 +86,8 @@ class Speaker:
             return self.cosine_similarity(e1, e2)
 
     def cosine_similarity(self, e1, e2):
-        cosine_score = np.dot(e1, e2) / (norm(e1) * norm(e2))
+        cosine_score = torch.dot(e1, e2) / (torch.norm(e1) * torch.norm(e2))
+        cosine_score = cosine_score.item()
         return (cosine_score + 1.0) / 2  # normalize: [-1, 1] => [0, 1]
 
     def register(self, name: str, audio_path: str):
