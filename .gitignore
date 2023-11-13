@@ -25,7 +25,7 @@ venv
 *.swo
 *.swp
 *.swm
-*~S
+*~
 
 # IPython notebook checkpoints
 .ipynb_checkpoints
