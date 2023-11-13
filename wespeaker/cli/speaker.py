@@ -75,12 +75,15 @@ class Speaker:
             else:  # all silence, nospeech
                 return None
         pcm = pcm.to(torch.float)
+        if sample_rate != self.resample_rate:
+            pcm = torchaudio.transforms.Resample(
+                orig_freq=sample_rate, new_freq=self.resample_rate)(pcm)
         feats = kaldi.fbank(pcm,
                             num_mel_bins=80,
                             frame_length=25,
                             frame_shift=10,
                             energy_floor=0.0,
-                            sample_frequency=16000)
+                            sample_frequency=self.resample_rate)
         feats = feats - torch.mean(feats, 0)  # CMN
         feats = feats.unsqueeze(0)
         feats = feats.to(self.device)
