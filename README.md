@@ -25,6 +25,10 @@ pip install git+https://github.com/wenet-e2e/wespeaker.git
 $ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt
 $ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav
 $ wespeaker --task diarization --audio_file audio.wav  # TODO
+
+# Add -g or --gpu to specify the gpu id to use, number < 0 means using CPU
+$ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt -g 0
+$ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav --g 0
 ```
 
 **Python programming usage**:
@@ -33,6 +37,8 @@ $ wespeaker --task diarization --audio_file audio.wav  # TODO
 import wespeaker
 
 model = wespeaker.load_model('chinese')
+# set_gpu to enable the cuda inference, number < 0 means using CPU
+model.set_gpu(0)
 embedding = model.extract_embedding('audio.wav')
 similarity = model.compute_similarity('audio1.wav', 'audio2.wav')
 diar_result = model.diarize('audio.wav')  # TODO

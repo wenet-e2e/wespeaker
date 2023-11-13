@@ -1,4 +1,5 @@
 # Copyright (c) 2023 Binbin Zhang (binbzha@qq.com)
+#                    Shuai Wang (wsstriving@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,13 +41,22 @@ class Speaker:
         self.vad_model = vad.OnnxWrapper()
         self.table = {}
         self.resample_rate = 16000
-        self.apply_vad = True
+        self.apply_vad = False
+        self.device = torch.device('cpu')
 
     def set_resample_rate(self, resample_rate: int):
         self.resample_rate = resample_rate
 
     def set_vad(self, apply_vad: bool):
         self.apply_vad = apply_vad
+
+    def set_gpu(self, device_id: int):
+        if device_id >= 0:
+            device = 'cuda:{}'.format(device_id)
+        else:
+            device = 'cpu'
+        self.device = torch.device(device)
+        self.model = self.model.to(self.device)
 
     def extract_embedding(self, audio_path: str):
         pcm, sample_rate = torchaudio.load(audio_path, normalize=False)
@@ -71,10 +81,11 @@ class Speaker:
                             sample_frequency=16000)
         feats = feats - torch.mean(feats, 0)  # CMN
         feats = feats.unsqueeze(0)
+        feats = feats.to(self.device)
         self.model.eval()
         with torch.no_grad():
             _, outputs = self.model(feats)
-        embedding = outputs[0]
+        embedding = outputs[0].to(torch.device('cpu'))
         return embedding
 
     def compute_similarity(self, audio_path1: str, audio_path2: str) -> float:
@@ -150,6 +161,11 @@ def get_args():
     parser.add_argument('--vad',
                         action='store_true',
                         help='whether to do VAD or not')
+    parser.add_argument('-g',
+                        '--gpu',
+                        type=int,
+                        default=-1,
+                        help='which gpu to use (number <0 means using cpu)')
     parser.add_argument('--output_file',
                         help='output file to save speaker embedding')
     args = parser.parse_args()
@@ -161,6 +177,7 @@ def main():
     model = load_model(args.language)
     model.set_resample_rate(args.resample_rate)
     model.set_vad(args.vad)
+    model.set_gpu(args.gpu)
     if args.task == 'embedding':
         embedding = model.extract_embedding(args.audio_file)
         if embedding is not None:
