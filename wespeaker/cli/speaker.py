@@ -23,6 +23,8 @@ import torch
 import torchaudio
 import torchaudio.compliance.kaldi as kaldi
 import yaml
+import kaldiio
+from tqdm import tqdm
 
 from wespeaker.cli.hub import Hub
 from wespeaker.models.speaker_model import get_speaker_model
@@ -88,6 +90,17 @@ class Speaker:
         embedding = outputs[0].to(torch.device('cpu'))
         return embedding
 
+    def extract_embedding_list(self, scp_path: str):
+        names = []
+        embeddings = []
+        with open(scp_path, 'r') as read_scp:
+            for line in tqdm(read_scp):
+                name, wav_path = line.strip().split()
+                names.append(name)
+                embedding = self.extract_embedding(wav_path)
+                embeddings.append(embedding.detach().numpy())
+        return names, embeddings
+
     def compute_similarity(self, audio_path1: str, audio_path2: str) -> float:
         e1 = self.extract_embedding(audio_path1)
         e2 = self.extract_embedding(audio_path2)
@@ -138,6 +151,7 @@ def get_args():
                         '--task',
                         choices=[
                             'embedding',
+                            'embedding_kaldi',
                             'similarity',
                             'diarization',
                         ],
@@ -151,9 +165,17 @@ def get_args():
                         ],
                         default='chinese',
                         help='language type')
+    parser.add_argument('-g',
+                        '--gpu',
+                        type=int,
+                        default=-1,
+                        help='which gpu to use (number <0 means using cpu)')
     parser.add_argument('--audio_file', help='audio file')
     parser.add_argument('--audio_file2',
                         help='audio file2, specifically for similarity task')
+    parser.add_argument('--wav_scp',
+                        help='path to wav.scp, for extract and saving '
+                             'kaldi-stype embeddings')
     parser.add_argument('--resample_rate',
                         type=int,
                         default=16000,
@@ -161,11 +183,6 @@ def get_args():
     parser.add_argument('--vad',
                         action='store_true',
                         help='whether to do VAD or not')
-    parser.add_argument('-g',
-                        '--gpu',
-                        type=int,
-                        default=-1,
-                        help='which gpu to use (number <0 means using cpu)')
     parser.add_argument('--output_file',
                         help='output file to save speaker embedding')
     args = parser.parse_args()
@@ -185,6 +202,13 @@ def main():
             print('Succeed, see {}'.format(args.output_file))
         else:
             print('Fails to extract embedding')
+    elif args.task == 'embedding_kaldi':
+        names, embeddings = model.extract_embedding_list(args.wav_scp)
+        embed_ark = args.output_file + ".ark"
+        embed_scp = args.output_file + ".scp"
+        with kaldiio.WriteHelper('ark,scp:' + embed_ark + "," + embed_scp) as writer:
+            for name, embedding in zip(names, embeddings):
+                writer(name, embedding)
     elif args.task == 'similarity':
         print(model.compute_similarity(args.audio_file, args.audio_file2))
     elif args.task == 'diarization':
