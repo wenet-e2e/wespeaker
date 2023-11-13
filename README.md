@@ -25,7 +25,7 @@ pip install git+https://github.com/wenet-e2e/wespeaker.git
 ``` sh
 # Add -g or --gpu to specify the gpu id to use, number < 0 means using CPU
 $ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt -g 0
-$ wespeaker --task embedding_kaldi --wav_scp wav.scp --output_file `/path/to/embedding -g 0
+$ wespeaker --task embedding_kaldi --wav_scp wav.scp --output_file /path/to/embedding -g 0
 $ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav --g 0
 $ wespeaker --task diarization --audio_file audio.wav -g 0  # TODO
 ```
