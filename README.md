@@ -39,6 +39,7 @@ model = wespeaker.load_model('chinese')
 # set_gpu to enable the cuda inference, number < 0 means using CPU
 model.set_gpu(0)
 embedding = model.extract_embedding('audio.wav')
+utt_names, embeddings = model.extract_embedding_list('wav.scp')
 similarity = model.compute_similarity('audio1.wav', 'audio2.wav')
 diar_result = model.diarize('audio.wav')  # TODO
 ```
