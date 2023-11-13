@@ -3,7 +3,8 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python-Version](https://img.shields.io/badge/Python-3.8%7C3.9-brightgreen)](https://github.com/wenet-e2e/wespeaker)
 
-[**Roadmap**](ROADMAP.md)
+[**Roadmap (Current support List)**](ROADMAP.md)
+| [**Documents**](https://github.com/wenet-e2e/wespeaker/tree/master/docs)
 | [**Paper**](https://arxiv.org/abs/2210.17016)
 | [**Runtime**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime)
 | [**Pretrained Models**](docs/pretrained.md)
@@ -22,13 +23,11 @@ pip install git+https://github.com/wenet-e2e/wespeaker.git
 **Command-line usage** (use `-h` for parameters):
 
 ``` sh
-$ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt
-$ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav
-$ wespeaker --task diarization --audio_file audio.wav  # TODO
-
 # Add -g or --gpu to specify the gpu id to use, number < 0 means using CPU
 $ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt -g 0
+$ wespeaker --task embedding_kaldi --wav_scp wav.scp --output_file /path/to/embedding -g 0
 $ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav --g 0
+$ wespeaker --task diarization --audio_file audio.wav -g 0  # TODO
 ```
 
 **Python programming usage**:
@@ -61,6 +60,7 @@ pip install -r requirements.txt
 ```
 
 ## 🔥 News
+* 2023.11.13: Support CLI usage of wespeaker, check [python usage](https://github.com/wenet-e2e/wespeaker/blob/master/docs/python_package.md) for details.
 * 2023.07.18: Support the kaldi-compatible PLDA and unsupervised adaptation, see [#186](https://github.com/wenet-e2e/wespeaker/pull/186).
 * 2023.07.14: Support the [NIST SRE16 recipe](https://www.nist.gov/itl/iad/mig/speaker-recognition-evaluation-2016), see [#177](https://github.com/wenet-e2e/wespeaker/pull/177).
 * 2023.07.10: Support the [Self-Supervised Learning recipe](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxceleb/v3) on Voxceleb, including [DINO](https://openaccess.thecvf.com/content/ICCV2021/papers/Caron_Emerging_Properties_in_Self-Supervised_Vision_Transformers_ICCV_2021_paper.pdf), [MoCo](https://openaccess.thecvf.com/content_CVPR_2020/papers/He_Momentum_Contrast_for_Unsupervised_Visual_Representation_Learning_CVPR_2020_paper.pdf) and [SimCLR](http://proceedings.mlr.press/v119/chen20j/chen20j.pdf), see [#180](https://github.com/wenet-e2e/wespeaker/pull/180).
@@ -84,54 +84,6 @@ pip install -r requirements.txt
    * 🔥 UPDATE 2023.07.14: We support NIST SRE16 recipe. After PLDA adaptation, we achieved 6.608%, 10.01%, and 2.974% EER on trial Pooled, Tagalog, and Cantonese, respectively.
 * [VoxConverse](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxconverse): Diarization recipe on the [VoxConverse dataset](https://www.robots.ox.ac.uk/~vgg/data/voxconverse/)
 
-## Support List:
-
-* Model (SOTA Models)
-    - [x] [Standard X-vector](http://www.danielpovey.com/files/2017_interspeech_embeddings.pdf)
-    - [x] [ResNet](https://arxiv.org/pdf/1512.03385.pdf)
-    - [x] [ECAPA_TDNN](https://arxiv.org/pdf/2005.07143.pdf)
-    - [x] [RepVGG](https://arxiv.org/pdf/2101.03697.pdf)
-    - [x] [CAM++](https://arxiv.org/pdf/2303.00332.pdf)
-* Pooling Functions
-    - [x] TAP(mean) / TSDP(std) / TSTP(mean+std)
-        - Comparison of mean/std pooling can be found in [shuai_iscslp](https://x-lance.sjtu.edu.cn/en/papers/2021/iscslp21_shuai_1_.pdf), [anna_arxiv](https://arxiv.org/pdf/2203.10300.pdf)
-    - [x] Attentive Statistics Pooling (ASTP)
-        - Mainly for ECAPA_TDNN
-    - [x] Multi-Query and Multi-Head Attentive Statistics Pooling (MQMHASTP)
-        - Details can be found in [MQMHASTP](https://arxiv.org/pdf/2110.05042.pdf)
-* Criteria
-    - [x] Softmax
-    - [x] [Sphere (A-Softmax)](https://www.researchgate.net/publication/327389164)
-    - [x] [Add_Margin (AM-Softmax)](https://arxiv.org/pdf/1801.05599.pdf)
-    - [x] [Arc_Margin (AAM-Softmax)](https://arxiv.org/pdf/1801.07698v1.pdf)
-    - [x] [Arc_Margin+Inter-topk+Sub-center](https://arxiv.org/pdf/2110.05042.pdf)
-    - [x] [SphereFace2](https://ieeexplore.ieee.org/abstract/document/10094954)
-* Scoring
-    - [x] Cosine
-    - [x] PLDA
-    - [x] Score Normalization (AS-Norm)
-* Metric
-    - [x] EER
-    - [x] minDCF
-* Online Augmentation
-    - [x] Noise && RIR
-    - [x] Speed Perturb
-    - [x] SpecAug
-* Training Strategy
-    - [x] Well-designed Learning Rate and Margin Schedulers
-    - [x] Large Margin Fine-tuning
-    - [x] Automatic Mixed Precision (AMP) Training
-* Runtime
-    - [x] Python Binding
-    - [x] Triton Inference Server on verification && diarization in GPU deployment
-    - [x] C++ Onnxruntime
-* Self-Supervised Learning (SSL)
-    - [x] [DINO](https://openaccess.thecvf.com/content/ICCV2021/papers/Caron_Emerging_Properties_in_Self-Supervised_Vision_Transformers_ICCV_2021_paper.pdf)
-    - [x] [MoCo](https://openaccess.thecvf.com/content_CVPR_2020/papers/He_Momentum_Contrast_for_Unsupervised_Visual_Representation_Learning_CVPR_2020_paper.pdf)
-    - [x] [SimCLR](http://proceedings.mlr.press/v119/chen20j/chen20j.pdf)
-* Literature
-    - [x] [Awesome Speaker Papers](docs/speaker_recognition_papers.md)
-
 ## Discussion
 
 For Chinese users, you can scan the QR code on the left to follow our offical account of `WeNet Community`.
@@ -142,11 +94,13 @@ We also created a WeChat group for better discussion and quicker response. Pleas
 ## Citations
 If you find wespeaker useful, please cite it as
 ```bibtex
-@article{wang2022wespeaker,
-  title={Wespeaker: A Research and Production oriented Speaker Embedding Learning Toolkit},
+@inproceedings{wang2023wespeaker,
+  title={Wespeaker: A research and production oriented speaker embedding learning toolkit},
   author={Wang, Hongji and Liang, Chengdong and Wang, Shuai and Chen, Zhengyang and Zhang, Binbin and Xiang, Xu and Deng, Yanlei and Qian, Yanmin},
-  journal={arXiv preprint arXiv:2210.17016},
-  year={2022}
+  booktitle={IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+  pages={1--5},
+  year={2023},
+  organization={IEEE}
 }
 ```
 ## Looking for contributors
