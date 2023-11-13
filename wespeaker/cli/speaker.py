@@ -13,21 +13,30 @@
 # limitations under the License.
 
 import argparse
+import os
 import sys
 
-import librosa
 import numpy as np
-import onnxruntime as ort
-from numpy.linalg import norm
 from silero_vad import vad
+import torch
+import torchaudio
+import torchaudio.compliance.kaldi as kaldi
+import yaml
 
 from wespeaker.cli.hub import Hub
-from wespeaker.cli.fbank import logfbank
+from wespeaker.models.speaker_model import get_speaker_model
+from wespeaker.utils.checkpoint import load_checkpoint
 
 
 class Speaker:
-    def __init__(self, model_path: str):
-        self.session = ort.InferenceSession(model_path)
+    def __init__(self, model_dir: str):
+        config_path = os.path.join(model_dir, 'config.yaml')
+        model_path = os.path.join(model_dir, 'avg_model.pt')
+        with open(config_path, 'r') as fin:
+            configs = yaml.load(fin, Loader=yaml.FullLoader)
+        self.model = get_speaker_model(
+            configs['model'])(**configs['model_args'])
+        load_checkpoint(self.model, model_path)
         self.vad_model = vad.OnnxWrapper()
         self.table = {}
         self.resample_rate = 16000
@@ -40,8 +49,7 @@ class Speaker:
         self.apply_vad = apply_vad
 
     def extract_embedding(self, audio_path: str):
-        pcm, sample_rate = librosa.load(audio_path, sr=self.resample_rate)
-        pcm = pcm * (1 << 15)
+        pcm, sample_rate = torchaudio.load(audio_path, normalize=False)
         if self.apply_vad:
             # TODO(Binbin Zhang): Refine the segments logic, here we just
             # suppose there is only silence at the start/end of the speech
@@ -54,20 +62,19 @@ class Speaker:
                 pcm = pcm[start:end]
             else:  # all silence, nospeech
                 return None
-
-        feats = logfbank(
-            pcm,
-            sample_rate,
-            nfilt=80,
-            lowfreq=20,
-            winlen=0.025,  # 25 ms
-            winstep=0.01,  # 10 ms
-            dither=0,
-            wintype='hamming')
-        feats = feats - np.mean(feats, axis=0)  # CMN
-        feats = np.expand_dims(feats, axis=0).astype(np.float32)
-        outputs = self.session.run(None, {"feats": feats})
-        embedding = outputs[0][0]
+        pcm = pcm.to(torch.float)
+        feats = kaldi.fbank(pcm,
+                            num_mel_bins=80,
+                            frame_length=25,
+                            frame_shift=10,
+                            energy_floor=0.0,
+                            sample_frequency=16000)
+        feats = feats - torch.mean(feats, 0)  # CMN
+        feats = feats.unsqueeze(0)
+        self.model.eval()
+        with torch.no_grad():
+            _, outputs = self.model(feats)
+        embedding = outputs[0]
         return embedding
 
     def compute_similarity(self, audio_path1: str, audio_path2: str) -> float:
@@ -79,7 +86,8 @@ class Speaker:
             return self.cosine_similarity(e1, e2)
 
     def cosine_similarity(self, e1, e2):
-        cosine_score = np.dot(e1, e2) / (norm(e1) * norm(e2))
+        cosine_score = torch.dot(e1, e2) / (torch.norm(e1) * torch.norm(e2))
+        cosine_score = cosine_score.item()
         return (cosine_score + 1.0) / 2  # normalize: [-1, 1] => [0, 1]
 
     def register(self, name: str, audio_path: str):
@@ -156,7 +164,7 @@ def main():
     if args.task == 'embedding':
         embedding = model.extract_embedding(args.audio_file)
         if embedding is not None:
-            np.savetxt(args.output_file, embedding)
+            np.savetxt(args.output_file, embedding.detach().numpy())
             print('Succeed, see {}'.format(args.output_file))
         else:
             print('Fails to extract embedding')

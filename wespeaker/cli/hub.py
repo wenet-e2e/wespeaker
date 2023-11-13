@@ -17,14 +17,16 @@ import os
 import requests
 import sys
 from pathlib import Path
+import tarfile
 from urllib.request import urlretrieve
 
 import tqdm
 
 
-def download(url: str, dest: str):
+def download(url: str, dest: str, only_child=True):
     """ download from url to dest
     """
+    assert os.path.exists(dest)
     print('Downloading {} to {}'.format(url, dest))
 
     def progress_hook(t):
@@ -41,19 +43,35 @@ def download(url: str, dest: str):
 
     # *.tar.gz
     name = url.split('?')[0].split('/')[-1]
+    tar_path = os.path.join(dest, name)
     with tqdm.tqdm(unit='B',
                    unit_scale=True,
                    unit_divisor=1024,
                    miniters=1,
                    desc=(name)) as t:
-        urlretrieve(url, filename=dest, reporthook=progress_hook(t), data=None)
+        urlretrieve(url,
+                    filename=tar_path,
+                    reporthook=progress_hook(t),
+                    data=None)
         t.total = t.n
+
+    with tarfile.open(tar_path) as f:
+        if not only_child:
+            f.extractall(dest)
+        else:
+            for tarinfo in f:
+                if "/" not in tarinfo.name:
+                    continue
+                name = os.path.basename(tarinfo.name)
+                fileobj = f.extractfile(tarinfo)
+                with open(os.path.join(dest, name), "wb") as writer:
+                    writer.write(fileobj.read())
 
 
 class Hub(object):
     Assets = {
-        "chinese": "cnceleb_resnet34.onnx",
-        "english": "voxceleb_resnet221_LM.onnx",
+        "chinese": "cnceleb_resnet34.tar.gz",
+        "english": "voxceleb_resnet221_LM.tar.gz",
     }
 
     def __init__(self) -> None:
@@ -65,15 +83,18 @@ class Hub(object):
             print('ERROR: Unsupported lang {} !!!'.format(lang))
             sys.exit(1)
         model = Hub.Assets[lang]
-        model_path = os.path.join(Path.home(), ".wespeaker", model)
-        if not os.path.exists(model_path):
-            if not os.path.exists(os.path.dirname(model_path)):
-                os.makedirs(os.path.dirname(model_path))
+        model_dir = os.path.join(Path.home(), ".wespeaker", lang)
+        if not os.path.exists(model_dir):
+            os.makedirs(model_dir)
+        if set(["avg_model.pt",
+                "config.yaml"]).issubset(set(os.listdir(model_dir))):
+            return model_dir
+        else:
             response = requests.get(
                 "https://modelscope.cn/api/v1/datasets/wenet/wespeaker_pretrained_models/oss/tree"  # noqa
             )
             model_info = next(data for data in response.json()["Data"]
                               if data["Key"] == model)
             model_url = model_info['Url']
-            download(model_url, model_path)
-        return model_path
+            download(model_url, model_dir)
+            return model_dir
