@@ -183,6 +183,11 @@ def get_args():
     parser.add_argument('--vad',
                         action='store_true',
                         help='whether to do VAD or not')
+    parser.add_argument('-g',
+                        '--gpu',
+                        type=int,
+                        default=-1,
+                        help='which gpu to use (number <0 means using cpu)')
     parser.add_argument('--output_file',
                         help='output file to save speaker embedding')
     args = parser.parse_args()
