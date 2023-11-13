@@ -32,14 +32,13 @@ You can specify the following parameters. (use `-h` for details)
     - similarity: compute similarity of two audios (in the range of [0, 1])
     - diarization: apply speaker diarization for an input audio (**TODO**)
 * `-l` or `--language`: use Chinese/English speaker models
-* `-g` or `--gpu`: use GPU for inference, number $< 0$ means using CPU 
+* `-g` or `--gpu`: use GPU for inference, number $< 0$ means using CPU
 * `--audio_file`: input audio file path
-* `--audio_file2`: input audio file2 path, spicifically for the similarity task
+* `--audio_file2`: input audio file2 path, specifically for the similarity task
 * `--wav_scp`: input wav.scp file in kaldi format (each line: key wav_path)
 * `--resample_rate`: resample rate (default: 16000)
 * `--vad`: apply vad or not for the input audios (default: true)
-* `--output_file`: output file to save speaker embedding, if you use kaldi wav_scp, 
-output will be `output_file.ark` and `output_file.scp`
+* `--output_file`: output file to save speaker embedding, if you use kaldi wav_scp, output will be `output_file.ark` and `output_file.scp`
 
 ## Python Programming Usage
 
