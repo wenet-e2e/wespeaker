@@ -40,6 +40,7 @@ You can specify the following parameters. (use `-h` for details)
 * `--vad`: apply vad or not for the input audios (default: true)
 * `--output_file`: output file to save speaker embedding, if you use kaldi wav_scp, output will be `output_file.ark` and `output_file.scp`
 
+
 ## Python Programming Usage
 
 ``` python
