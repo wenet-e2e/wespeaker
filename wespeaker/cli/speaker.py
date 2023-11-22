@@ -148,6 +148,10 @@ def load_model(language: str) -> Speaker:
     return Speaker(model_path)
 
 
+def load_model_local(model_dir: str) -> Speaker:
+    return Speaker(model_dir)
+
+
 def get_args():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('-t',
@@ -168,6 +172,11 @@ def get_args():
                         ],
                         default='chinese',
                         help='language type')
+    parser.add_argument('-p',
+                        '--pretrain',
+                        type=str,
+                        default="",
+                        help='model directory')
     parser.add_argument('-g',
                         '--gpu',
                         type=int,
@@ -194,7 +203,10 @@ def get_args():
 
 def main():
     args = get_args()
-    model = load_model(args.language)
+    if args.pretrain == "":
+        model = load_model(args.language)
+    else:
+        model = load_model_local(args.pretrain)
     model.set_resample_rate(args.resample_rate)
     model.set_vad(args.vad)
     model.set_gpu(args.gpu)
