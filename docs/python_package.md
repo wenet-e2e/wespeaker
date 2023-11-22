@@ -32,6 +32,7 @@ You can specify the following parameters. (use `-h` for details)
     - similarity: compute similarity of two audios (in the range of [0, 1])
     - diarization: apply speaker diarization for an input audio (**TODO**)
 * `-l` or `--language`: use Chinese/English speaker models
+* `-p` or `--pretrain`: the path of pretrained model, `avg_model.pt` and `config.yaml` should be contained
 * `-g` or `--gpu`: use GPU for inference, number $< 0$ means using CPU
 * `--audio_file`: input audio file path
 * `--audio_file2`: input audio file2 path, specifically for the similarity task
@@ -40,6 +41,18 @@ You can specify the following parameters. (use `-h` for details)
 * `--vad`: apply vad or not for the input audios (default: true)
 * `--output_file`: output file to save speaker embedding, if you use kaldi wav_scp, output will be `output_file.ark` and `output_file.scp`
 
+### Pretrained model support
+We provide different pretrained models, which can be found at [pretrained models](https://github.com/wenet-e2e/wespeaker/blob/master/docs/pretrained.md)
+
+**Warning** If you want to use the models provided in the above link, be sure to rename the model and config file to `avg_model.pt` and `config.yaml`
+
+By default, specifying the `language` option will download the pretrained models as
+
+* english: `ResNet221_LM` pretrained on VoxCeleb
+* chinese: `ResNet34_LM` pretrained on CnCeleb
+
+if you want to use other pretrained models, please use the `-p` or `--pretrain` to specify the directory containing `avg_model.pt` and `config.yaml`,
+which can either be the ones we provided and trained by yourself.
 
 ## Python Programming Usage
 
