@@ -129,11 +129,11 @@ class Speaker:
         best_name = ''
         for name, e in self.table.items():
             score = self.cosine_similarity(q, e)
-            if best_score > score:
+            if best_score < score:
                 best_score = score
                 best_name = name
         result = {}
-        result['name'] = name
+        result['name'] = best_name
         result['confidence'] = best_score
         return result
 
