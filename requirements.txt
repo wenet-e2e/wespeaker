@@ -22,3 +22,4 @@ onnxruntime
 soundfile==0.10.3.post1
 pypeln==0.4.9
 silero-vad @ git+https://github.com/pengzhendong/silero-vad.git
+pre-commit==3.5.0
