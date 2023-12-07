@@ -23,7 +23,8 @@ from scipy.io import wavfile
 import torchaudio.compliance.kaldi as kaldi
 
 from wespeaker.utils.file_utils import read_scp
-from wespeaker.utils.dataset_utils_deprecated import (get_random_chunk, speed_perturb,
+from wespeaker.utils.dataset_utils_deprecated import (get_random_chunk,
+                                                      speed_perturb,
                                                       spec_augmentation)
 
 
@@ -31,11 +32,8 @@ class FeatList_LableDict_Dataset(Dataset):
     """
     shuffle wav.scp/feats.scp, load all labels into cpu memory
     """
-    def __init__(self,
-                 data_list,
-                 utt2spkid_dict,
-                 whole_utt=False,
-                 **kwargs):
+
+    def __init__(self, data_list, utt2spkid_dict, whole_utt=False, **kwargs):
         super(FeatList_LableDict_Dataset, self).__init__()
         self.data_list = data_list
         self.length = len(data_list)
@@ -117,9 +115,14 @@ class FeatList_LableDict_Dataset(Dataset):
 
 
 class Augment_Wav:
+
     def __init__(self, musan_scp, rirs_scp):
 
-        self.noise_snr = {'noise': [0, 15], 'speech': [13, 20], 'music': [5, 15]}
+        self.noise_snr = {
+            'noise': [0, 15],
+            'speech': [13, 20],
+            'music': [5, 15]
+        }
         self.num_noise = {'noise': [1, 1], 'speech': [3, 7], 'music': [1, 1]}
 
         self.rir_list = read_scp(rirs_scp)
@@ -159,7 +162,8 @@ class Augment_Wav:
                                        self.noise_snr[noise_type][1])
             noise_db = 10 * np.log10(np.mean(noise_audio**2) + 1e-4)
             noise_list.append(
-                np.sqrt(10**((audio_db - noise_db - noise_snr) / 10)) * noise_audio)
+                np.sqrt(10**((audio_db - noise_db - noise_snr) / 10)) *
+                noise_audio)
 
         return np.sum(np.stack(noise_list), axis=0) + audio
 

@@ -17,17 +17,17 @@
 
 #ifdef USE_BPU
 
-#include <vector>
-#include <string>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "easy_dnn/data_structure.h"
 #include "easy_dnn/model.h"
 
 #include "speaker/speaker_model.h"
 
-using hobot::easy_dnn::Model;
 using hobot::easy_dnn::DNNTensor;
+using hobot::easy_dnn::Model;
 
 namespace wespeaker {
 
@@ -38,11 +38,12 @@ class BpuSpeakerModel : public SpeakerModel {
   ~BpuSpeakerModel() = default;
   void ExtractEmbedding(const std::vector<std::vector<float>>& chunk_feats,
                         std::vector<float>* embed) override;
+
  private:
   void AllocMemory(
-    std::vector<std::shared_ptr<DNNTensor>>* input_dnn_tensor_array,
-    std::vector<std::shared_ptr<DNNTensor>>* output_dnn_tensor_array,
-    Model* model);
+      std::vector<std::shared_ptr<DNNTensor>>* input_dnn_tensor_array,
+      std::vector<std::shared_ptr<DNNTensor>>* output_dnn_tensor_array,
+      Model* model);
   void Read(const std::string& model_path);
   void Reset();
   std::vector<std::shared_ptr<DNNTensor>> input_dnn_;

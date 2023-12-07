@@ -125,6 +125,7 @@ def parse_raw(data):
         Returns:
             Iterable[{key, wav, spk, sample_rate}]
     """
+
     def read_audio(wav):
         if wav.endswith('|'):
             p = Popen(wav[:-1], shell=True, stdout=PIPE)
@@ -156,7 +157,8 @@ def parse_raw(data):
         try:
             waveform, sample_rate = read_audio(wav_file)
             if 'vad' in obj:
-                waveform, sample_rate = apply_vad(waveform, sample_rate, obj['vad'])
+                waveform, sample_rate = apply_vad(waveform, sample_rate,
+                                                  obj['vad'])
             example = dict(key=key,
                            spk=spk,
                            wav=waveform,
@@ -187,9 +189,7 @@ def parse_feat(data):
         spk = obj['spk']
         try:
             feat = torch.from_numpy(kaldiio.load_mat(feat_ark))
-            example = dict(key=key,
-                           spk=spk,
-                           feat=feat)
+            example = dict(key=key, spk=spk, feat=feat)
             yield example
         except Exception as ex:
             logging.warning('Failed to load {}'.format(feat_ark))
@@ -312,7 +312,8 @@ def get_random_chunk(data, chunk_len):
     else:
         # padding
         repeat_factor = chunk_len // data_len + 1
-        repeat_shape = repeat_factor if len(data_shape) == 1 else (repeat_factor, 1)
+        repeat_shape = repeat_factor if len(data_shape) == 1 else (
+            repeat_factor, 1)
         if type(data) == torch.Tensor:
             data = data.repeat(repeat_shape)
         else:  # np.array
@@ -326,8 +327,7 @@ def filter(data,
            min_num_frames=100,
            max_num_frames=800,
            frame_shift=10,
-           data_type='shard/raw/feat'
-           ):
+           data_type='shard/raw/feat'):
     """ Filter the utterance with very short duration and random chunk the
         utterance with very long duration.
 
@@ -452,8 +452,7 @@ def add_reverb_noise(data,
                     # Since the noise audio could be very long, it must be
                     # chunked first before resampled (to save time)
                     noise_audio = get_random_chunk(
-                        noise_audio,
-                        int(audio_len / resample_rate * noise_sr))
+                        noise_audio, int(audio_len / resample_rate * noise_sr))
                     noise_audio = signal.resample(noise_audio, audio_len)
                 else:
                     noise_audio = get_random_chunk(noise_audio, audio_len)

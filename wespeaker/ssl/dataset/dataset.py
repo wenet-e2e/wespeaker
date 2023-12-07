@@ -99,14 +99,15 @@ def SSLDataset(data_type,
         filter_conf = configs.get('filter_args', {})
         dataset = Processor(dataset,
                             processor.filter,
-                            frame_shift=configs['fbank_args'].get('frame_shift', 10),
+                            frame_shift=configs['fbank_args'].get(
+                                'frame_shift', 10),
                             data_type=data_type,
-                            **filter_conf
-                            )
+                            **filter_conf)
 
     # Local shuffle
     if shuffle:
-        dataset = Processor(dataset, processor.shuffle, **configs['shuffle_args'])
+        dataset = Processor(dataset, processor.shuffle,
+                            **configs['shuffle_args'])
 
     # spk2id
     dataset = Processor(dataset, ssl_processor.spk_to_id, spk2id_dict)
@@ -158,6 +159,7 @@ def SSLDataset(data_type,
     # spec augmentation
     spec_aug_flag = configs.get('spec_aug', True)
     if spec_aug_flag:
-        dataset = Processor(dataset, ssl_processor.spec_aug, **configs['spec_aug_args'])
+        dataset = Processor(dataset, ssl_processor.spec_aug,
+                            **configs['spec_aug_args'])
 
     return dataset

@@ -68,15 +68,11 @@ def trials_cosine_score(eval_scp_path='',
                     w_f.write('{} {} {:.5f} {}\n'.format(
                         segs[0], segs[1], cos_score, segs[2]))
                 else:  # enroll_name test_name
-                    w_f.write('{} {} {:.5f}\n'.format(
-                        segs[0], segs[1], cos_score))
+                    w_f.write('{} {} {:.5f}\n'.format(segs[0], segs[1],
+                                                      cos_score))
 
 
-def main(exp_dir,
-         eval_scp_path,
-         cal_mean,
-         cal_mean_dir,
-         *trials):
+def main(exp_dir, eval_scp_path, cal_mean, cal_mean_dir, *trials):
     if not cal_mean:
         print("Do not do mean normalization for evaluation embeddings.")
         mean_vec_path = None

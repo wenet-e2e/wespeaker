@@ -29,11 +29,12 @@ from wespeaker.utils.plda.plda_utils import sort_svd
 
 M_LOG_2PI = 1.8378770664093454835606594728112
 
-
-ClassInfo = collections.namedtuple('ClassInfo', ['weight', 'num_example', 'mu'])
+ClassInfo = collections.namedtuple('ClassInfo',
+                                   ['weight', 'num_example', 'mu'])
 
 
 class PldaStats(object):
+
     def __init__(self, dim):
         self.dim = dim
         self.num_example, self.num_classes = 0, 0
@@ -61,7 +62,11 @@ class PldaStats(object):
 
 
 class TwoCovPLDA:
-    def __init__(self, scp_file=None, utt2spk_file=None, embed_dim=256,
+
+    def __init__(self,
+                 scp_file=None,
+                 utt2spk_file=None,
+                 embed_dim=256,
                  normalize_length=True):
         self.normalize_length = normalize_length
         self.dim = embed_dim
@@ -80,8 +85,8 @@ class TwoCovPLDA:
         self.W_stats = np.zeros((self.dim, self.dim))
         self.W_count = 0
         if scp_file is not None:
-            samples, self.embeddings_dict = get_data_for_plda(scp_file,
-                                                              utt2spk_file)
+            samples, self.embeddings_dict = get_data_for_plda(
+                scp_file, utt2spk_file)
             train_mean_vec = samples.mean(0)
             for key, mat in self.embeddings_dict.items():
                 mat = np.vstack(mat)
@@ -143,8 +148,8 @@ class TwoCovPLDA:
     def transform_embedding(self, embedding):
         transformed_embedding = np.matmul(self.transform, embedding)
         transformed_embedding += self.offset
-        normalization_factor = math.sqrt(self.dim) / np.linalg.norm(
-            transformed_embedding)
+        normalization_factor = math.sqrt(
+            self.dim) / np.linalg.norm(transformed_embedding)
         if self.normalize_length:
             transformed_embedding = normalization_factor * transformed_embedding
         return transformed_embedding
@@ -157,19 +162,24 @@ class TwoCovPLDA:
         sqdiff = transformed_test_embedding - mean
         sqdiff = np.power(sqdiff, 2.0)
         variance = 1.0 / variance
-        loglike_given_class = -0.5 * (
-            logdet + M_LOG_2PI * self.dim + np.dot(sqdiff, variance))
+        loglike_given_class = -0.5 * (logdet + M_LOG_2PI * self.dim +
+                                      np.dot(sqdiff, variance))
         sqdiff = transformed_test_embedding
         sqdiff = np.power(sqdiff, 2.0)
         variance = self.psi + 1.0
         logdet = np.sum(np.log(variance))
         variance = 1.0 / variance
-        loglike_without_class = -0.5 * (
-            logdet + M_LOG_2PI * self.dim + np.dot(sqdiff, variance))
+        loglike_without_class = -0.5 * (logdet + M_LOG_2PI * self.dim +
+                                        np.dot(sqdiff, variance))
         loglike_ratio = loglike_given_class - loglike_without_class
         return loglike_ratio
 
-    def eval_sv(self, enroll_scp, enroll_utt2spk, test_scp, trials, score_file,
+    def eval_sv(self,
+                enroll_scp,
+                enroll_utt2spk,
+                test_scp,
+                trials,
+                score_file,
                 indomain_scp=None):
         """
         Caculate the plda score
@@ -187,9 +197,8 @@ class TwoCovPLDA:
 
         if indomain_scp is not None:
             indomain_embeddings_dict = read_vec_scp_file(indomain_scp)
-            mean_vec = np.vstack(
-                list(indomain_embeddings_dict.values())
-            ).mean(0)
+            mean_vec = np.vstack(list(
+                indomain_embeddings_dict.values())).mean(0)
         else:
             mean_vec = np.zeros(self.dim)
 
@@ -212,13 +221,11 @@ class TwoCovPLDA:
             with open(trials, 'r') as read_trials:
                 for line in tqdm(read_trials):
                     tokens = line.strip().split()
-                    score = self.log_likelihood_ratio(
-                        enrollspks[tokens[0]],
-                        testspks[tokens[1]])
+                    score = self.log_likelihood_ratio(enrollspks[tokens[0]],
+                                                      testspks[tokens[1]])
                     segs = line.strip().split()
-                    output_line = (
-                        '{} {} {:.5f} {}\n'.format(segs[0], segs[1], score,
-                                                   segs[2]))
+                    output_line = ('{} {} {:.5f} {}\n'.format(
+                        segs[0], segs[1], score, segs[2]))
                     write_score.write(output_line)
 
     def adapt(self, adapt_scp, ac_scale=0.5, wc_scale=0.5):

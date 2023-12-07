@@ -36,8 +36,8 @@ class TritonPythonModel:
             self.device = "cpu"
 
         # Get OUTPUT0 configuration
-        output0_config = pb_utils.get_output_config_by_name(model_config,
-                                                            "LABELS")
+        output0_config = pb_utils.get_output_config_by_name(
+            model_config, "LABELS")
         # Convert Triton types to numpy types
         self.output0_dtype = pb_utils.triton_string_to_numpy(
             output0_config['data_type'])
@@ -59,8 +59,8 @@ class TritonPythonModel:
 
         for current_start_sample in range(0, audio_length_samples,
                                           window_size_samples):
-            chunk = wav[current_start_sample:
-                        current_start_sample + window_size_samples]
+            chunk = wav[current_start_sample:current_start_sample +
+                        window_size_samples]
             if len(chunk) < window_size_samples:
                 chunk = torch.nn.functional.pad(
                     chunk, (0, int(window_size_samples - len(chunk))))
@@ -68,7 +68,9 @@ class TritonPythonModel:
             chunks.append(speech_prob)
         return chunks
 
-    def get_timestamps(self, speech_probs, audio_length_samples,
+    def get_timestamps(self,
+                       speech_probs,
+                       audio_length_samples,
                        sr: int = 16000,
                        threshold: float = 0.5,
                        min_duration: float = 0.255,
@@ -115,19 +117,21 @@ class TritonPythonModel:
 
         for i, speech in enumerate(speeches):
             if i == 0:
-                speech['start'] = int(max(0,
-                                      speech['start'] - speech_pad_samples))
+                speech['start'] = int(
+                    max(0, speech['start'] - speech_pad_samples))
             if i != len(speeches) - 1:
                 silence_duration = speeches[i + 1]['start'] - speech['end']
                 if silence_duration < 2 * speech_pad_samples:
                     speech['end'] += int(silence_duration // 2)
                     speeches[i + 1]['start'] = int(
-                        max(0, speeches[i + 1]['start'] - silence_duration // 2))
+                        max(0,
+                            speeches[i + 1]['start'] - silence_duration // 2))
                 else:
                     speech['end'] += int(speech_pad_samples)
             else:
-                speech['end'] = int(min(audio_length_samples, speech['end']
-                                        + speech_pad_samples))
+                speech['end'] = int(
+                    min(audio_length_samples,
+                        speech['end'] + speech_pad_samples))
         vad_result = []
         for item in speeches:
             begin = item['start'] / sr
@@ -138,11 +142,15 @@ class TritonPythonModel:
                 vad_result.append(item)
         return vad_result
 
-    def subsegment(self, wav, segments, wav_idx,
+    def subsegment(self,
+                   wav,
+                   segments,
+                   wav_idx,
                    window_fs: float = 1.50,
                    period_fs: float = 0.75,
                    sr: int = 16000,
                    frame_shift: int = 10):
+
         def repeat_to_fill(x, window_fs):
             length = x.size(0)
             num = (window_fs + length - 1) // length
@@ -162,13 +170,14 @@ class TritonPythonModel:
         for segment in segments:
             seg_begin = int(segment['start'] * sr)
             seg_end = int(segment['end'] * sr)
-            seg_signal = wav[seg_begin: seg_end + 1]
+            seg_signal = wav[seg_begin:seg_end + 1]
             seg_length = seg_end - seg_begin
 
             if seg_length <= window_fs:
-                subseg = [wav_idx, seg_idx,
-                          segment['start'], segment['end'], 0,
-                          int(seg_length / sr * 1000 // frame_shift)]
+                subseg = [
+                    wav_idx, seg_idx, segment['start'], segment['end'], 0,
+                    int(seg_length / sr * 1000 // frame_shift)
+                ]
                 subseg_signal = repeat_to_fill(seg_signal, window_fs)
 
                 subsegs.append(subseg)
@@ -178,12 +187,13 @@ class TritonPythonModel:
                 max_subseg_begin = seg_length - window_fs + period_fs
                 for subseg_begin in range(0, max_subseg_begin, period_fs):
                     subseg_end = min(subseg_begin + window_fs, seg_length)
-                    subseg = [wav_idx, seg_idx,
-                              segment['start'], segment['end'],
-                              int(subseg_begin / sr * 1000 / frame_shift),
-                              int(subseg_end / sr * 1000 / frame_shift)]
+                    subseg = [
+                        wav_idx, seg_idx, segment['start'], segment['end'],
+                        int(subseg_begin / sr * 1000 / frame_shift),
+                        int(subseg_end / sr * 1000 / frame_shift)
+                    ]
                     subseg_signal = repeat_to_fill(
-                        seg_signal[subseg_begin: subseg_end + 1], window_fs)
+                        seg_signal[subseg_begin:subseg_end + 1], window_fs)
 
                     subsegs.append(subseg)
                     subseg_signals.append(subseg_signal)
@@ -196,8 +206,10 @@ class TritonPythonModel:
         new_sort = {}
         for i, subseg in enumerate(subseg_ids):
             (utt, seg_idx, begin_ms, end_ms, begin_frames, end_frames) = subseg
-            begin = (int(begin_ms * 1000) + int(begin_frames) * frame_shift) / 1000.0
-            end = (int(begin_ms * 1000) + int(end_frames) * frame_shift) / 1000.0
+            begin = (int(begin_ms * 1000) +
+                     int(begin_frames) * frame_shift) / 1000.0
+            end = (int(begin_ms * 1000) +
+                   int(end_frames) * frame_shift) / 1000.0
             new_sort[seg_idx] = (begin, end, label[i])
         utt_to_subseg_labels = list(dict(sorted(new_sort.items())).values())
         return utt_to_subseg_labels
@@ -280,7 +292,8 @@ class TritonPythonModel:
         out_segs = []
         for speech_prob, speech_len in zip(reshape_probs, total_lens):
             segments = self.get_timestamps(speech_prob,
-                                           speech_len, threshold=0.36)
+                                           speech_len,
+                                           threshold=0.36)
             out_segs.append(segments)
 
         total_subsegments = []
@@ -289,8 +302,7 @@ class TritonPythonModel:
 
         wav_idx = 0
         for waveform, segments in zip(total_wavs, out_segs):
-            subsegs, subseg_signals = self.subsegment(waveform,
-                                                      segments,
+            subsegs, subseg_signals = self.subsegment(waveform, segments,
                                                       wav_idx)
             total_subsegments.extend(subseg_signals)
             total_subsegment_ids.extend(subsegs)
@@ -298,25 +310,25 @@ class TritonPythonModel:
 
         inference_response_awaits = []
         for wavs in total_subsegments:
-            input_tensor_spk0 = pb_utils.Tensor.from_dlpack("WAV",
-                                                            to_dlpack(wavs))
+            input_tensor_spk0 = pb_utils.Tensor.from_dlpack(
+                "WAV", to_dlpack(wavs))
 
             input_tensors_spk = [input_tensor_spk0]
-            inference_request = pb_utils.InferenceRequest(model_name='speaker',
-                                                          requested_output_names=['EMBEDDINGS'],
-                                                          inputs=input_tensors_spk)
+            inference_request = pb_utils.InferenceRequest(
+                model_name='speaker',
+                requested_output_names=['EMBEDDINGS'],
+                inputs=input_tensors_spk)
             inference_response_awaits.append(inference_request.async_exec())
 
-        inference_responses = await asyncio.gather(
-            *inference_response_awaits)
+        inference_responses = await asyncio.gather(*inference_response_awaits)
 
         for inference_response in inference_responses:
             if inference_response.has_error():
-                raise pb_utils.TritonModelException(inference_response.
-                                                    error().message())
+                raise pb_utils.TritonModelException(
+                    inference_response.error().message())
             else:
-                batched_result = pb_utils.get_output_tensor_by_name(inference_response,
-                                                                    'EMBEDDINGS')
+                batched_result = pb_utils.get_output_tensor_by_name(
+                    inference_response, 'EMBEDDINGS')
                 total_embds.extend(from_dlpack(batched_result.to_dlpack()))
 
         out_embds = list()
@@ -338,26 +350,26 @@ class TritonPythonModel:
                 "EMBEDDINGS", to_dlpack(torch.unsqueeze(embd, 0)))
 
             input_tensors_spk = [input_tensor_embds0]
-            inference_request = pb_utils.InferenceRequest(model_name='clusterer',
-                                                          requested_output_names=['LABELS'],
-                                                          request_id=str(i),
-                                                          inputs=input_tensors_spk)
+            inference_request = pb_utils.InferenceRequest(
+                model_name='clusterer',
+                requested_output_names=['LABELS'],
+                request_id=str(i),
+                inputs=input_tensors_spk)
             inference_response_awaits.append(inference_request.async_exec())
 
-        inference_responses = await asyncio.gather(
-            *inference_response_awaits)
+        inference_responses = await asyncio.gather(*inference_response_awaits)
 
         i = 0
         results = []
         for inference_response in inference_responses:
             if inference_response.has_error():
-                raise pb_utils.TritonModelException(inference_response.
-                                                    error().message())
+                raise pb_utils.TritonModelException(
+                    inference_response.error().message())
             else:
-                result = pb_utils.get_output_tensor_by_name(inference_response,
-                                                            'LABELS').as_numpy()[0]
-                utt_to_subseg_labels = self.read_labels(out_time_info[i],
-                                                        result)
+                result = pb_utils.get_output_tensor_by_name(
+                    inference_response, 'LABELS').as_numpy()[0]
+                utt_to_subseg_labels = self.read_labels(
+                    out_time_info[i], result)
                 i += 1
                 rttm = self.merge_segments(utt_to_subseg_labels)
                 if len(rttm) > 0:
@@ -368,7 +380,8 @@ class TritonPythonModel:
         for b in batch_count:
             sents = np.array(results[st:st + b])
             out0 = pb_utils.Tensor("LABELS", sents.astype(self.output0_dtype))
-            inference_response = pb_utils.InferenceResponse(output_tensors=[out0])
+            inference_response = pb_utils.InferenceResponse(
+                output_tensors=[out0])
             responses.append(inference_response)
             st += b
         return responses

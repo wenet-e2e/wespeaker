@@ -23,7 +23,9 @@ import argparse
 import os
 import kaldiio
 
+
 class SpeakerClient(object):
+
     def __init__(self, triton_client, model_name, protocol_client):
         self.triton_client = triton_client
         self.protocol_client = protocol_client
@@ -43,8 +45,10 @@ class SpeakerClient(object):
             print(len(waveform) // 16000)
         input = np.zeros((1, cur_length), dtype=np.float32)
         input[0][0:cur_length] = waveform[0:cur_length]
-        inputs = [self.protocol_client.InferInput("WAV", input.shape,
-                  np_to_triton_dtype(input.dtype))]
+        inputs = [
+            self.protocol_client.InferInput("WAV", input.shape,
+                                            np_to_triton_dtype(input.dtype))
+        ]
         inputs[0].set_data_from_numpy(input)
         outputs = [grpcclient.InferRequestedOutput("EMBEDDINGS")]
         response = self.triton_client.infer(self.model_name,
@@ -88,13 +92,11 @@ if __name__ == '__main__':
                         required=False,
                         default=None,
                         help='data dir will be append to audio file if given')
-    parser.add_argument(
-        '--audio_file',
-        type=str,
-        required=False,
-        default=None,
-        help='single wav file'
-    )
+    parser.add_argument('--audio_file',
+                        type=str,
+                        required=False,
+                        default=None,
+                        help='single wav file')
 
     FLAGS = parser.parse_args()
 
@@ -122,11 +124,12 @@ if __name__ == '__main__':
         if not os.path.exists(dir_name) and (dir_name != ''):
             os.makedirs(dir_name)
 
-        embed_ark = os.path.abspath(dir_name) + "/xvector_{:0>3d}.ark".format(idx)
+        embed_ark = os.path.abspath(dir_name) + "/xvector_{:0>3d}.ark".format(
+            idx)
         embed_scp = embed_ark[:-3] + "scp"
 
-        with grpcclient.InferenceServerClient(url=FLAGS.url,
-                                              verbose=FLAGS.verbose) as triton_client:
+        with grpcclient.InferenceServerClient(
+                url=FLAGS.url, verbose=FLAGS.verbose) as triton_client:
             protocol_client = grpcclient
             speech_client = SpeakerClient(triton_client, FLAGS.model_name,
                                           protocol_client)

@@ -60,8 +60,7 @@ def run_epoch(dataloader,
 
         # loss, acc
         loss_meter.add(loss.item())
-        acc_meter.add(outputs.cpu().detach().numpy(),
-                      targets.cpu().numpy())
+        acc_meter.add(outputs.cpu().detach().numpy(), targets.cpu().numpy())
 
         # updata the model
         optimizer.zero_grad()
@@ -83,8 +82,8 @@ def run_epoch(dataloader,
             break
 
     logger.info(
-        tp.row((epoch, i + 1, scheduler.get_lr(),
-                margin_scheduler.get_margin()) +
-               (loss_meter.value()[0], acc_meter.value()[0]),
-               width=10,
-               style='grid'))
+        tp.row(
+            (epoch, i + 1, scheduler.get_lr(), margin_scheduler.get_margin()) +
+            (loss_meter.value()[0], acc_meter.value()[0]),
+            width=10,
+            style='grid'))

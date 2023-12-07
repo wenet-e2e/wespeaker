@@ -15,9 +15,9 @@
 #ifndef UTILS_UTILS_H_
 #define UTILS_UTILS_H_
 
-#include <vector>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace wespeaker {
 

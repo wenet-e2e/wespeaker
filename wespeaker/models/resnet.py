@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 '''ResNet in PyTorch.
 
 Some modifications from the original architecture:
@@ -59,8 +58,7 @@ class BasicBlock(nn.Module):
                           self.expansion * planes,
                           kernel_size=1,
                           stride=stride,
-                          bias=False),
-                nn.BatchNorm2d(self.expansion * planes))
+                          bias=False), nn.BatchNorm2d(self.expansion * planes))
 
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
@@ -97,8 +95,7 @@ class Bottleneck(nn.Module):
                           self.expansion * planes,
                           kernel_size=1,
                           stride=stride,
-                          bias=False),
-                nn.BatchNorm2d(self.expansion * planes))
+                          bias=False), nn.BatchNorm2d(self.expansion * planes))
 
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
@@ -110,6 +107,7 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
+
     def __init__(self,
                  block,
                  num_blocks,
@@ -149,11 +147,11 @@ class ResNet(nn.Module):
                                        num_blocks[3],
                                        stride=2)
 
-        self.pool = getattr(pooling_layers, pooling_func)(
-            in_dim=self.stats_dim * block.expansion)
+        self.pool = getattr(pooling_layers,
+                            pooling_func)(in_dim=self.stats_dim *
+                                          block.expansion)
         self.pool_out_dim = self.pool.get_out_dim()
-        self.seg_1 = nn.Linear(self.pool_out_dim,
-                               embed_dim)
+        self.seg_1 = nn.Linear(self.pool_out_dim, embed_dim)
         if self.two_emb_layer:
             self.seg_bn_1 = nn.BatchNorm1d(embed_dim, affine=False)
             self.seg_2 = nn.Linear(embed_dim, embed_dim)
@@ -189,7 +187,6 @@ class ResNet(nn.Module):
             return embed_a, embed_b
         else:
             return torch.tensor(0.0), embed_a
-
 
 
 def ResNet18(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
@@ -250,9 +247,7 @@ def ResNet293(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
 
 if __name__ == '__main__':
     x = torch.zeros(10, 200, 80)
-    model = ResNet34(feat_dim=80,
-                     embed_dim=256,
-                     pooling_func='MQMHASTP')
+    model = ResNet34(feat_dim=80, embed_dim=256, pooling_func='MQMHASTP')
     model.eval()
     out = model(x)
     print(out[-1].size())

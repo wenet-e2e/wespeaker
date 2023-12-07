@@ -95,11 +95,10 @@ def get_args():
     parser.add_argument('--ark-path',
                         required=True,
                         help='path to store feat ark')
-    parser.add_argument(
-        '--subseg-cmn',
-        default=True,
-        type=lambda x: x.lower() == 'true',
-        help='do cmn after or before fbank sub-segmentation')
+    parser.add_argument('--subseg-cmn',
+                        default=True,
+                        type=lambda x: x.lower() == 'true',
+                        help='do cmn after or before fbank sub-segmentation')
     args = parser.parse_args()
 
     return args

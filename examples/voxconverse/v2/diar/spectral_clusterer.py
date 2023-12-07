@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
+
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -80,8 +80,8 @@ def cluster(embeddings, p=.01, num_spks=None, min_num_spks=1, max_num_spks=20):
     # Compute Laplacian
     laplacian_matrix = laplacian(pruned_similarity_matrix)
     # Compute spectral embeddings
-    spectral_embeddings = spectral(laplacian_matrix, num_spks,
-                                   min_num_spks, max_num_spks)
+    spectral_embeddings = spectral(laplacian_matrix, num_spks, min_num_spks,
+                                   max_num_spks)
     # Assign class labels
     labels = kmeans(spectral_embeddings)
 
@@ -118,6 +118,7 @@ def get_args():
 
     return args
 
+
 def main():
     args = get_args()
 
@@ -127,7 +128,10 @@ def main():
     with cf.ProcessPoolExecutor() as executor, open(args.output, 'w') as f:
         for (subsegs, labels) in zip(subsegs_list,
                                      executor.map(cluster, embeddings_list)):
-            [print(subseg, label, file=f) for (subseg, label) in zip(subsegs, labels)]
+            [
+                print(subseg, label, file=f)
+                for (subseg, label) in zip(subsegs, labels)
+            ]
 
 
 if __name__ == '__main__':

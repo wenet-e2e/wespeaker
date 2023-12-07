@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 def read_scp(scp_file):
     """ scp_file: mostly 2 columns
     """

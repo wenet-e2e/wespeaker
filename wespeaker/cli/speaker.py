@@ -32,6 +32,7 @@ from wespeaker.utils.checkpoint import load_checkpoint
 
 
 class Speaker:
+
     def __init__(self, model_dir: str):
         config_path = os.path.join(model_dir, 'config.yaml')
         model_path = os.path.join(model_dir, 'avg_model.pt')
@@ -187,7 +188,7 @@ def get_args():
                         help='audio file2, specifically for similarity task')
     parser.add_argument('--wav_scp',
                         help='path to wav.scp, for extract and saving '
-                             'kaldi-stype embeddings')
+                        'kaldi-stype embeddings')
     parser.add_argument('--resample_rate',
                         type=int,
                         default=16000,
@@ -221,7 +222,8 @@ def main():
         names, embeddings = model.extract_embedding_list(args.wav_scp)
         embed_ark = args.output_file + ".ark"
         embed_scp = args.output_file + ".scp"
-        with kaldiio.WriteHelper('ark,scp:' + embed_ark + "," + embed_scp) as writer:
+        with kaldiio.WriteHelper('ark,scp:' + embed_ark + "," +
+                                 embed_scp) as writer:
             for name, embedding in zip(names, embeddings):
                 writer(name, embedding)
     elif args.task == 'similarity':

@@ -27,7 +27,8 @@ def get_random_chunk(data, chunk_len):
     data = data[chunk_start:chunk_start + adjust_chunk_len]
     # padding if needed
     if adjust_chunk_len < chunk_len:
-        chunk_shape = chunk_len if len(data_shape) == 1 else (chunk_len, data.shape[1])
+        chunk_shape = chunk_len if len(data_shape) == 1 else (chunk_len,
+                                                              data.shape[1])
         data = np.resize(data, chunk_shape)  # repeating
 
     return data

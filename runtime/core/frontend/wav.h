@@ -22,12 +22,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <vector>
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "glog/logging.h"
 #include "gflags/gflags.h"
+#include "glog/logging.h"
 
 DEFINE_int32(pcm_sample_rate, 16000, "pcm data sample rate");
 

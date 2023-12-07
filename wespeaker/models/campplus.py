@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 '''
 This implementation is adapted from github repo:
 https://github.com/alibaba-damo-academy/3D-Speaker
@@ -53,6 +52,7 @@ def get_nonlinear(config_str, channels):
 
 
 class TDNNLayer(nn.Module):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -83,6 +83,7 @@ class TDNNLayer(nn.Module):
 
 
 class CAMLayer(nn.Module):
+
     def __init__(self,
                  bn_channels,
                  out_channels,
@@ -127,12 +128,14 @@ class CAMLayer(nn.Module):
             raise ValueError('Wrong segment pooling type.')
         shape = seg.shape
         seg = seg.unsqueeze(-1).expand(shape[0], shape[1], shape[2],
-                                       seg_len).reshape(shape[0], shape[1], -1)
+                                       seg_len).reshape(
+                                           shape[0], shape[1], -1)
         seg = seg[..., :x.shape[-1]]
         return seg
 
 
 class CAMDenseTDNNLayer(nn.Module):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -167,6 +170,7 @@ class CAMDenseTDNNLayer(nn.Module):
 
 
 class CAMDenseTDNNBlock(nn.ModuleList):
+
     def __init__(self,
                  num_layers,
                  in_channels,
@@ -197,6 +201,7 @@ class CAMDenseTDNNBlock(nn.ModuleList):
 
 
 class TransitLayer(nn.Module):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -213,6 +218,7 @@ class TransitLayer(nn.Module):
 
 
 class DenseLayer(nn.Module):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -233,6 +239,8 @@ class DenseLayer(nn.Module):
 
 '''Note: The stride used here is different from that in Resnet
 '''
+
+
 class BasicResBlock(nn.Module):
     expansion = 1
 
@@ -260,8 +268,7 @@ class BasicResBlock(nn.Module):
                           self.expansion * planes,
                           kernel_size=1,
                           stride=(stride, 1),
-                          bias=False),
-                nn.BatchNorm2d(self.expansion * planes))
+                          bias=False), nn.BatchNorm2d(self.expansion * planes))
 
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
@@ -272,11 +279,8 @@ class BasicResBlock(nn.Module):
 
 
 class FCM(nn.Module):
-    def __init__(self,
-                 block,
-                 num_blocks,
-                 m_channels=32,
-                 feat_dim=80):
+
+    def __init__(self, block, num_blocks, m_channels=32, feat_dim=80):
         super(FCM, self).__init__()
         self.in_planes = m_channels
         self.conv1 = nn.Conv2d(1,
@@ -326,6 +330,7 @@ class FCM(nn.Module):
 
 
 class CAMPPlus(nn.Module):
+
     def __init__(self,
                  feat_dim=80,
                  embed_dim=512,
@@ -336,7 +341,9 @@ class CAMPPlus(nn.Module):
                  config_str='batchnorm-relu'):
         super(CAMPPlus, self).__init__()
 
-        self.head = FCM(block=BasicResBlock, num_blocks=[2, 2], feat_dim=feat_dim)
+        self.head = FCM(block=BasicResBlock,
+                        num_blocks=[2, 2],
+                        feat_dim=feat_dim)
         channels = self.head.out_channels
 
         self.xvector = nn.Sequential(

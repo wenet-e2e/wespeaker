@@ -24,7 +24,8 @@ from wespeaker.utils.utils import parse_config_or_kwargs
 
 def convert(config='conf/config.yaml', **kwargs):
     configs = parse_config_or_kwargs(config, **kwargs)
-    speaker_model = get_speaker_model(configs['model'])(**configs['model_args'])
+    speaker_model = get_speaker_model(
+        configs['model'])(**configs['model_args'])
     configs['model_args']['deploy'] = True
     # save new configs for testing and deploying
     # NOTE: 'deploy': true
@@ -46,6 +47,7 @@ def convert(config='conf/config.yaml', **kwargs):
         print('no checkpoint')
     repvgg_model_convert(speaker_model, save_path=configs['save'])
     print("==> Saving convert model to '{}'".format(configs['save']))
+
 
 if __name__ == '__main__':
     fire.Fire(convert)

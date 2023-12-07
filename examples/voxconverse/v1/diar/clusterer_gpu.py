@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -26,7 +27,12 @@ from clusterer import get_args, compute_embeddings
 import scipy
 import torch
 
-def cluster_gpu(embeddings, p=.01, num_spks=None, min_num_spks=1, max_num_spks=20):
+
+def cluster_gpu(embeddings,
+                p=.01,
+                num_spks=None,
+                min_num_spks=1,
+                max_num_spks=20):
     # Define utility functions
     def cosine_similarity(M):
         M = M / cp.linalg.norm(M, axis=1, keepdims=True)
@@ -78,12 +84,13 @@ def cluster_gpu(embeddings, p=.01, num_spks=None, min_num_spks=1, max_num_spks=2
     # Compute Laplacian
     laplacian_matrix = laplacian(pruned_similarity_matrix)
     # Compute spectral embeddings
-    spectral_embeddings = spectral(laplacian_matrix, num_spks,
-                                   min_num_spks, max_num_spks)
+    spectral_embeddings = spectral(laplacian_matrix, num_spks, min_num_spks,
+                                   max_num_spks)
     # Assign class labels
     labels = kmeans(spectral_embeddings)
 
     return labels
+
 
 def test_time():
     a = np.random.rand(1000, 256)
@@ -106,11 +113,11 @@ def test_time():
         elapsed_time = timer() - start
         print("CPU Time: {}".format(elapsed_time))
 
+
 def main():
     args = get_args()
     print('Segmenting and extracting speaker embeddings')
-    subsegs_list, embeddings_list = compute_embeddings(args.scp,
-                                                       args.segments,
+    subsegs_list, embeddings_list = compute_embeddings(args.scp, args.segments,
                                                        args.source,
                                                        args.device,
                                                        args.batch_size)
@@ -123,7 +130,10 @@ def main():
         for i in embeddings_list:
             labels_list.append(cluster_gpu(cp.asarray(i)))
         for (subsegs, labels) in zip(subsegs_list, labels_list):
-            [print(subseg, label, file=f) for (subseg, label) in zip(subsegs, labels)]
+            [
+                print(subseg, label, file=f)
+                for (subseg, label) in zip(subsegs, labels)
+            ]
 
 
 if __name__ == '__main__':
