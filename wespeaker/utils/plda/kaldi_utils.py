@@ -120,7 +120,8 @@ def _read_sparse_mat(fd, format):
         _format = fd.read(3).decode()
         assert (_format == 'SV ')
         _, dim = np.frombuffer(fd.read(5), dtype='int8,int32', count=1)[0]
-        _, num_elems = np.frombuffer(fd.read(5), dtype='int8,int32', count=1)[0]
+        _, num_elems = np.frombuffer(fd.read(5), dtype='int8,int32',
+                                     count=1)[0]
         col = []
         data = []
         for j in range(num_elems):
@@ -146,5 +147,6 @@ def _read_sparse_mat(fd, format):
         cols += col
         all_data += data
         max_dim = max(dim, max_dim)
-    sparse_mat = csr_matrix((all_data, (rows, cols)), shape=(num_rows, max_dim))
+    sparse_mat = csr_matrix((all_data, (rows, cols)),
+                            shape=(num_rows, max_dim))
     return sparse_mat

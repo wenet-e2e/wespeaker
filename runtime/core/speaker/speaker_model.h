@@ -15,8 +15,9 @@
 #ifndef SPEAKER_SPEAKER_MODEL_H_
 #define SPEAKER_SPEAKER_MODEL_H_
 
-#include <vector>
 #include <string>
+#include <vector>
+
 #include "utils/utils.h"
 
 namespace wespeaker {

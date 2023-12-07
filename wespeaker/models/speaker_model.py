@@ -18,6 +18,7 @@ import wespeaker.models.resnet as resnet
 import wespeaker.models.repvgg as repvgg
 import wespeaker.models.campplus as campplus
 
+
 def get_speaker_model(model_name: str):
     if model_name.startswith("XVEC"):
         return getattr(tdnn, model_name)

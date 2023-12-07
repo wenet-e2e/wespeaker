@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
+
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -31,11 +31,14 @@ import torch
 
 def get_args():
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument('--repo-path', required=True,
+    parser.add_argument('--repo-path',
+                        required=True,
                         help='VAD model repo path')
     parser.add_argument('--scp', required=True, help='wav scp')
-    parser.add_argument('--min-duration', required=True,
-                        type=float, help='min duration')
+    parser.add_argument('--min-duration',
+                        required=True,
+                        type=float,
+                        help='min duration')
     args = parser.parse_args()
 
     return args
@@ -50,8 +53,11 @@ def read_scp(scp):
     return utt_wav_pair
 
 
-def silero_vad(utt_wav_pair, repo_path, min_duration,
-               sampling_rate=16000, threshold=0.25):
+def silero_vad(utt_wav_pair,
+               repo_path,
+               min_duration,
+               sampling_rate=16000,
+               threshold=0.25):
 
     def module_from_file(module_name, file_path):
         spec = importlib.util.spec_from_file_location(module_name, file_path)
@@ -69,8 +75,7 @@ def silero_vad(utt_wav_pair, repo_path, min_duration,
 
     wav = utils_vad.read_audio(wav, sampling_rate=sampling_rate)
     speech_timestamps = utils_vad.get_speech_timestamps(
-        wav, model, sampling_rate=sampling_rate,
-        threshold=threshold)
+        wav, model, sampling_rate=sampling_rate, threshold=threshold)
 
     vad_result = ""
     for item in speech_timestamps:

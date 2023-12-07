@@ -127,11 +127,10 @@ def get_args():
                         type=float,
                         default=0.75,
                         help='the shift seconds in embedding extraction')
-    parser.add_argument(
-        '--subseg-cmn',
-        default=True,
-        type=lambda x: x.lower() == 'true',
-        help='do cmn after or before fbank sub-segmentation')
+    parser.add_argument('--subseg-cmn',
+                        default=True,
+                        type=lambda x: x.lower() == 'true',
+                        help='do cmn after or before fbank sub-segmentation')
     args = parser.parse_args()
 
     return args

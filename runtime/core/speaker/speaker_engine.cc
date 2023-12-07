@@ -12,25 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "speaker/speaker_engine.h"
 #include <algorithm>
 #include <functional>
 #include <limits>
 #include <numeric>
-#include "speaker/speaker_engine.h"
-
 
 #ifdef USE_ONNX
-  #include "speaker/onnx_speaker_model.h"
+#include "speaker/onnx_speaker_model.h"
 #elif USE_BPU
-  #include "speaker/bpu_speaker_model.h"
+#include "speaker/bpu_speaker_model.h"
 #endif
 
 namespace wespeaker {
 
-SpeakerEngine::SpeakerEngine(const std::string& model_path,
-                             const int feat_dim,
-                             const int sample_rate,
-                             const int embedding_size,
+SpeakerEngine::SpeakerEngine(const std::string& model_path, const int feat_dim,
+                             const int sample_rate, const int embedding_size,
                              const int SamplesPerChunk) {
   // NOTE(cdliang): default num_threads = 1
   const int kNumGemmThreads = 1;
@@ -41,26 +38,24 @@ SpeakerEngine::SpeakerEngine(const std::string& model_path,
   LOG(INFO) << "per_chunk_samples: " << per_chunk_samples_;
   sample_rate_ = sample_rate;
   LOG(INFO) << "Sample rate: " << sample_rate_;
-  feature_config_ = std::make_shared<wenet::FeaturePipelineConfig>(
-    feat_dim, sample_rate);
-  feature_pipeline_ = \
-    std::make_shared<wenet::FeaturePipeline>(*feature_config_);
+  feature_config_ =
+      std::make_shared<wenet::FeaturePipelineConfig>(feat_dim, sample_rate);
+  feature_pipeline_ =
+      std::make_shared<wenet::FeaturePipeline>(*feature_config_);
   feature_pipeline_->Reset();
 #ifdef USE_ONNX
   OnnxSpeakerModel::InitEngineThreads(kNumGemmThreads);
-  #ifdef USE_GPU
+#ifdef USE_GPU
   // NOTE(cdliang): default gpu_id = 0
   OnnxSpeakerModel::SetGpuDeviceId(0);
-  #endif
+#endif
   model_ = std::make_shared<OnnxSpeakerModel>(model_path);
 #elif USE_BPU
   model_ = std::make_shared<BpuSpeakerModel>(model_path);
 #endif
 }
 
-int SpeakerEngine::EmbeddingSize() {
-  return embedding_size_;
-}
+int SpeakerEngine::EmbeddingSize() { return embedding_size_; }
 
 void SpeakerEngine::ApplyMean(std::vector<std::vector<float>>* feat,
                               unsigned int feat_dim) {
@@ -70,7 +65,7 @@ void SpeakerEngine::ApplyMean(std::vector<std::vector<float>>* feat,
                    std::plus<>{});
   }
   std::transform(mean.begin(), mean.end(), mean.begin(),
-                 [&](const float d) {return d / feat->size();});
+                 [&](const float d) { return d / feat->size(); });
   for (auto& i : *feat) {
     std::transform(i.begin(), i.end(), mean.begin(), i.begin(), std::minus<>{});
   }
@@ -82,12 +77,13 @@ void SpeakerEngine::ApplyMean(std::vector<std::vector<float>>* feat,
 // Extract audio features chunk by chunk, with 198 frames for each chunk.
 // If the last chunk is less than 198 frames,
 // concatenate the head frame to the tail.
-void SpeakerEngine::ExtractFeature(const int16_t* data, int data_size,
+void SpeakerEngine::ExtractFeature(
+    const int16_t* data, int data_size,
     std::vector<std::vector<std::vector<float>>>* chunks_feat) {
   if (data != nullptr) {
     std::vector<std::vector<float>> chunk_feat;
-    feature_pipeline_->AcceptWaveform(std::vector<int16_t>(
-        data, data + data_size));
+    feature_pipeline_->AcceptWaveform(
+        std::vector<int16_t>(data, data + data_size));
     if (per_chunk_samples_ <= 0) {
       // full mode
       feature_pipeline_->Read(feature_pipeline_->num_frames(), &chunk_feat);
@@ -96,11 +92,11 @@ void SpeakerEngine::ExtractFeature(const int16_t* data, int data_size,
       chunk_feat.clear();
     } else {
       // NOTE(cdliang): extract feature with chunk by chunk
-      int num_chunk_frames_ = 1 + ((
-        per_chunk_samples_ - sample_rate_ / 1000 * 25) /
-        (sample_rate_ / 1000 * 10));
-      int chunk_num = std::ceil(
-        feature_pipeline_->num_frames() / num_chunk_frames_);
+      int num_chunk_frames_ =
+          1 + ((per_chunk_samples_ - sample_rate_ / 1000 * 25) /
+               (sample_rate_ / 1000 * 10));
+      int chunk_num =
+          std::ceil(feature_pipeline_->num_frames() / num_chunk_frames_);
       chunks_feat->reserve(chunk_num);
       chunk_feat.reserve(num_chunk_frames_);
       while (feature_pipeline_->NumQueuedFrames() >= num_chunk_frames_) {
@@ -119,12 +115,13 @@ void SpeakerEngine::ExtractFeature(const int16_t* data, int data_size,
             chunk_feat.insert(chunk_feat.end(), chunk_feat.begin(),
                               chunk_feat.begin() + last_frames);
           }
-          chunk_feat.insert(chunk_feat.end(), chunk_feat.begin(),
-            chunk_feat.begin() + num_chunk_frames_ - chunk_feat.size());
+          chunk_feat.insert(
+              chunk_feat.end(), chunk_feat.begin(),
+              chunk_feat.begin() + num_chunk_frames_ - chunk_feat.size());
         } else {
-          chunk_feat.insert(chunk_feat.end(),
-            (*chunks_feat)[0].begin(),
-            (*chunks_feat)[0].begin() + num_chunk_frames_ - chunk_feat.size());
+          chunk_feat.insert(chunk_feat.end(), (*chunks_feat)[0].begin(),
+                            (*chunks_feat)[0].begin() + num_chunk_frames_ -
+                                chunk_feat.size());
         }
         CHECK_EQ(chunk_feat.size(), num_chunk_frames_);
         chunks_feat->emplace_back(chunk_feat);
@@ -162,10 +159,10 @@ float SpeakerEngine::CosineSimilarity(const std::vector<float>& emb1,
                                       const std::vector<float>& emb2) {
   CHECK_EQ(emb1.size(), emb2.size());
   float dot = std::inner_product(emb1.begin(), emb1.end(), emb2.begin(), 0.0);
-  float emb1_sum = std::inner_product(emb1.begin(), emb1.end(),
-                                      emb1.begin(), 0.0);
-  float emb2_sum = std::inner_product(emb2.begin(), emb2.end(),
-                                      emb2.begin(), 0.0);
+  float emb1_sum =
+      std::inner_product(emb1.begin(), emb1.end(), emb1.begin(), 0.0);
+  float emb2_sum =
+      std::inner_product(emb2.begin(), emb2.end(), emb2.begin(), 0.0);
   dot /= std::max(std::sqrt(emb1_sum) * std::sqrt(emb2_sum),
                   std::numeric_limits<float>::epsilon());
   return dot;

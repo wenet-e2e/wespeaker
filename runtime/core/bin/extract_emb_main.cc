@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
 #include <fstream>
-#include <sstream>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 #include "frontend/wav.h"
-#include "utils/utils.h"
-#include "utils/timer.h"
 #include "speaker/speaker_engine.h"
+#include "utils/timer.h"
+#include "utils/utils.h"
 
 DEFINE_string(wav_list, "", "input wav scp");
 DEFINE_string(result, "", "output embedding file");
@@ -38,8 +38,8 @@ int main(int argc, char* argv[]) {
   // init model
   LOG(INFO) << "Init model ...";
   auto speaker_engine = std::make_shared<wespeaker::SpeakerEngine>(
-    FLAGS_speaker_model_path, FLAGS_fbank_dim, FLAGS_sample_rate,
-    FLAGS_embedding_size, FLAGS_SamplesPerChunk);
+      FLAGS_speaker_model_path, FLAGS_fbank_dim, FLAGS_sample_rate,
+      FLAGS_embedding_size, FLAGS_SamplesPerChunk);
   int embedding_size = speaker_engine->EmbeddingSize();
   LOG(INFO) << "embedding size: " << embedding_size;
   // read wav.scp
@@ -58,11 +58,11 @@ int main(int argc, char* argv[]) {
   if (!FLAGS_result.empty()) {
     result.open(FLAGS_result, std::ios::out);
   }
-  std::ostream &buffer = FLAGS_result.empty() ? std::cout : result;
+  std::ostream& buffer = FLAGS_result.empty() ? std::cout : result;
 
   int total_waves_dur = 0;
   int total_extract_time = 0;
-  for (auto &wav : waves) {
+  for (auto& wav : waves) {
     auto data_reader = wenet::ReadAudioFile(wav.second);
     CHECK_EQ(data_reader->sample_rate(), 16000);
     int16_t* data = const_cast<int16_t*>(data_reader->data());

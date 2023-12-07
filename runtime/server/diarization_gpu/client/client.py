@@ -25,6 +25,7 @@ import os
 
 
 class SpeakerClient(object):
+
     def __init__(self, triton_client, model_name, protocol_client):
         self.triton_client = triton_client
         self.protocol_client = protocol_client
@@ -38,8 +39,10 @@ class SpeakerClient(object):
         cur_length = len(waveform)
         input = np.zeros((1, cur_length), dtype=np.float32)
         input[0][0:cur_length] = waveform[0:cur_length]
-        inputs = [self.protocol_client.InferInput("input", input.shape,
-                  np_to_triton_dtype(input.dtype))]
+        inputs = [
+            self.protocol_client.InferInput("input", input.shape,
+                                            np_to_triton_dtype(input.dtype))
+        ]
         inputs[0].set_data_from_numpy(input)
         outputs = [grpcclient.InferRequestedOutput("LABELS")]
         response = self.triton_client.infer(self.model_name,
@@ -113,10 +116,12 @@ if __name__ == '__main__':
         if not os.path.exists(dir_name) and (dir_name != ''):
             os.makedirs(dir_name)
         seg_writer = open(os.path.join(FLAGS.output_directory,
-                                       'rttm' + str(idx)), 'w', encoding="utf-8")
+                                       'rttm' + str(idx)),
+                          'w',
+                          encoding="utf-8")
 
-        with grpcclient.InferenceServerClient(url=FLAGS.url,
-                                              verbose=FLAGS.verbose) as triton_client:
+        with grpcclient.InferenceServerClient(
+                url=FLAGS.url, verbose=FLAGS.verbose) as triton_client:
             protocol_client = grpcclient
             speech_client = SpeakerClient(triton_client, FLAGS.model_name,
                                           protocol_client)
@@ -132,11 +137,9 @@ if __name__ == '__main__':
                     end = rttms[i][1]
                     label = int(rttms[i][2])
                     channel = 1
-                    seg_writer.write(spec.format(utt,
-                                                 channel,
-                                                 begin,
-                                                 end - begin,
-                                                 label) + '\n')
+                    seg_writer.write(
+                        spec.format(utt, channel, begin, end - begin, label) +
+                        '\n')
                     seg_writer.flush()
         return predictions
 

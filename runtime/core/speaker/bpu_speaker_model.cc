@@ -15,25 +15,25 @@
 #ifdef USE_BPU
 
 #include "speaker/bpu_speaker_model.h"
-#include <vector>
+
 #include <cstring>
-#include "glog/logging.h"
+#include <vector>
 
 #include "easy_dnn/data_structure.h"
 #include "easy_dnn/model_manager.h"
 #include "easy_dnn/task_manager.h"
+#include "glog/logging.h"
 
 using hobot::easy_dnn::ModelManager;
 using hobot::easy_dnn::Task;
 using hobot::easy_dnn::TaskManager;
 
-
 namespace wespeaker {
 
 void BpuSpeakerModel::AllocMemory(
-  std::vector<std::shared_ptr<DNNTensor>>* input_dnn_tensor_array,
-  std::vector<std::shared_ptr<DNNTensor>>* output_dnn_tensor_array,
-  Model* model) {
+    std::vector<std::shared_ptr<DNNTensor>>* input_dnn_tensor_array,
+    std::vector<std::shared_ptr<DNNTensor>>* output_dnn_tensor_array,
+    Model* model) {
   int32_t input_counts = model->GetInputCount();
   LOG(INFO) << "input_counts: " << input_counts;
   input_dnn_tensor_array->resize(input_counts);
@@ -45,8 +45,7 @@ void BpuSpeakerModel::AllocMemory(
     if (input->properties.tensorType != hbDNNDataType::HB_DNN_TENSOR_TYPE_F32) {
       LOG(FATAL) << "Input data type must be float32";
     }
-    hbSysAllocCachedMem(&(input->sysMem[0]),
-                          input->properties.alignedByteSize);
+    hbSysAllocCachedMem(&(input->sysMem[0]), input->properties.alignedByteSize);
   }
   // stage-2: output
   int32_t output_counts = model->GetOutputCount();
@@ -78,9 +77,9 @@ void BpuSpeakerModel::Read(const std::string& model_path) {
   // Model_path is bin model egs: speaker_resnet34.bin
   ret_code = model_manager->Load(models, model_path);
   if (ret_code != 0) {
-      LOG(FATAL) << "easydn error code: "
-                  << ", error loading bpu model speaker_model.bin at "
-                  << model_path;
+    LOG(FATAL) << "easydn error code: "
+               << ", error loading bpu model speaker_model.bin at "
+               << model_path;
   }
   // get model handle
   speaker_dnn_handle_ = model_manager->GetModel([](Model* model) {
@@ -98,8 +97,8 @@ BpuSpeakerModel::BpuSpeakerModel(const std::string& model_path) {
 }
 
 void BpuSpeakerModel::ExtractEmbedding(
-  const std::vector<std::vector<float>>& chunk_feats,
-  std::vector<float>* embed) {
+    const std::vector<std::vector<float>>& chunk_feats,
+    std::vector<float>* embed) {
   // reset input && output
   Reset();
   // chunk_feats: [198, 80]
@@ -123,10 +122,10 @@ void BpuSpeakerModel::ExtractEmbedding(
   infer_task.reset();
 
   hbSysFlushMem(&(output_dnn_[0]->sysMem[0]), HB_SYS_MEM_CACHE_INVALIDATE);
-  int output_dim = \
-    output_dnn_[0]->properties.validShape.dimensionSize[1];  // 256
-  const float* raw_data = \
-    reinterpret_cast<float*>(output_dnn_[0]->sysMem[0].virAddr);
+  int output_dim =
+      output_dnn_[0]->properties.validShape.dimensionSize[1];  // 256
+  const float* raw_data =
+      reinterpret_cast<float*>(output_dnn_[0]->sysMem[0].virAddr);
   embed->reserve(output_dim);
   // NOTE(cdliang): default output_node = 1
   for (int idx = 0, i = 0; i < output_dim; i++) {
@@ -136,15 +135,17 @@ void BpuSpeakerModel::ExtractEmbedding(
 
 void BpuSpeakerModel::Reset() {
   auto set_to_zero =
-    [](std::vector<std::shared_ptr<DNNTensor>>& input_dnn_tensor_array,
-        std::vector<std::shared_ptr<DNNTensor>>& output_dnn_tensor_array) {
-    for (auto& tensor : input_dnn_tensor_array) {
-      memset(tensor->sysMem[0].virAddr, 0, tensor->properties.alignedByteSize);
-    }
-    for (auto& tensor : output_dnn_tensor_array) {
-      memset(tensor->sysMem[0].virAddr, 0, tensor->properties.alignedByteSize);
-    }
-  };
+      [](std::vector<std::shared_ptr<DNNTensor>>& input_dnn_tensor_array,
+         std::vector<std::shared_ptr<DNNTensor>>& output_dnn_tensor_array) {
+        for (auto& tensor : input_dnn_tensor_array) {
+          memset(tensor->sysMem[0].virAddr, 0,
+                 tensor->properties.alignedByteSize);
+        }
+        for (auto& tensor : output_dnn_tensor_array) {
+          memset(tensor->sysMem[0].virAddr, 0,
+                 tensor->properties.alignedByteSize);
+        }
+      };
   set_to_zero(input_dnn_, output_dnn_);
 }
 }  // namespace wespeaker

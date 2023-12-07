@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
+
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -42,20 +42,28 @@ def get_args():
     parser.add_argument('--scp', required=True, help='wav scp')
     parser.add_argument('--segments', required=True, help='vad segments')
     parser.add_argument('--output', required=True, help='output label file')
-    parser.add_argument('--source', required=True,
-                        help='onnx model')
-    parser.add_argument('--device', default='cuda',
+    parser.add_argument('--source', required=True, help='onnx model')
+    parser.add_argument('--device',
+                        default='cuda',
                         help='inference device type: cpu or cuda')
-    parser.add_argument('--batch-size', type=int, default=96,
+    parser.add_argument('--batch-size',
+                        type=int,
+                        default=96,
                         help='batch size for embedding extraction')
     args = parser.parse_args()
 
     return args
 
 
-def compute_embeddings(scp, segments, source, device,
-                       batch_size, sampling_rate=16000,
-                       window_secs=1.50, period_secs=0.75, frame_shift=10):
+def compute_embeddings(scp,
+                       segments,
+                       source,
+                       device,
+                       batch_size,
+                       sampling_rate=16000,
+                       window_secs=1.50,
+                       period_secs=0.75,
+                       frame_shift=10):
 
     def read_segments(segments):
         utt_to_segments = OrderedDict()
@@ -97,13 +105,12 @@ def compute_embeddings(scp, segments, source, device,
         for (seg, begin, end) in segments:
             seg_begin = int(begin * sampling_rate)
             seg_end = int(end * sampling_rate)
-            seg_signal = signal[seg_begin: seg_end + 1, :]
+            seg_signal = signal[seg_begin:seg_end + 1, :]
             seg_length = seg_end - seg_begin
 
             if seg_length <= window_fs:
                 subseg = seg + "-{:08d}-{:08d}".format(
-                    0,
-                    int(seg_length / sampling_rate * 1000 // frame_shift))
+                    0, int(seg_length / sampling_rate * 1000 // frame_shift))
                 subseg_signal = repeat_to_fill(seg_signal, window_fs)
 
                 subsegs.append(subseg)
@@ -116,15 +123,19 @@ def compute_embeddings(scp, segments, source, device,
                         int(subseg_begin / sampling_rate * 1000 / frame_shift),
                         int(subseg_end / sampling_rate * 1000 / frame_shift))
                     subseg_signal = repeat_to_fill(
-                        seg_signal[subseg_begin: subseg_end + 1, :], window_fs)
+                        seg_signal[subseg_begin:subseg_end + 1, :], window_fs)
 
                     subsegs.append(subseg)
                     subseg_signals.append(subseg_signal)
 
         return subsegs, subseg_signals
 
-    def compute_fbank(wavs, num_mel_bins=80, frame_length=25,
-                      frame_shift=10, dither=0.0, sample_frequency=16000):
+    def compute_fbank(wavs,
+                      num_mel_bins=80,
+                      frame_length=25,
+                      frame_shift=10,
+                      dither=0.0,
+                      sample_frequency=16000):
 
         feats = []
         for wav in wavs:
@@ -155,14 +166,15 @@ def compute_embeddings(scp, segments, source, device,
         opts = ort.SessionOptions()
         opts.inter_op_num_threads = 1
         opts.intra_op_num_threads = 1
-        session = ort.InferenceSession(source, sess_options=opts,
+        session = ort.InferenceSession(source,
+                                       sess_options=opts,
                                        providers=providers)
         return session
 
     def extract_embeddings(wavs, batch_size):
         embeddings = []
         for i in range(0, wavs.size(0), batch_size):
-            batch_wavs = wavs[i: i + batch_size, :]
+            batch_wavs = wavs[i:i + batch_size, :]
             batch_feats = compute_fbank(batch_wavs)
             batch_embs = session.run(input_feed={'feats': batch_feats.numpy()},
                                      output_names=['embs'])[0].squeeze()
@@ -193,8 +205,8 @@ def compute_embeddings(scp, segments, source, device,
         segments = utt_to_segments[utt]
 
         # Extract wav data using sliding window with overlap for each utterance
-        utt_subsegs, utt_subseg_signals = subsegment(wav, segments,
-                                                     window_fs, period_fs)
+        utt_subsegs, utt_subseg_signals = subsegment(wav, segments, window_fs,
+                                                     period_fs)
         # Convert a list of Tensor to a Tensor
         utt_subseg_signals = torch.stack(utt_subseg_signals).squeeze(-1)
 
@@ -256,8 +268,8 @@ def cluster(embeddings, p=.01, num_spks=None, min_num_spks=1, max_num_spks=20):
     # Compute Laplacian
     laplacian_matrix = laplacian(pruned_similarity_matrix)
     # Compute spectral embeddings
-    spectral_embeddings = spectral(laplacian_matrix, num_spks,
-                                   min_num_spks, max_num_spks)
+    spectral_embeddings = spectral(laplacian_matrix, num_spks, min_num_spks,
+                                   max_num_spks)
     # Assign class labels
     labels = kmeans(spectral_embeddings)
 
@@ -268,8 +280,7 @@ def main():
     args = get_args()
 
     print('Segmenting and extracting speaker embeddings')
-    subsegs_list, embeddings_list = compute_embeddings(args.scp,
-                                                       args.segments,
+    subsegs_list, embeddings_list = compute_embeddings(args.scp, args.segments,
                                                        args.source,
                                                        args.device,
                                                        args.batch_size)
@@ -279,7 +290,10 @@ def main():
     with cf.ProcessPoolExecutor() as executor, open(args.output, 'w') as f:
         for (subsegs, labels) in zip(subsegs_list,
                                      executor.map(cluster, embeddings_list)):
-            [print(subseg, label, file=f) for (subseg, label) in zip(subsegs, labels)]
+            [
+                print(subseg, label, file=f)
+                for (subseg, label) in zip(subsegs, labels)
+            ]
 
 
 if __name__ == '__main__':

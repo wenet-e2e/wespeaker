@@ -36,10 +36,11 @@ def get_args():
                         default=0,
                         type=int,
                         help='min epoch used for averaging model')
-    parser.add_argument('--max_epoch',
-                        default=65536,  # Big enough
-                        type=int,
-                        help='max epoch used for averaging model')
+    parser.add_argument(
+        '--max_epoch',
+        default=65536,  # Big enough
+        type=int,
+        help='max epoch used for averaging model')
     args = parser.parse_args()
     print(args)
     return args
@@ -57,7 +58,8 @@ def get_t_model_state_dict(state_dict):
 def main():
     args = get_args()
 
-    path_list = glob.glob('{}/[!avg][!final][!convert]*.pt'.format(args.src_path))
+    path_list = glob.glob('{}/[!avg][!final][!convert]*.pt'.format(
+        args.src_path))
     path_list = sorted(
         path_list,
         key=lambda p: int(re.findall(r"(?<=model_)\d*(?=.pt)", p)[0]))

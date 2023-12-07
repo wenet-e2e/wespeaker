@@ -24,8 +24,8 @@ from wespeaker.utils.file_utils import read_table
 
 
 def get_mean_std(emb, cohort, top_n):
-    emb = emb / np.sqrt(np.sum(emb ** 2, axis=1, keepdims=True))
-    cohort = cohort / np.sqrt(np.sum(cohort ** 2, axis=1, keepdims=True))
+    emb = emb / np.sqrt(np.sum(emb**2, axis=1, keepdims=True))
+    cohort = cohort / np.sqrt(np.sum(cohort**2, axis=1, keepdims=True))
     emb_cohort_score = np.matmul(emb, cohort.T)
     emb_cohort_score = np.sort(emb_cohort_score, axis=1)[:, ::-1]
     emb_cohort_score_topn = emb_cohort_score[:, :top_n]
@@ -67,7 +67,7 @@ def main(score_norm_method,
     else:
         assert os.path.exists(
             mean_vec_path), "mean_vec file ({}) does not exist !!!".format(
-            mean_vec_path)
+                mean_vec_path)
         mean_vec = np.load(mean_vec_path)
 
     # get embedding
@@ -105,8 +105,8 @@ def main(score_norm_method,
                 normed_score = 0.5 * (
                     (score - enroll_mean[enroll_idx]) / enroll_std[enroll_idx]
                     + (score - test_mean[test_idx]) / test_std[test_idx])
-                fout.write('{} {} {:.5f} {}\n'.format(
-                    line[0], line[1], normed_score, line[3]))
+                fout.write('{} {} {:.5f} {}\n'.format(line[0], line[1],
+                                                      normed_score, line[3]))
     logging.info("Over!")
 
 

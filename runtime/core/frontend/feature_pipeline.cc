@@ -46,7 +46,6 @@ void FeaturePipeline::AcceptWaveform(const std::vector<float>& wav) {
   finish_condition_.notify_one();
 }
 
-
 void FeaturePipeline::AcceptWaveform(const std::vector<int16_t>& wav) {
   std::vector<float> float_wav(wav.size());
   for (size_t i = 0; i < wav.size(); i++) {

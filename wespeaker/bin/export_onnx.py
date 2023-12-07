@@ -31,7 +31,9 @@ def get_args():
     parser.add_argument('--config', required=True, help='config file')
     parser.add_argument('--checkpoint', required=True, help='checkpoint model')
     parser.add_argument('--output_model', required=True, help='output file')
-    parser.add_argument('--mean_vec', required=False, default=None,
+    parser.add_argument('--mean_vec',
+                        required=False,
+                        default=None,
                         help='mean vector')
     args = parser.parse_args()
     return args
@@ -54,6 +56,7 @@ def main():
         mean_vec = torch.zeros(embed_dim, dtype=torch.float32)
 
     class Model(nn.Module):
+
         def __init__(self, model, mean_vec=None):
             super(Model, self).__init__()
             self.model = model
@@ -75,15 +78,23 @@ def main():
         num_frms = configs['dataset_args'].get('num_frms', 200)
 
     dummy_input = torch.ones(1, num_frms, feat_dim)
-    torch.onnx.export(
-        model, dummy_input,
-        args.output_model,
-        do_constant_folding=True,
-        verbose=False,
-        opset_version=14,
-        input_names=['feats'],
-        output_names=['embs'],
-        dynamic_axes={'feats': {0: 'B', 1: 'T'}, 'embs': {0: 'B'}})
+    torch.onnx.export(model,
+                      dummy_input,
+                      args.output_model,
+                      do_constant_folding=True,
+                      verbose=False,
+                      opset_version=14,
+                      input_names=['feats'],
+                      output_names=['embs'],
+                      dynamic_axes={
+                          'feats': {
+                              0: 'B',
+                              1: 'T'
+                          },
+                          'embs': {
+                              0: 'B'
+                          }
+                      })
 
     # You may further generate tensorrt engine:
     # trtexec --onnx=avg_model.onnx --minShapes=feats:1x200x80 \

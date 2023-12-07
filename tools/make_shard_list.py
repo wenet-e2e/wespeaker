@@ -103,7 +103,8 @@ def write_tar_file(data_list, tar_file, index=0, total=1):
 
             ts = time.time()
             if wav.endswith('|'):
-                p = subprocess.Popen(wav[:-1], shell=True,
+                p = subprocess.Popen(wav[:-1],
+                                     shell=True,
                                      stdout=subprocess.PIPE)
                 data = p.stdout.read()
             else:
@@ -148,7 +149,10 @@ def get_args():
     parser.add_argument('--shuffle',
                         action='store_true',
                         help='whether to shuffle data')
-    parser.add_argument('--vad_file', type=str, help='vad file', default='non_exist')
+    parser.add_argument('--vad_file',
+                        type=str,
+                        help='vad file',
+                        default='non_exist')
     parser.add_argument('wav_file', help='wav file')
     parser.add_argument('utt2spk_file', help='utt2spk file')
     parser.add_argument('shards_dir', help='output shards dir')

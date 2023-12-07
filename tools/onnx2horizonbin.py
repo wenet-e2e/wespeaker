@@ -32,7 +32,6 @@ except ImportError:
     print('Please install hbdk,horizon_nn,horizon_tc_ui !')
     sys.exit(1)
 
-
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.INFO)
 
@@ -40,15 +39,14 @@ logger.setLevel(logging.INFO)
 def make_calibration_data(args, conf, cal_data_dir):
     conf['shuffle'] = True
     logger.info(conf)
-    dataset = Dataset(
-        args.cali_data_type,
-        args.cali_datalist,
-        conf,
-        spk2id_dict={},
-        whole_utt=False,
-        reverb_lmdb_file=None,
-        noise_lmdb_file=None,
-        repeat_dataset=False)
+    dataset = Dataset(args.cali_data_type,
+                      args.cali_datalist,
+                      conf,
+                      spk2id_dict={},
+                      whole_utt=False,
+                      reverb_lmdb_file=None,
+                      noise_lmdb_file=None,
+                      repeat_dataset=False)
     dataloader = DataLoader(dataset,
                             shuffle=False,
                             batch_size=1,
@@ -57,11 +55,10 @@ def make_calibration_data(args, conf, cal_data_dir):
         if batch_idx % 100 == 0:
             logger.info("processed {} samples.".format(batch_idx))
         assert len(batch['key']) == 1
-        key = batch['key'][0]   # [B, key]
+        key = batch['key'][0]  # [B, key]
         feat = batch['feat']
         feat = feat.unsqueeze(1).numpy()
-        feats_save_path = os.path.join(cal_data_dir,
-                                       '{}.bin'.format(key))
+        feats_save_path = os.path.join(cal_data_dir, '{}.bin'.format(key))
         feat.tofile(feats_save_path)
 
 
@@ -133,30 +130,48 @@ compiler_parameters:
     output_dir = os.path.realpath(args.output_dir)
     speaker_onnx_path = os.path.realpath(args.onnx_path)
     speaker_log_path = os.path.join(output_dir, 'hb_makertbin_output_speaker')
-    speaker_config = template.format(
-        os.path.realpath(args.onnx_path), "speaker", speaker_log_path,
-        args.input_name, args.input_shape,
-        "cal_data_dir", args.calibration_type, args.extra_ops_run_on_cpu, "")
+    speaker_config = template.format(os.path.realpath(args.onnx_path),
+                                     "speaker", speaker_log_path,
+                                     args.input_name, args.input_shape,
+                                     "cal_data_dir", args.calibration_type,
+                                     args.extra_ops_run_on_cpu, "")
     with open(output_dir + "/config_speaker.yaml", "w") as speaker_yaml:
         speaker_yaml.write(speaker_config)
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description='convert onnx to horizon .bin')
+    parser = argparse.ArgumentParser(
+        description='convert onnx to horizon .bin')
     parser.add_argument('--config', required=True, help='config file')
     parser.add_argument('--output_dir', required=True, help='output directory')
-    parser.add_argument('--cali_datalist', type=str, default=None,
+    parser.add_argument('--cali_datalist',
+                        type=str,
+                        default=None,
                         help='make calibration data')
-    parser.add_argument('--cali_data_type', type=str, default=None,
+    parser.add_argument('--cali_data_type',
+                        type=str,
+                        default=None,
                         help='make calibration data')
-    parser.add_argument('--extra_ops_run_on_cpu', type=str, default="",
+    parser.add_argument('--extra_ops_run_on_cpu',
+                        type=str,
+                        default="",
                         help='extra operations running on cpu.')
-    parser.add_argument('--calibration_type', type=str, default='default',
+    parser.add_argument('--calibration_type',
+                        type=str,
+                        default='default',
                         help='kl / max / default.')
-    parser.add_argument('--onnx_path', type=str, required=True,
+    parser.add_argument('--onnx_path',
+                        type=str,
+                        required=True,
                         help='onnx model (float)')
-    parser.add_argument('--input_name', type=str, required=True, help='input name')
-    parser.add_argument('--input_shape', type=str, required=True, help='input shape')
+    parser.add_argument('--input_name',
+                        type=str,
+                        required=True,
+                        help='input name')
+    parser.add_argument('--input_shape',
+                        type=str,
+                        required=True,
+                        help='input shape')
     return parser
 
 
@@ -191,9 +206,7 @@ if __name__ == '__main__':
 
     output_dir = os.path.realpath(args.output_dir)
     logger.info("Stage-3: Make speaker.bin")
-    os.system(
-        "cd {} && mkdir -p hb_makertbin_log_speaker".format(output_dir) +
-        " && cd hb_makertbin_log_speaker &&" +
-        " hb_mapper makertbin --model-type \"onnx\" --config \"{}\"".format(
-            output_dir + "/config_speaker.yaml")
-    )
+    os.system("cd {} && mkdir -p hb_makertbin_log_speaker".format(output_dir) +
+              " && cd hb_makertbin_log_speaker &&" +
+              " hb_mapper makertbin --model-type \"onnx\" --config \"{}\"".
+              format(output_dir + "/config_speaker.yaml"))

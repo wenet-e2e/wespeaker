@@ -16,14 +16,14 @@
 
 #include <vector>
 
-#include "speaker/onnx_speaker_model.h"
 #include "glog/logging.h"
+#include "speaker/onnx_speaker_model.h"
 #include "utils/utils.h"
 
 namespace wespeaker {
 
-Ort::Env OnnxSpeakerModel::env_ = Ort::Env(
-  ORT_LOGGING_LEVEL_WARNING, "OnnxModel");
+Ort::Env OnnxSpeakerModel::env_ =
+    Ort::Env(ORT_LOGGING_LEVEL_WARNING, "OnnxModel");
 Ort::SessionOptions OnnxSpeakerModel::session_options_ = Ort::SessionOptions();
 
 void OnnxSpeakerModel::InitEngineThreads(int num_threads) {
@@ -32,22 +32,22 @@ void OnnxSpeakerModel::InitEngineThreads(int num_threads) {
 
 #ifdef USE_GPU
 void OnnxSpeakerModel::SetGpuDeviceId(int gpu_id) {
-  Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_CUDA(
-    session_options_, gpu_id));
+  Ort::ThrowOnError(
+      OrtSessionOptionsAppendExecutionProvider_CUDA(session_options_, gpu_id));
 }
 #endif
 
 OnnxSpeakerModel::OnnxSpeakerModel(const std::string& model_path) {
   session_options_.SetGraphOptimizationLevel(
       GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
-  // 1. Load sessions
-  #ifdef _MSC_VER
+// 1. Load sessions
+#ifdef _MSC_VER
   speaker_session_ = std::make_shared<Ort::Session>(
-                     env_, ToWString(model_path).c_str(), session_options_);
-  #else
-  speaker_session_ = std::make_shared<Ort::Session>(
-                     env_, model_path.c_str(), session_options_);
-  #endif
+      env_, ToWString(model_path).c_str(), session_options_);
+#else
+  speaker_session_ = std::make_shared<Ort::Session>(env_, model_path.c_str(),
+                                                    session_options_);
+#endif
   // 2. Model info
   Ort::AllocatorWithDefaultOptions allocator;
   // 2.1. input info
@@ -69,10 +69,9 @@ OnnxSpeakerModel::OnnxSpeakerModel(const std::string& model_path) {
 }
 
 void OnnxSpeakerModel::ExtractEmbedding(
-  const std::vector<std::vector<float>>& feats,
-  std::vector<float>* embed) {
+    const std::vector<std::vector<float>>& feats, std::vector<float>* embed) {
   Ort::MemoryInfo memory_info =
-        Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+      Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
   // prepare onnx required data
   unsigned int num_frames = feats.size();
   unsigned int feat_dim = feats[0].size();

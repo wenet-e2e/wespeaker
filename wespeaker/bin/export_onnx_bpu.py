@@ -33,15 +33,21 @@ def get_args():
     parser.add_argument('--config', required=True, help='config file')
     parser.add_argument('--checkpoint', required=True, help='checkpoint model')
     parser.add_argument('--output_model', required=True, help='output file')
-    parser.add_argument('--mean_vec', required=False, default=None,
+    parser.add_argument('--mean_vec',
+                        required=False,
+                        default=None,
                         help='mean vector')
     # NOTE(cdliang): for horizon bpu, the shape of input is fixed.
-    parser.add_argument('--num_frames', type=int, required=True, help="num frames")
+    parser.add_argument('--num_frames',
+                        type=int,
+                        required=True,
+                        help="num frames")
     args = parser.parse_args()
     return args
 
 
 class Model(nn.Module):
+
     def __init__(self, model, mean_vec=None):
         super(Model, self).__init__()
         self.model = model
@@ -49,7 +55,7 @@ class Model(nn.Module):
 
     def forward(self, feats):
         # NOTE(cdliang): for horizion x3pi, input shape is [NHWC]
-        feats = feats.squeeze(1)   # [B, 1, T, F] -> [B, T, F]
+        feats = feats.squeeze(1)  # [B, 1, T, F] -> [B, T, F]
         outputs = self.model(feats)  # embed or (embed_a, embed_b)
         embeds = outputs[-1] if isinstance(outputs, tuple) else outputs
         embeds = embeds - self.mean_vec
@@ -78,14 +84,14 @@ def main():
 
     feat_dim = configs['model_args'].get('feat_dim', 80)
     static_input = torch.ones(1, 1, args.num_frames, feat_dim)
-    torch.onnx.export(
-        model, static_input,
-        args.output_model,
-        do_constant_folding=True,
-        verbose=False,
-        opset_version=11,
-        input_names=['feats'],
-        output_names=['embs'])
+    torch.onnx.export(model,
+                      static_input,
+                      args.output_model,
+                      do_constant_folding=True,
+                      verbose=False,
+                      opset_version=11,
+                      input_names=['feats'],
+                      output_names=['embs'])
 
 
 if __name__ == '__main__':

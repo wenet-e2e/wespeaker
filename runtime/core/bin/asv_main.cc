@@ -13,13 +13,12 @@
 // limitations under the License.
 
 #include <string>
+
 #include "frontend/wav.h"
-#include "utils/utils.h"
 #include "gflags/gflags.h"
-#include "utils/timer.h"
-
 #include "speaker/speaker_engine.h"
-
+#include "utils/timer.h"
+#include "utils/utils.h"
 
 DEFINE_string(enroll_wav, "", "First wav as enroll wav.");
 DEFINE_string(test_wav, "", "Second wav as test wav.");
@@ -31,8 +30,6 @@ DEFINE_int32(sample_rate, 16000, "sample rate");
 DEFINE_int32(embedding_size, 256, "embedding size");
 DEFINE_int32(SamplesPerChunk, 32000, "samples of one chunk");
 
-
-
 int main(int argc, char* argv[]) {
   gflags::ParseCommandLineFlags(&argc, &argv, false);
   google::InitGoogleLogging(argv[0]);
@@ -41,8 +38,8 @@ int main(int argc, char* argv[]) {
   LOG(INFO) << FLAGS_speaker_model_path;
   LOG(INFO) << "Init model ...";
   auto speaker_engine = std::make_shared<wespeaker::SpeakerEngine>(
-    FLAGS_speaker_model_path, FLAGS_fbank_dim, FLAGS_sample_rate,
-    FLAGS_embedding_size, FLAGS_SamplesPerChunk);
+      FLAGS_speaker_model_path, FLAGS_fbank_dim, FLAGS_sample_rate,
+      FLAGS_embedding_size, FLAGS_SamplesPerChunk);
   int embedding_size = speaker_engine->EmbeddingSize();
   LOG(INFO) << "embedding size: " << embedding_size;
   // read enroll wav/pcm data
@@ -52,26 +49,21 @@ int main(int argc, char* argv[]) {
   // NOTE(cdliang): memory allocation
   std::vector<float> enroll_embs(embedding_size, 0);
   int enroll_wave_dur = static_cast<int>(static_cast<float>(enroll_samples) /
-                              data_reader->sample_rate() * 1000);
+                                         data_reader->sample_rate() * 1000);
   LOG(INFO) << enroll_wave_dur;
-  speaker_engine->ExtractEmbedding(enroll_data,
-                                   enroll_samples,
-                                   &enroll_embs);
+  speaker_engine->ExtractEmbedding(enroll_data, enroll_samples, &enroll_embs);
   // test wav
   auto test_data_reader = wenet::ReadAudioFile(FLAGS_test_wav);
   int16_t* test_data = const_cast<int16_t*>(test_data_reader->data());
   int test_samples = test_data_reader->num_sample();
   std::vector<float> test_embs(embedding_size, 0);
   int test_wave_dur = static_cast<int>(static_cast<float>(test_samples) /
-                              test_data_reader->sample_rate() * 1000);
+                                       test_data_reader->sample_rate() * 1000);
   LOG(INFO) << test_wave_dur;
-  speaker_engine->ExtractEmbedding(test_data,
-                                   test_samples,
-                                   &test_embs);
+  speaker_engine->ExtractEmbedding(test_data, test_samples, &test_embs);
   float cosine_score;
   LOG(INFO) << "compute score ...";
-  cosine_score = speaker_engine->CosineSimilarity(enroll_embs,
-                                                  test_embs);
+  cosine_score = speaker_engine->CosineSimilarity(enroll_embs, test_embs);
   LOG(INFO) << "Cosine socre: " << cosine_score;
   if (cosine_score >= FLAGS_threshold) {
     LOG(INFO) << "It's the same speaker!";

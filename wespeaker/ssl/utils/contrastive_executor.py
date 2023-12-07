@@ -53,8 +53,7 @@ def run_epoch(dataloader,
 
         # loss, acc
         loss_meter.add(loss.item())
-        acc_meter.add(logits.cpu().detach().numpy(),
-                      labels.cpu().numpy())
+        acc_meter.add(logits.cpu().detach().numpy(), labels.cpu().numpy())
 
         # updata the model
         optimizer.zero_grad()

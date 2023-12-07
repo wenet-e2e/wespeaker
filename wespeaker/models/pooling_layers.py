@@ -94,7 +94,11 @@ class ASTP(nn.Module):
         statistics pooling, first used in ECAPA_TDNN.
     """
 
-    def __init__(self, in_dim, bottleneck_dim=128, global_context_att=False, **kwargs):
+    def __init__(self,
+                 in_dim,
+                 bottleneck_dim=128,
+                 global_context_att=False,
+                 **kwargs):
         super(ASTP, self).__init__()
         self.in_dim = in_dim
         self.global_context_att = global_context_att

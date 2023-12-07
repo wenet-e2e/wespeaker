@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """TDNN model for x-vector learning"""
 
 import torch
@@ -21,6 +20,7 @@ import wespeaker.models.pooling_layers as pooling_layers
 
 
 class TdnnLayer(nn.Module):
+
     def __init__(self, in_dim, out_dim, context_size, dilation=1, padding=0):
         """Define the TDNN layer, essentially 1-D convolution
 
@@ -54,6 +54,7 @@ class TdnnLayer(nn.Module):
 
 
 class XVEC(nn.Module):
+
     def __init__(self,
                  feat_dim=40,
                  hid_dim=512,

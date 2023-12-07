@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import argparse
 from collections import OrderedDict
 
@@ -20,8 +19,10 @@ from collections import OrderedDict
 def get_args():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('--rttm', required=True, help='reference rttm')
-    parser.add_argument('--min-duration', required=True,
-                        type=float, help='min duration')
+    parser.add_argument('--min-duration',
+                        required=True,
+                        type=float,
+                        help='min duration')
     args = parser.parse_args()
 
     return args
@@ -67,6 +68,7 @@ def merge_segments(utt_to_segments, min_duration):
 
     return utt_to_merged_segments
 
+
 def main():
     args = get_args()
 
@@ -76,8 +78,9 @@ def main():
     segments_line_spec = "{}-{:08d}-{:08d} {} {:.3f} {:.3f}"
     for utt, segments in utt_to_merged_segments.items():
         for (begin, end) in segments:
-            print(segments_line_spec.format(
-                utt, int(begin * 1000), int(end * 1000), utt, begin, end))
+            print(
+                segments_line_spec.format(utt, int(begin * 1000),
+                                          int(end * 1000), utt, begin, end))
 
 
 if __name__ == '__main__':

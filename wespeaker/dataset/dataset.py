@@ -38,7 +38,6 @@ class Processor(IterableDataset):
     def set_epoch(self, epoch):
         self.source.set_epoch(epoch)
 
-
     def __iter__(self):
         """ Return an iterator over the source dataset processed by the
             given processor.
@@ -103,7 +102,11 @@ class DistributedSampler:
 
 class DataList(IterableDataset):
 
-    def __init__(self, lists, shuffle=True, partition=True, repeat_dataset=True):
+    def __init__(self,
+                 lists,
+                 shuffle=True,
+                 partition=True,
+                 repeat_dataset=True):
         self.lists = lists
         self.repeat_dataset = repeat_dataset
         self.sampler = DistributedSampler(shuffle, partition)
@@ -171,14 +174,15 @@ def Dataset(data_type,
         filter_conf = configs.get('filter_args', {})
         dataset = Processor(dataset,
                             processor.filter,
-                            frame_shift=configs['fbank_args'].get('frame_shift', 10),
+                            frame_shift=configs['fbank_args'].get(
+                                'frame_shift', 10),
                             data_type=data_type,
-                            **filter_conf
-                            )
+                            **filter_conf)
 
     # Local shuffle
     if shuffle:
-        dataset = Processor(dataset, processor.shuffle, **configs['shuffle_args'])
+        dataset = Processor(dataset, processor.shuffle,
+                            **configs['shuffle_args'])
 
     # spk2id
     dataset = Processor(dataset, processor.spk_to_id, spk2id_dict)
@@ -187,7 +191,8 @@ def Dataset(data_type,
         if not whole_utt:
             # random chunk
             chunk_len = num_frms = configs.get('num_frms', 200)
-            dataset = Processor(dataset, processor.random_chunk, chunk_len, 'feat')
+            dataset = Processor(dataset, processor.random_chunk, chunk_len,
+                                'feat')
     else:
         # resample
         resample_rate = configs.get('resample_rate', 16000)
@@ -195,24 +200,28 @@ def Dataset(data_type,
         # speed perturb
         speed_perturb_flag = configs.get('speed_perturb', True)
         if speed_perturb_flag:
-            dataset = Processor(dataset, processor.speed_perturb, len(spk2id_dict))
+            dataset = Processor(dataset, processor.speed_perturb,
+                                len(spk2id_dict))
         if not whole_utt:
             # random chunk
             num_frms = configs.get('num_frms', 200)
             frame_shift = configs['fbank_args'].get('frame_shift', 10)
             frame_length = configs['fbank_args'].get('frame_length', 25)
-            chunk_len = ((num_frms - 1) * frame_shift
-                         + frame_length) * resample_rate // 1000
-            dataset = Processor(dataset, processor.random_chunk, chunk_len, data_type)
+            chunk_len = ((num_frms - 1) * frame_shift +
+                         frame_length) * resample_rate // 1000
+            dataset = Processor(dataset, processor.random_chunk, chunk_len,
+                                data_type)
         # add reverb & noise
         aug_prob = configs.get('aug_prob', 0.6)
         if (reverb_lmdb_file and noise_lmdb_file) and (aug_prob > 0.0):
             reverb_data = LmdbData(reverb_lmdb_file)
             noise_data = LmdbData(noise_lmdb_file)
-            dataset = Processor(dataset, processor.add_reverb_noise, reverb_data,
-                                noise_data, resample_rate, aug_prob)
+            dataset = Processor(dataset, processor.add_reverb_noise,
+                                reverb_data, noise_data, resample_rate,
+                                aug_prob)
         # compute fbank
-        dataset = Processor(dataset, processor.compute_fbank, **configs['fbank_args'])
+        dataset = Processor(dataset, processor.compute_fbank,
+                            **configs['fbank_args'])
 
     # apply cmvn
     dataset = Processor(dataset, processor.apply_cmvn)
@@ -220,6 +229,7 @@ def Dataset(data_type,
     # spec augmentation
     spec_aug_flag = configs.get('spec_aug', True)
     if spec_aug_flag:
-        dataset = Processor(dataset, processor.spec_aug, **configs['spec_aug_args'])
+        dataset = Processor(dataset, processor.spec_aug,
+                            **configs['spec_aug_args'])
 
     return dataset
