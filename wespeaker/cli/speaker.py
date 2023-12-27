@@ -189,11 +189,10 @@ class Speaker:
         for item in vad_segments:
             begin, end = item['start'], item['end']
             if end - begin >= min_duration:
-                tmp_wavform = pcm[0,
-                                  int(begin *
-                                      sample_rate):int(end *
-                                                       sample_rate)].unsqueeze(
-                                                           0).to(torch.float)
+                begin_idx = int(begin * sample_rate)
+                end_idx = int(end * sample_rate)
+                tmp_wavform = pcm[0, begin_idx:end_idx].unsqueeze(0).to(
+                    torch.float)
                 fbank = self.compute_fbank(tmp_wavform,
                                            sample_rate=sample_rate,
                                            cmn=False)
