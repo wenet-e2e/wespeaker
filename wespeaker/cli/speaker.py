@@ -215,7 +215,7 @@ class Speaker:
         subseg2label = []
         labels = cluster(embeddings)
         for (_subseg, _label) in zip(subsegs, labels):
-            b, e = process_seg_id(_subseg)
+            b, e = process_seg_id(_subseg, frame_shift=frame_shift)
             subseg2label.append([b, e, _label])
 
         # 5. merged segments
