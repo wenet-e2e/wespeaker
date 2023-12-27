@@ -29,6 +29,8 @@ from tqdm import tqdm
 from wespeaker.cli.hub import Hub
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.utils.checkpoint import load_checkpoint
+from wespeaker.utils.cluster import cluster
+from wespeaker.utils.diar_utils import subsegment, merge_segments, process_seg_id
 
 
 class Speaker:
@@ -61,6 +63,36 @@ class Speaker:
         self.device = torch.device(device)
         self.model = self.model.to(self.device)
 
+    def compute_fbank(self,
+                      wavform,
+                      sample_rate=16000,
+                      num_mel_bins=80,
+                      frame_length=25,
+                      frame_shift=10,
+                      cmn=True):
+        feat = kaldi.fbank(wavform,
+                           num_mel_bins=num_mel_bins,
+                           frame_length=frame_length,
+                           frame_shift=frame_shift,
+                           sample_frequency=sample_rate)
+        if cmn:
+            feat = feat - torch.mean(feat, 0)
+        return feat
+
+    def extract_embedding_feats(self, fbanks, batch_size, subseg_cmn):
+        fbanks_array = np.stack(fbanks)
+        if subseg_cmn:
+            fbanks_array = fbanks_array - np.mean(
+                fbanks_array, axis=1, keepdims=True)
+        embeddings = []
+        fbanks_array = torch.from_numpy(fbanks_array).to(self.device)
+        for i in tqdm(range(0, fbanks_array.shape[0], batch_size)):
+            batch_feats = fbanks_array[i:i + batch_size]
+            _, batch_embs = self.model(batch_feats)
+            embeddings.append(batch_embs.detach().cpu().numpy())
+        embeddings = np.vstack(embeddings)
+        return embeddings
+
     def extract_embedding(self, audio_path: str):
         pcm, sample_rate = torchaudio.load(audio_path, normalize=False)
         if self.apply_vad:
@@ -79,13 +111,9 @@ class Speaker:
         if sample_rate != self.resample_rate:
             pcm = torchaudio.transforms.Resample(
                 orig_freq=sample_rate, new_freq=self.resample_rate)(pcm)
-        feats = kaldi.fbank(pcm,
-                            num_mel_bins=80,
-                            frame_length=25,
-                            frame_shift=10,
-                            energy_floor=0.0,
-                            sample_frequency=self.resample_rate)
-        feats = feats - torch.mean(feats, 0)  # CMN
+        feats = self.compute_fbank(pcm,
+                                   sample_rate=self.resample_rate,
+                                   cmn=True)
         feats = feats.unsqueeze(0)
         feats = feats.to(self.device)
         self.model.eval()
@@ -138,10 +166,70 @@ class Speaker:
         result['confidence'] = best_score
         return result
 
-    def diarize(self, audio_path: str):
-        #  TODO
-        pcm, sample_rate = librosa.load(audio_path, sr=self.resample_rate)
-        return [[0.0, len(pcm) / sample_rate, 0]]
+    def diarize(self,
+                audio_path: str,
+                utt: str = "unk",
+                min_duration: float = 0.255,
+                window_secs: float = 1.5,
+                period_secs: float = 0.75,
+                frame_shift: int = 10,
+                batch_size: int = 32,
+                subseg_cmn: bool = True):
+
+        pcm, sample_rate = torchaudio.load(audio_path, normalize=False)
+        # 1. vad
+        vad_segments = vad.get_speech_timestamps(self.vad_model,
+                                                 audio_path,
+                                                 return_seconds=True)
+
+        # 2. extact fbanks
+        subsegs, subseg_fbanks = [], []
+        window_fs = int(window_secs * 1000) // frame_shift
+        period_fs = int(period_secs * 1000) // frame_shift
+        for item in vad_segments:
+            begin, end = item['start'], item['end']
+            if end - begin >= min_duration:
+                tmp_wavform = pcm[0,
+                                  int(begin *
+                                      sample_rate):int(end *
+                                                       sample_rate)].unsqueeze(
+                                                           0).to(torch.float)
+                fbank = self.compute_fbank(tmp_wavform,
+                                           sample_rate=sample_rate,
+                                           cmn=False)
+                tmp_subsegs, tmp_subseg_fbanks = subsegment(
+                    fbank=fbank,
+                    seg_id="{:08d}-{:08d}".format(int(begin * 1000),
+                                                  int(end * 1000)),
+                    window_fs=window_fs,
+                    period_fs=period_fs,
+                    frame_shift=frame_shift)
+                subsegs.extend(tmp_subsegs)
+                subseg_fbanks.extend(tmp_subseg_fbanks)
+
+        # 3. extract embedding
+        embeddings = self.extract_embedding_feats(subseg_fbanks, batch_size,
+                                                  subseg_cmn)
+
+        # 4. cluster
+        subseg2label = []
+        labels = cluster(embeddings)
+        for (_subseg, _label) in zip(subsegs, labels):
+            b, e = process_seg_id(_subseg)
+            subseg2label.append([b, e, _label])
+
+        # 5. merged segments
+        # [[utt, ([begin, end, label], [])], [utt, ([], [])]]
+        merged_segment_to_labels = merge_segments({utt: subseg2label})
+
+        return merged_segment_to_labels
+
+    def make_rttm(self, merged_segment_to_labels, outfile):
+        with open(outfile, 'w', encoding='utf-8') as fin:
+            for (utt, begin, end, label) in merged_segment_to_labels:
+                fin.write(
+                    "SPEAKER {} {} {:.3f} {:.3f} <NA> <NA> {} <NA> <NA>\n".
+                    format(utt, 1, begin, end - begin, label))
 
 
 def load_model(language: str) -> Speaker:
@@ -197,7 +285,9 @@ def get_args():
                         action='store_true',
                         help='whether to do VAD or not')
     parser.add_argument('--output_file',
-                        help='output file to save speaker embedding')
+                        default=None,
+                        help='output file to save speaker embedding '
+                        'or save diarization result')
     args = parser.parse_args()
     return args
 
@@ -229,10 +319,12 @@ def main():
     elif args.task == 'similarity':
         print(model.compute_similarity(args.audio_file, args.audio_file2))
     elif args.task == 'diarization':
-        # TODO(Chengdong Liang): Add diarization surport
         diar_result = model.diarize(args.audio_file)
-        for (start, end, spkid) in diar_result:
-            print("{:.3f}\t{:.3f}\t{:d}".format(start, end, spkid))
+        if args.output_file is None:
+            for (_, start, end, spkid) in diar_result:
+                print("{:.3f}\t{:.3f}\t{:d}".format(start, end, spkid))
+        else:
+            model.make_rttm(diar_result, args.output_file)
     else:
         print('Unsupported task {}'.format(args.task))
         sys.exit(-1)
