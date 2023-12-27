@@ -72,7 +72,7 @@ class Speaker:
             if len(segments) > 0:  # remove head and tail silence
                 start = int(segments[0]['start'] * sample_rate)
                 end = int(segments[-1]['end'] * sample_rate)
-                pcm = pcm[start:end]
+                pcm = pcm[0, start:end].unsqueeze(0)
             else:  # all silence, nospeech
                 return None
         pcm = pcm.to(torch.float)
