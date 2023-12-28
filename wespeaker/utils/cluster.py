@@ -20,7 +20,6 @@ from sklearn.cluster._kmeans import k_means
 def cluster(embeddings, p=.01, num_spks=None, min_num_spks=1, max_num_spks=20):
     # Define utility functions
     def cosine_similarity(M):
-        print(M.shape)
         M = M / np.linalg.norm(M, axis=1, keepdims=True)
         return 0.5 * (1.0 + np.dot(M, M.T))
 

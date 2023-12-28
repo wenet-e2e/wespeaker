@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse
 import os
 import sys
 
@@ -27,6 +26,7 @@ import kaldiio
 from tqdm import tqdm
 
 from wespeaker.cli.hub import Hub
+from wespeaker.cli.utils import get_args
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.utils.checkpoint import load_checkpoint
 from wespeaker.utils.cluster import cluster
@@ -49,6 +49,17 @@ class Speaker:
         self.apply_vad = False
         self.device = torch.device('cpu')
 
+        # diarization parmas
+        self.num_spks = None
+        self.min_num_spks = 1
+        self.max_num_spks = 20
+        self.diar_min_duration = 0.255
+        self.diar_window_secs = 1.5
+        self.diar_period_secs = 0.75
+        self.diar_frame_shift = 10
+        self.diar_batch_size = 32
+        self.diar_subseg_cmn = True
+
     def set_resample_rate(self, resample_rate: int):
         self.resample_rate = resample_rate
 
@@ -62,6 +73,26 @@ class Speaker:
             device = 'cpu'
         self.device = torch.device(device)
         self.model = self.model.to(self.device)
+
+    def set_diarization_params(self,
+                               num_spks=None,
+                               min_num_spks=1,
+                               max_num_spks=20,
+                               min_duration: float = 0.255,
+                               window_secs: float = 1.5,
+                               period_secs: float = 0.75,
+                               frame_shift: int = 10,
+                               batch_size: int = 32,
+                               subseg_cmn: bool = True):
+        self.num_spks = num_spks
+        self.min_num_spks = min_num_spks
+        self.max_num_spks = max_num_spks
+        self.diar_min_duration = min_duration
+        self.diar_window_secs = window_secs
+        self.diar_period_secs = period_secs
+        self.diar_frame_shift = frame_shift
+        self.diar_batch_size = batch_size
+        self.diar_subseg_cmn = subseg_cmn
 
     def compute_fbank(self,
                       wavform,
@@ -166,15 +197,7 @@ class Speaker:
         result['confidence'] = best_score
         return result
 
-    def diarize(self,
-                audio_path: str,
-                utt: str = "unk",
-                min_duration: float = 0.255,
-                window_secs: float = 1.5,
-                period_secs: float = 0.75,
-                frame_shift: int = 10,
-                batch_size: int = 32,
-                subseg_cmn: bool = True):
+    def diarize(self, audio_path: str, utt: str = "unk"):
 
         pcm, sample_rate = torchaudio.load(audio_path, normalize=False)
         # 1. vad
@@ -184,11 +207,11 @@ class Speaker:
 
         # 2. extact fbanks
         subsegs, subseg_fbanks = [], []
-        window_fs = int(window_secs * 1000) // frame_shift
-        period_fs = int(period_secs * 1000) // frame_shift
+        window_fs = int(self.diar_window_secs * 1000) // self.diar_frame_shift
+        period_fs = int(self.diar_period_secs * 1000) // self.diar_frame_shift
         for item in vad_segments:
             begin, end = item['start'], item['end']
-            if end - begin >= min_duration:
+            if end - begin >= self.diar_min_duration:
                 begin_idx = int(begin * sample_rate)
                 end_idx = int(end * sample_rate)
                 tmp_wavform = pcm[0, begin_idx:end_idx].unsqueeze(0).to(
@@ -202,19 +225,20 @@ class Speaker:
                                                   int(end * 1000)),
                     window_fs=window_fs,
                     period_fs=period_fs,
-                    frame_shift=frame_shift)
+                    frame_shift=self.diar_frame_shift)
                 subsegs.extend(tmp_subsegs)
                 subseg_fbanks.extend(tmp_subseg_fbanks)
 
         # 3. extract embedding
-        embeddings = self.extract_embedding_feats(subseg_fbanks, batch_size,
-                                                  subseg_cmn)
+        embeddings = self.extract_embedding_feats(subseg_fbanks,
+                                                  self.diar_batch_size,
+                                                  self.diar_subseg_cmn)
 
         # 4. cluster
         subseg2label = []
         labels = cluster(embeddings)
         for (_subseg, _label) in zip(subsegs, labels):
-            b, e = process_seg_id(_subseg, frame_shift=frame_shift)
+            b, e = process_seg_id(_subseg, frame_shift=self.diar_frame_shift)
             subseg2label.append([b, e, _label])
 
         # 5. merged segments
@@ -239,7 +263,8 @@ class Speaker:
             for (utt, begin, end, label) in merged_segment_to_labels:
                 fin.write(
                     "SPEAKER {} {} {:.3f} {:.3f} <NA> <NA> {} <NA> <NA>\n".
-                    format(utt, 1, begin, end - begin, label))
+                    format(utt, 1, float(begin),
+                           float(end) - float(begin), label))
 
 
 def load_model(language: str) -> Speaker:
@@ -251,58 +276,6 @@ def load_model_local(model_dir: str) -> Speaker:
     return Speaker(model_dir)
 
 
-def get_args():
-    parser = argparse.ArgumentParser(description='')
-    parser.add_argument('-t',
-                        '--task',
-                        choices=[
-                            'embedding',
-                            'embedding_kaldi',
-                            'similarity',
-                            'diarization',
-                            'diarization_list',
-                        ],
-                        default='embedding',
-                        help='task type')
-    parser.add_argument('-l',
-                        '--language',
-                        choices=[
-                            'chinese',
-                            'english',
-                        ],
-                        default='chinese',
-                        help='language type')
-    parser.add_argument('-p',
-                        '--pretrain',
-                        type=str,
-                        default="",
-                        help='model directory')
-    parser.add_argument('-g',
-                        '--gpu',
-                        type=int,
-                        default=-1,
-                        help='which gpu to use (number <0 means using cpu)')
-    parser.add_argument('--audio_file', help='audio file')
-    parser.add_argument('--audio_file2',
-                        help='audio file2, specifically for similarity task')
-    parser.add_argument('--wav_scp',
-                        help='path to wav.scp, for extract and saving '
-                        'kaldi-stype embeddings')
-    parser.add_argument('--resample_rate',
-                        type=int,
-                        default=16000,
-                        help='resampling rate')
-    parser.add_argument('--vad',
-                        action='store_true',
-                        help='whether to do VAD or not')
-    parser.add_argument('--output_file',
-                        default=None,
-                        help='output file to save speaker embedding '
-                        'or save diarization result')
-    args = parser.parse_args()
-    return args
-
-
 def main():
     args = get_args()
     if args.pretrain == "":
@@ -312,6 +285,15 @@ def main():
     model.set_resample_rate(args.resample_rate)
     model.set_vad(args.vad)
     model.set_gpu(args.gpu)
+    model.set_diarization_params(num_spks=args.diar_num_spks,
+                                 min_num_spks=args.diar_min_num_spks,
+                                 max_num_spks=args.diar_max_num_spks,
+                                 min_duration=args.diar_min_duration,
+                                 window_secs=args.diar_window_secs,
+                                 period_secs=args.diar_period_secs,
+                                 frame_shift=args.diar_frame_shift,
+                                 batch_size=args.diar_emb_bs,
+                                 subseg_cmn=args.diar_subseg_cmn)
     if args.task == 'embedding':
         embedding = model.extract_embedding(args.audio_file)
         if embedding is not None:
@@ -339,7 +321,7 @@ def main():
     elif args.task == 'diarization_list':
         utts, segment2labels = model.diarize_list(args.wav_scp)
         assert args.output_file is not None
-        model.make_rttm(np.stack(segment2labels), args.output_file)
+        model.make_rttm(np.vstack(segment2labels), args.output_file)
     else:
         print('Unsupported task {}'.format(args.task))
         sys.exit(-1)
