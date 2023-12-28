@@ -223,6 +223,17 @@ class Speaker:
 
         return merged_segment_to_labels
 
+    def diarize_list(self, scp_path: str):
+        utts = []
+        segment2labels = []
+        with open(scp_path, 'r', encoding='utf-8') as read_scp:
+            for line in tqdm(read_scp):
+                utt, wav_path = line.strip().split()
+                utts.append(utt)
+                segment2label = self.diarize(wav_path, utt)
+                segment2labels.append(segment2label)
+        return utts, segment2labels
+
     def make_rttm(self, merged_segment_to_labels, outfile):
         with open(outfile, 'w', encoding='utf-8') as fin:
             for (utt, begin, end, label) in merged_segment_to_labels:
@@ -249,6 +260,7 @@ def get_args():
                             'embedding_kaldi',
                             'similarity',
                             'diarization',
+                            'diarization_list',
                         ],
                         default='embedding',
                         help='task type')
@@ -324,6 +336,10 @@ def main():
                 print("{:.3f}\t{:.3f}\t{:d}".format(start, end, spkid))
         else:
             model.make_rttm(diar_result, args.output_file)
+    elif args.task == 'diarization_list':
+        utts, segment2labels = model.diarize_list(args.wav_scp)
+        assert args.output_file is not None
+        model.make_rttm(np.stack(segment2labels), args.output_file)
     else:
         print('Unsupported task {}'.format(args.task))
         sys.exit(-1)
