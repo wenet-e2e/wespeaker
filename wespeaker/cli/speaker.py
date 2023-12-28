@@ -50,9 +50,9 @@ class Speaker:
         self.device = torch.device('cpu')
 
         # diarization parmas
-        self.num_spks = None
-        self.min_num_spks = 1
-        self.max_num_spks = 20
+        self.diar_num_spks = None
+        self.diar_min_num_spks = 1
+        self.diar_max_num_spks = 20
         self.diar_min_duration = 0.255
         self.diar_window_secs = 1.5
         self.diar_period_secs = 0.75
@@ -84,9 +84,9 @@ class Speaker:
                                frame_shift: int = 10,
                                batch_size: int = 32,
                                subseg_cmn: bool = True):
-        self.num_spks = num_spks
-        self.min_num_spks = min_num_spks
-        self.max_num_spks = max_num_spks
+        self.diar_num_spks = num_spks
+        self.diar_min_num_spks = min_num_spks
+        self.diar_max_num_spks = max_num_spks
         self.diar_min_duration = min_duration
         self.diar_window_secs = window_secs
         self.diar_period_secs = period_secs
@@ -236,7 +236,10 @@ class Speaker:
 
         # 4. cluster
         subseg2label = []
-        labels = cluster(embeddings)
+        labels = cluster(embeddings,
+                         num_spks=self.diar_num_spks,
+                         min_num_spks=self.diar_min_num_spks,
+                         max_num_spks=self.diar_max_num_spks)
         for (_subseg, _label) in zip(subsegs, labels):
             b, e = process_seg_id(_subseg, frame_shift=self.diar_frame_shift)
             subseg2label.append([b, e, _label])
