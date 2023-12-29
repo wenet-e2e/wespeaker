@@ -40,3 +40,4 @@ tensorboard
 **/*build*
 
 *.onnx
+external_tools
