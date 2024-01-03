@@ -9,6 +9,7 @@
 | [**Runtime**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime)
 | [**Pretrained Models**](docs/pretrained.md)
 | [**Huggingface Demo**](https://huggingface.co/spaces/wenet/wespeaker_demo)
+| [**Modelscope Demo**](https://www.modelscope.cn/studios/wenet/Speaker_Verification_in_WeSpeaker/summary)
 
 
 WeSpeaker mainly focuses on speaker embedding learning, with application to the speaker verification task. We support
