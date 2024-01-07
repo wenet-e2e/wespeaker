@@ -13,8 +13,7 @@
 # limitations under the License.
 
 import argparse
-
-from wespeaker.utils.file_utils import read_labels
+from collections import OrderedDict
 
 
 def get_args():
@@ -29,6 +28,20 @@ def get_args():
     args = parser.parse_args()
 
     return args
+
+
+def read_labels(labels_file, frame_shift=10):
+    utt_to_subseg_labels = OrderedDict()
+    for line in open(labels_file, 'r'):
+        subseg, label = line.strip().split()
+        utt, begin_ms, end_ms, begin_frames, end_frames = subseg.split('-')
+        begin = (int(begin_ms) + int(begin_frames) * frame_shift) / 1000.0
+        end = (int(begin_ms) + int(end_frames) * frame_shift) / 1000.0
+        if utt not in utt_to_subseg_labels:
+            utt_to_subseg_labels[utt] = [(begin, end, label)]
+        else:
+            utt_to_subseg_labels[utt].append((begin, end, label))
+    return utt_to_subseg_labels
 
 
 def merge_segments(utt_to_subseg_labels):

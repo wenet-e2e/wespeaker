@@ -16,13 +16,13 @@
 import os
 import argparse
 import kaldiio
+from collections import OrderedDict
 
 import numpy as np
 from tqdm import tqdm
 
 import onnxruntime as ort
 from wespeaker.utils.utils import validate_path
-from wespeaker.utils.file_utils import read_fbank
 
 
 def init_session(source, device):
@@ -41,6 +41,14 @@ def init_session(source, device):
                                    sess_options=opts,
                                    providers=providers)
     return session
+
+
+def read_fbank(scp_file):
+    fbank_dict = OrderedDict()
+
+    for utt, fbank in kaldiio.load_scp_sequential(scp_file):
+        fbank_dict[utt] = fbank
+    return fbank_dict
 
 
 def subsegment(fbank, seg_id, window_fs, period_fs, frame_shift):
