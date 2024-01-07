@@ -27,7 +27,7 @@ import torchaudio.compliance.kaldi as kaldi
 from wespeaker.utils.utils import validate_path
 
 
-def read_scp_dict(scp_file):
+def read_scp(scp_file):
     utt_to_wav = OrderedDict()
     for line in open(scp_file, 'r'):
         utt, wav = line.strip().split()
@@ -107,7 +107,7 @@ def get_args():
 def main():
     args = get_args()
 
-    utt_to_wav = read_scp_dict(args.scp)
+    utt_to_wav = read_scp(args.scp)
     utt_to_segments = read_segments(args.segments)
     speech_segments_id, speech_segments = get_speech_segments(
         utt_to_wav, utt_to_segments)
