@@ -107,7 +107,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
 
     echo "Make Fbank features and store it under exp/${sad_type}_sad_fbank"
     echo "..."
-    bash diar/make_fbank.sh \
+    bash local/make_fbank.sh \
             --scp data/${partition}/wav.scp \
             --segments data/${partition}/${sad_type}_sad \
             --store_dir exp/${partition}_${sad_type}_sad_fbank \
@@ -122,7 +122,7 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
 
     echo "Extract embeddings and store it under exp/${sad_type}_sad_embedding"
     echo "..."
-    bash diar/extract_emb.sh \
+    bash local/extract_emb.sh \
             --scp exp/${partition}_${sad_type}_sad_fbank/fbank.scp \
             --pretrained_model pretrained_models/voxceleb_resnet34_LM.onnx \
             --device cuda \
@@ -143,7 +143,7 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
 
     echo "Doing spectral clustering and store the result in exp/spectral_cluster/${partition}_${sad_type}_sad_labels"
     echo "..."
-    python3 diar/spectral_clusterer.py \
+    python3 wespeaker/diar/spectral_clusterer.py \
             --scp exp/${partition}_${sad_type}_sad_embedding/emb.scp \
             --output exp/spectral_cluster/${partition}_${sad_type}_sad_labels
 fi
@@ -151,7 +151,7 @@ fi
 
 # Convert labels to RTTMs
 if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
-    python3 diar/make_rttm.py \
+    python3 wespeaker/diar/make_rttm.py \
             --labels exp/spectral_cluster/${partition}_${sad_type}_sad_labels \
             --channel 1 > exp/spectral_cluster/${partition}_${sad_type}_sad_rttm
 fi
