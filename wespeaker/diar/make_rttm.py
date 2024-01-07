@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import argparse
-from collections import OrderedDict
-from wespeaker.utils.diar_utils import merge_segments
+
+from wespeaker.utils.file_utils import read_labels
 
 
 def get_args():
@@ -31,18 +31,30 @@ def get_args():
     return args
 
 
-def read_labels(labels, frame_shift=10):
-    utt_to_subseg_labels = OrderedDict()
-    for line in open(labels, 'r'):
-        subseg, label = line.strip().split()
-        utt, begin_ms, end_ms, begin_frames, end_frames = subseg.split('-')
-        begin = (int(begin_ms) + int(begin_frames) * frame_shift) / 1000.0
-        end = (int(begin_ms) + int(end_frames) * frame_shift) / 1000.0
-        if utt not in utt_to_subseg_labels:
-            utt_to_subseg_labels[utt] = [(begin, end, label)]
-        else:
-            utt_to_subseg_labels[utt].append((begin, end, label))
-    return utt_to_subseg_labels
+def merge_segments(utt_to_subseg_labels):
+    merged_segment_to_labels = []
+
+    for utt, subseg_to_labels in utt_to_subseg_labels.items():
+        if len(subseg_to_labels) == 0:
+            continue
+
+        (begin, end, label) = subseg_to_labels[0]
+        e = end  # when there is only one subseg, we assign end to e
+        for (b, e, la) in subseg_to_labels[1:]:
+            if b <= end and la == label:
+                end = e
+            elif b > end:
+                merged_segment_to_labels.append((utt, begin, end, label))
+                begin, end, label = b, e, la
+            elif b <= end and la != label:
+                pivot = (b + end) / 2.0
+                merged_segment_to_labels.append((utt, begin, pivot, label))
+                begin, end, label = pivot, e, la
+            else:
+                raise ValueError
+        merged_segment_to_labels.append((utt, begin, e, label))
+
+    return merged_segment_to_labels
 
 
 def main():

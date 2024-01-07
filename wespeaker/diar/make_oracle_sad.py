@@ -15,6 +15,8 @@
 import argparse
 from collections import OrderedDict
 
+from wespeaker.utils.file_utils import read_rttm
+
 
 def get_args():
     parser = argparse.ArgumentParser(description='')
@@ -26,25 +28,6 @@ def get_args():
     args = parser.parse_args()
 
     return args
-
-
-def read_ref_rttm(rttm):
-    utt_to_segments = OrderedDict()
-
-    for line in open(rttm, 'r'):
-        line = line.strip().split()
-        utt, begin, duration = line[1], line[3], line[4]
-        begin = float(begin)
-        end = begin + float(duration)
-        if utt not in utt_to_segments:
-            utt_to_segments[utt] = [(begin, end)]
-        else:
-            utt_to_segments[utt].append((begin, end))
-
-    for utt in utt_to_segments.keys():
-        utt_to_segments[utt].sort()
-
-    return utt_to_segments
 
 
 def merge_segments(utt_to_segments, min_duration):
@@ -72,7 +55,7 @@ def merge_segments(utt_to_segments, min_duration):
 def main():
     args = get_args()
 
-    utt_to_segments = read_ref_rttm(args.rttm)
+    utt_to_segments = read_rttm(args.rttm)
     utt_to_merged_segments = merge_segments(utt_to_segments, args.min_duration)
 
     segments_line_spec = "{}-{:08d}-{:08d} {} {:.3f} {:.3f}"

@@ -27,6 +27,7 @@ import argparse
 import importlib
 
 import torch
+from wespeaker.utils.file_utils import read_scp
 
 
 def get_args():
@@ -42,15 +43,6 @@ def get_args():
     args = parser.parse_args()
 
     return args
-
-
-def read_scp(scp):
-    utt_wav_pair = []
-    for line in open(scp, 'r'):
-        utt, wav = line.strip().split()
-        utt_wav_pair.append((utt, wav))
-
-    return utt_wav_pair
 
 
 def silero_vad(utt_wav_pair,

@@ -56,7 +56,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     unzip -o data/voxconverse_master.zip -d data
 
     # Download annotations from VoxSRC-23 validation toolkit (looks like version 0.0.2)
-    cd data && git clone https://github.com/JaesungHuh/VoxSRC2023.git --recursive && cd -
+    #cd data && git clone https://github.com/JaesungHuh/VoxSRC2023.git --recursive && cd -
 
     # Download dev audios
     mkdir -p data/dev
@@ -84,7 +84,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
     if [[ "x${sad_type}" == "xoracle" ]]; then
         # Oracle SAD: handling overlapping or too short regions in ground truth RTTM
         while read -r utt wav_path; do
-            python3 sad/make_oracle_sad.py \
+            python3 wespeaker/diar/make_oracle_sad.py \
                     --rttm data/voxconverse-master/${partition}/${utt}.rttm \
                     --min-duration $min_duration
         done < data/${partition}/wav.scp > data/${partition}/oracle_sad
@@ -92,7 +92,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
 
     if [[ "x${sad_type}" == "xsystem" ]]; then
        # System SAD: applying 'silero' VAD
-       python3 sad/make_system_sad.py \
+       python3 wespeaker/diar/make_system_sad.py \
                --repo-path external_tools/silero-vad-3.1 \
                --scp data/${partition}/wav.scp \
                --min-duration $min_duration > data/${partition}/system_sad
@@ -159,8 +159,8 @@ fi
 
 # Evaluate the result
 if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
-    # ref_dir=data/voxconverse-master/
-    ref_dir=data/VoxSRC2023/voxconverse/
+    ref_dir=data/voxconverse-master/
+    #ref_dir=data/VoxSRC2023/voxconverse/
 
     echo -e "Get the DER results\n..."
     perl external_tools/SCTK-2.4.12/src/md-eval/md-eval.pl \

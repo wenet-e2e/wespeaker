@@ -44,7 +44,7 @@ for suffix in `seq 0 $[$nj-1]`;do
     suffix=`printf '%03d' $suffix`
     scp_subfile=${split_dir}/${prefix}_scp_${suffix}
     write_ark=$store_dir/emb_${suffix}.ark
-    python3 diar/extract_emb.py \
+    python3 wespeaker/diar/extract_emb.py \
             --scp ${scp_subfile} \
             --ark-path ${write_ark} \
             --source ${pretrained_model} \
