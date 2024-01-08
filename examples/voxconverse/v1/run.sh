@@ -99,7 +99,7 @@ fi
 
 # Convert labels to RTTMs
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
-    python3 diar/make_rttm.py \
+    python3 wespeaker/diar/make_rttm.py \
             --labels data/dev/${sad_type}_sad_labels \
             --channel 1 > data/dev/${sad_type}_sad_rttm
 fi
