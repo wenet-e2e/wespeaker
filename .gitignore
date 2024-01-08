@@ -41,3 +41,4 @@ tensorboard
 
 *.onnx
 external_tools
+pretrained_models
