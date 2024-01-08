@@ -24,7 +24,6 @@ from cuml.cluster import KMeans as cuKM
 import numpy as np
 from timeit import default_timer as timer
 from clusterer import get_args, compute_embeddings
-import scipy
 import torch
 
 
@@ -140,6 +139,5 @@ if __name__ == '__main__':
     # You can use the test_time() function
     # to calculate the GPU vs CPU clustering speed
     torch.set_num_threads(1)
-    scipy.random.seed(1)
 
     main()

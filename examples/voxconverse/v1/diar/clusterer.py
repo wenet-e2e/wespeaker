@@ -298,6 +298,6 @@ def main():
 
 if __name__ == '__main__':
     torch.set_num_threads(1)
-    scipy.random.seed(1)
+    # scipy.random.seed(1)
 
     main()
