@@ -30,9 +30,9 @@ def get_args():
     return args
 
 
-def read_labels(labels, frame_shift=10):
+def read_labels(labels_file, frame_shift=10):
     utt_to_subseg_labels = OrderedDict()
-    for line in open(labels, 'r'):
+    for line in open(labels_file, 'r'):
         subseg, label = line.strip().split()
         utt, begin_ms, end_ms, begin_frames, end_frames = subseg.split('-')
         begin = (int(begin_ms) + int(begin_frames) * frame_shift) / 1000.0

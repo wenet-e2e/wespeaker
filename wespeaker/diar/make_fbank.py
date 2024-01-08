@@ -15,8 +15,8 @@
 
 import os
 import argparse
-from collections import OrderedDict
 import kaldiio
+from collections import OrderedDict
 
 from tqdm import tqdm
 
@@ -27,9 +27,18 @@ import torchaudio.compliance.kaldi as kaldi
 from wespeaker.utils.utils import validate_path
 
 
-def read_segments(segments):
+def read_scp(scp_file):
+    utt_to_wav = OrderedDict()
+    for line in open(scp_file, 'r'):
+        utt, wav = line.strip().split()
+        utt_to_wav[utt] = wav
+
+    return utt_to_wav
+
+
+def read_segments(segments_file):
     utt_to_segments = OrderedDict()
-    for line in open(segments, 'r'):
+    for line in open(segments_file, 'r'):
         seg, utt, begin, end = line.strip().split()
         begin, end = float(begin), float(end)
         if utt not in utt_to_segments:
@@ -38,15 +47,6 @@ def read_segments(segments):
             utt_to_segments[utt].append((seg, begin, end))
 
     return utt_to_segments
-
-
-def read_scp(scp):
-    utt_to_wav = OrderedDict()
-    for line in open(scp, 'r'):
-        utt, wav = line.strip().split()
-        utt_to_wav[utt] = wav
-
-    return utt_to_wav
 
 
 def get_speech_segments(utt_to_wav, utt_to_segments):

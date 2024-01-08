@@ -28,10 +28,10 @@ def get_args():
     return args
 
 
-def read_ref_rttm(rttm):
+def read_rttm(rttm_file):
     utt_to_segments = OrderedDict()
 
-    for line in open(rttm, 'r'):
+    for line in open(rttm_file, 'r'):
         line = line.strip().split()
         utt, begin, duration = line[1], line[3], line[4]
         begin = float(begin)
@@ -72,7 +72,7 @@ def merge_segments(utt_to_segments, min_duration):
 def main():
     args = get_args()
 
-    utt_to_segments = read_ref_rttm(args.rttm)
+    utt_to_segments = read_rttm(args.rttm)
     utt_to_merged_segments = merge_segments(utt_to_segments, args.min_duration)
 
     segments_line_spec = "{}-{:08d}-{:08d} {} {:.3f} {:.3f}"

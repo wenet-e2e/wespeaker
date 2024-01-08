@@ -14,7 +14,13 @@
 
 
 def read_scp(scp_file):
-    """ scp_file: mostly 2 columns
+    """read scp file (also support PIPE format)
+
+    Args:
+        scp_file (str): path to the scp file
+
+    Returns:
+        list: key_value_list
     """
     key_value_list = []
     with open(scp_file, "r", encoding='utf8') as fin:
@@ -27,7 +33,13 @@ def read_scp(scp_file):
 
 
 def read_lists(list_file):
-    """ list_file: only 1 column
+    """read list file with only 1 column
+
+    Args:
+        list_file (str): path to the list file
+
+    Returns:
+        list: lists
     """
     lists = []
     with open(list_file, 'r', encoding='utf8') as fin:
@@ -37,7 +49,13 @@ def read_lists(list_file):
 
 
 def read_table(table_file):
-    """ table_file: any columns
+    """read table file with any columns
+
+    Args:
+        table_file (str): path to the table file
+
+    Returns:
+        list: table_list
     """
     table_list = []
     with open(table_file, 'r', encoding='utf8') as fin:

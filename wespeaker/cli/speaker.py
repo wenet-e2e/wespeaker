@@ -29,8 +29,9 @@ from wespeaker.cli.hub import Hub
 from wespeaker.cli.utils import get_args
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.utils.checkpoint import load_checkpoint
-from wespeaker.utils.cluster import cluster
-from wespeaker.utils.diar_utils import subsegment, merge_segments, process_seg_id
+from wespeaker.diar.spectral_clusterer import cluster
+from wespeaker.diar.extract_emb import subsegment
+from wespeaker.diar.make_rttm import merge_segments
 
 
 class Speaker:
@@ -241,8 +242,14 @@ class Speaker:
                          min_num_spks=self.diar_min_num_spks,
                          max_num_spks=self.diar_max_num_spks)
         for (_subseg, _label) in zip(subsegs, labels):
-            b, e = process_seg_id(_subseg, frame_shift=self.diar_frame_shift)
-            subseg2label.append([b, e, _label])
+            # b, e = process_seg_id(_subseg, frame_shift=self.diar_frame_shift)
+            # subseg2label.append([b, e, _label])
+            begin_ms, end_ms, begin_frames, end_frames = _subseg.split('-')
+            begin = (int(begin_ms) +
+                     int(begin_frames) * self.diar_frame_shift) / 1000.0
+            end = (int(begin_ms) +
+                   int(end_frames) * self.diar_frame_shift) / 1000.0
+            subseg2label.append([begin, end, _label])
 
         # 5. merged segments
         # [[utt, ([begin, end, label], [])], [utt, ([], [])]]

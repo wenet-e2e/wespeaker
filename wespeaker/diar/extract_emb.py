@@ -15,15 +15,14 @@
 
 import os
 import argparse
-from collections import OrderedDict
 import kaldiio
+from collections import OrderedDict
 
 import numpy as np
 from tqdm import tqdm
 
 import onnxruntime as ort
 from wespeaker.utils.utils import validate_path
-from wespeaker.utils.diar_utils import subsegment
 
 
 def init_session(source, device):
@@ -44,13 +43,43 @@ def init_session(source, device):
     return session
 
 
-def read_fbank(scp):
-
+def read_fbank(scp_file):
     fbank_dict = OrderedDict()
 
-    for utt, fbank in kaldiio.load_scp_sequential(scp):
+    for utt, fbank in kaldiio.load_scp_sequential(scp_file):
         fbank_dict[utt] = fbank
     return fbank_dict
+
+
+def subsegment(fbank, seg_id, window_fs, period_fs, frame_shift):
+    subsegs = []
+    subseg_fbanks = []
+
+    seg_begin, seg_end = seg_id.split('-')[-2:]
+    seg_length = (int(seg_end) - int(seg_begin)) // frame_shift
+
+    # We found that the num_frames + 2 equals to seg_length, which is caused
+    # by the implementation of torchaudio.compliance.kaldi.fbank.
+    # Thus, here seg_length is used to get the subsegs.
+    num_frames, feat_dim = fbank.shape
+    if seg_length <= window_fs:
+        subseg = seg_id + "-{:08d}-{:08d}".format(0, seg_length)
+        subseg_fbank = np.resize(fbank, (window_fs, feat_dim))
+
+        subsegs.append(subseg)
+        subseg_fbanks.append(subseg_fbank)
+    else:
+        max_subseg_begin = seg_length - window_fs + period_fs
+        for subseg_begin in range(0, max_subseg_begin, period_fs):
+            subseg_end = min(subseg_begin + window_fs, seg_length)
+            subseg = seg_id + "-{:08d}-{:08d}".format(subseg_begin, subseg_end)
+            subseg_fbank = np.resize(fbank[subseg_begin:subseg_end],
+                                     (window_fs, feat_dim))
+
+            subsegs.append(subseg)
+            subseg_fbanks.append(subseg_fbank)
+
+    return subsegs, subseg_fbanks
 
 
 def extract_embeddings(fbanks, batch_size, session, subseg_cmn):
