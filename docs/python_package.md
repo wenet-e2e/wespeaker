@@ -18,19 +18,20 @@ pip install -e .
 ## Command line Usage
 
 ``` sh
-$ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt -g 0
-$ wespeaker --task embedding_kaldi --wav_scp wav.scp --output_file /path/to/embedding -g 0
-$ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav -g 0
-$ wespeaker --task diarization --audio_file audio.wav -g 0  # TODO
+$ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt
+$ wespeaker --task embedding_kaldi --wav_scp wav.scp --output_file /path/to/embedding
+$ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav
+$ wespeaker --task diarization --audio_file audio.wav
 ```
 
 You can specify the following parameters. (use `-h` for details)
 
-* `-t` or `--task`: embedding/embedding_kaldi/similarity/diarization are supported
+* `-t` or `--task`: five tasks are supported now
     - embedding: extract embedding for an audio and save it into an output file
     - embedding_kaldi: extract embeddings from kaldi-style wav.scp and save it to ark/scp files.
     - similarity: compute similarity of two audios (in the range of [0, 1])
-    - diarization: apply speaker diarization for an input audio (**TODO**)
+    - diarization: apply speaker diarization for an input audio
+    - diarization_list: apply speaker diarization for a kaldi-style wav.scp
 * `-l` or `--language`: use Chinese/English speaker models
 * `-p` or `--pretrain`: the path of pretrained model, `avg_model.pt` and `config.yaml` should be contained
 * `-g` or `--gpu`: use GPU for inference, number $< 0$ means using CPU
@@ -67,7 +68,7 @@ model.set_gpu(0)
 embedding = model.extract_embedding('audio.wav')
 utt_names, embeddings = model.extract_embedding_list('wav.scp')
 similarity = model.compute_similarity('audio1.wav', 'audio2.wav')
-diar_result = model.diarize('audio.wav')  # TODO
+diar_result = model.diarize('audio.wav')
 
 # register and recognize
 model.register('spk1', 'spk1_audio1.wav')
