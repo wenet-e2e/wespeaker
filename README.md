@@ -24,11 +24,10 @@ pip install git+https://github.com/wenet-e2e/wespeaker.git
 **Command-line usage** (use `-h` for parameters):
 
 ``` sh
-# Add -g or --gpu to specify the gpu id to use, number < 0 means using CPU
-$ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt -g 0
-$ wespeaker --task embedding_kaldi --wav_scp wav.scp --output_file /path/to/embedding -g 0
-$ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav --g 0
-$ wespeaker --task diarization --audio_file audio.wav -g 0  # TODO
+$ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt
+$ wespeaker --task embedding_kaldi --wav_scp wav.scp --output_file /path/to/embedding
+$ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav
+$ wespeaker --task diarization --audio_file audio.wav
 ```
 
 **Python programming usage**:
@@ -37,12 +36,10 @@ $ wespeaker --task diarization --audio_file audio.wav -g 0  # TODO
 import wespeaker
 
 model = wespeaker.load_model('chinese')
-# set_gpu to enable the cuda inference, number < 0 means using CPU
-model.set_gpu(0)
 embedding = model.extract_embedding('audio.wav')
 utt_names, embeddings = model.extract_embedding_list('wav.scp')
 similarity = model.compute_similarity('audio1.wav', 'audio2.wav')
-diar_result = model.diarize('audio.wav')  # TODO
+diar_result = model.diarize('audio.wav')
 ```
 
 Please refer to [python usage](docs/python_package.md) for more command line and python programming usage.
