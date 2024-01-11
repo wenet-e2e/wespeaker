@@ -120,7 +120,10 @@ class Speaker:
         fbanks_array = torch.from_numpy(fbanks_array).to(self.device)
         for i in tqdm(range(0, fbanks_array.shape[0], batch_size)):
             batch_feats = fbanks_array[i:i + batch_size]
-            _, batch_embs = self.model(batch_feats)
+            # _, batch_embs = self.model(batch_feats)
+            batch_embs = self.model(batch_feats)
+            batch_embs = batch_embs[-1] if isinstance(batch_embs,
+                                                      tuple) else batch_embs
             embeddings.append(batch_embs.detach().cpu().numpy())
         embeddings = np.vstack(embeddings)
         return embeddings
@@ -150,7 +153,9 @@ class Speaker:
         feats = feats.to(self.device)
         self.model.eval()
         with torch.no_grad():
-            _, outputs = self.model(feats)
+            # _, outputs = self.model(feats)
+            outputs = self.model(feats)
+            outputs = outputs[-1] if isinstance(outputs, tuple) else outputs
         embedding = outputs[0].to(torch.device('cpu'))
         return embedding
 
