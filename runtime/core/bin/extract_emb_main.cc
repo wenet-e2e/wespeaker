@@ -29,7 +29,7 @@ DEFINE_string(speaker_model_path, "", "path of speaker model");
 DEFINE_int32(fbank_dim, 80, "fbank feature dimension");
 DEFINE_int32(sample_rate, 16000, "sample rate");
 DEFINE_int32(embedding_size, 256, "embedding size");
-DEFINE_int32(SamplesPerChunk, 32000, "samples of one chunk");
+DEFINE_int32(samples_per_chunk, 32000, "samples of one chunk");
 
 int main(int argc, char* argv[]) {
   gflags::ParseCommandLineFlags(&argc, &argv, false);
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
   LOG(INFO) << "Init model ...";
   auto speaker_engine = std::make_shared<wespeaker::SpeakerEngine>(
       FLAGS_speaker_model_path, FLAGS_fbank_dim, FLAGS_sample_rate,
-      FLAGS_embedding_size, FLAGS_SamplesPerChunk);
+      FLAGS_embedding_size, FLAGS_samples_per_chunk);
   int embedding_size = speaker_engine->EmbeddingSize();
   LOG(INFO) << "embedding size: " << embedding_size;
   // read wav.scp
@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
     int samples = data_reader->num_sample();
     // NOTE(cdliang): memory allocation
     std::vector<float> embs(embedding_size, 0);
-    result << wav.first;
+    buffer << wav.first;
 
     int wave_dur = static_cast<int>(static_cast<float>(samples) /
                                     data_reader->sample_rate() * 1000);
@@ -78,9 +78,9 @@ int main(int argc, char* argv[]) {
     speaker_engine->ExtractEmbedding(data, samples, &embs);
     extract_time = timer.Elapsed();
     for (size_t i = 0; i < embs.size(); i++) {
-      result << " " << embs[i];
+      buffer << " " << embs[i];
     }
-    result << std::endl;
+    buffer << std::endl;
     LOG(INFO) << "process: " << wav.first
               << " RTF: " << static_cast<float>(extract_time) / wave_dur;
     total_waves_dur += wave_dur;

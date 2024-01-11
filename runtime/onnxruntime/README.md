@@ -44,13 +44,13 @@ embed_out=your_embedding_txt
   --result $embed_out \
   --speaker_model_path $onnx_dir/final.onnx \
   --embedding_size 256 \
-  --SamplesPerChunk  80000  # 5s
+  --samples_per_chunk  80000  # 5s
 
 ```
 
-> NOTE: SamplesPerChunk: samples of one chunk. SamplesPerChunk = sample_rate * duration
+> NOTE: samples_per_chunk: samples of one chunk. samples_per_chunk = sample_rate * duration
 >
-> If SamplesPerChunk = -1, compute the embedding of whole sentence;
+> If samples_per_chunk = -1, compute the embedding of whole sentence;
 > else compute embedding with chunk by chunk, and then average embeddings of chunk.
 
 2. Calculate the similarity of two speech.
@@ -70,7 +70,7 @@ onnx_dir=your_model_dir
 1. RTF
 > num_threads = 1
 >
-> SamplesPerChunk = 80000
+> samples_per_chunk = 80000
 >
 > CPU: Intel(R) Xeon(R) Platinum 8160 CPU @ 2.10GHz
 
@@ -87,7 +87,7 @@ onnx_dir=your_model_dir
 
 > num_threads = 1
 >
-> samplesPerChunk = 80000
+> samples_per_chunk = 80000
 >
 > CPU: Intel(R) Xeon(R) Platinum 8160 CPU @ 2.10GHz
 >
@@ -98,7 +98,7 @@ onnx_dir=your_model_dir
 | ResNet-34           | 6.63 M  | 0.00857436 |
 
 2. EER (%)
-> onnxruntime: SamplesPerChunk=-1.
+> onnxruntime: samples_per_chunk=-1.
 >
 > don't use mean normalization for evaluation embeddings.
 
