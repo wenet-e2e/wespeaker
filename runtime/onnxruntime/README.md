@@ -40,7 +40,7 @@ wav_scp=your_test_wav_scp
 onnx_dir=your_model_dir
 embed_out=your_embedding_txt
 ./build/bin/extract_emb_main \
-  --wav_list $wav_scp \
+  --wav_scp $wav_scp \
   --result $embed_out \
   --speaker_model_path $onnx_dir/final.onnx \
   --embedding_size 256 \
