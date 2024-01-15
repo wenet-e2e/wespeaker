@@ -93,7 +93,7 @@ export GLOG_v=2
 wav_scp=your_test_wav_scp
 embed_out=your_embedding_txt
 ./build/bin/extract_emb_main \
-  --wav_list $wav_scp \
+  --wav_scp $wav_scp \
   --result $embed_out \
   --speaker_model_path speaker.bin \
   --embedding_size 256 \

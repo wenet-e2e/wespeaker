@@ -19,10 +19,12 @@
 
 #include "frontend/wav.h"
 #include "speaker/speaker_engine.h"
+#include "utils/thread_pool.h"
 #include "utils/timer.h"
 #include "utils/utils.h"
 
-DEFINE_string(wav_list, "", "input wav scp");
+DEFINE_string(wav_scp, "", "input wav scp");
+DEFINE_string(wav_path, "", "input wav path");
 DEFINE_string(result, "", "output embedding file");
 
 DEFINE_string(speaker_model_path, "", "path of speaker model");
@@ -30,66 +32,86 @@ DEFINE_int32(fbank_dim, 80, "fbank feature dimension");
 DEFINE_int32(sample_rate, 16000, "sample rate");
 DEFINE_int32(embedding_size, 256, "embedding size");
 DEFINE_int32(samples_per_chunk, 32000, "samples of one chunk");
+DEFINE_int32(thread_num, 1, "num of extract_emb thread");
 
-int main(int argc, char* argv[]) {
-  gflags::ParseCommandLineFlags(&argc, &argv, false);
-  google::InitGoogleLogging(argv[0]);
+std::ofstream g_result;
+std::mutex g_result_mutex;
+int g_total_waves_dur = 0;
+int g_total_extract_time = 0;
 
+void extract_emb(std::pair<std::string, std::string> wav) {
   // init model
-  LOG(INFO) << "Init model ...";
   auto speaker_engine = std::make_shared<wespeaker::SpeakerEngine>(
       FLAGS_speaker_model_path, FLAGS_fbank_dim, FLAGS_sample_rate,
       FLAGS_embedding_size, FLAGS_samples_per_chunk);
   int embedding_size = speaker_engine->EmbeddingSize();
   LOG(INFO) << "embedding size: " << embedding_size;
   // read wav.scp
-  // [utt, wav_path]
+  wenet::WavReader wav_reader(wav.second);
+  CHECK_EQ(wav_reader.sample_rate(), 16000);
+  int16_t* data = const_cast<int16_t*>(wav_reader.data());
+  int samples = wav_reader.num_sample();
+  // NOTE(cdliang): memory allocation
+  std::vector<float> embs(FLAGS_embedding_size, 0);
+
+  int wave_dur = static_cast<int>(static_cast<float>(samples) /
+                                  wav_reader.sample_rate() * 1000);
+  int extract_time = 0;
+  wenet::Timer timer;
+  speaker_engine->ExtractEmbedding(data, samples, &embs);
+  extract_time = timer.Elapsed();
+  LOG(INFO) << "process: " << wav.first
+            << " RTF: " << static_cast<float>(extract_time) / wave_dur;
+  g_result_mutex.lock();
+  std::ostream& buffer = FLAGS_result.empty() ? std::cout : g_result;
+  buffer << wav.first;
+  for (size_t i = 0; i < embs.size(); i++) {
+    buffer << " " << embs[i];
+  }
+  buffer << std::endl;
+  g_total_waves_dur += wave_dur;
+  g_total_extract_time += extract_time;
+  g_result_mutex.unlock();
+}
+
+int main(int argc, char* argv[]) {
+  gflags::ParseCommandLineFlags(&argc, &argv, false);
+  google::InitGoogleLogging(argv[0]);
+
+  if (FLAGS_wav_scp.empty() && FLAGS_wav_path.empty()) {
+    LOG(FATAL) << "wav_scp and wav_path should not be empty at the same time";
+  }
+
   std::vector<std::pair<std::string, std::string>> waves;
-  std::ifstream wav_scp(FLAGS_wav_list);
-  std::string line;
-  while (getline(wav_scp, line)) {
-    std::vector<std::string> strs;
-    wespeaker::SplitString(line, &strs);
-    CHECK_EQ(strs.size(), 2);
-    waves.emplace_back(make_pair(strs[0], strs[1]));
-  }
-
-  std::ofstream result;
-  if (!FLAGS_result.empty()) {
-    result.open(FLAGS_result, std::ios::out);
-  }
-  std::ostream& buffer = FLAGS_result.empty() ? std::cout : result;
-
-  int total_waves_dur = 0;
-  int total_extract_time = 0;
-  for (auto& wav : waves) {
-    auto data_reader = wenet::ReadAudioFile(wav.second);
-    CHECK_EQ(data_reader->sample_rate(), 16000);
-    int16_t* data = const_cast<int16_t*>(data_reader->data());
-    int samples = data_reader->num_sample();
-    // NOTE(cdliang): memory allocation
-    std::vector<float> embs(embedding_size, 0);
-    buffer << wav.first;
-
-    int wave_dur = static_cast<int>(static_cast<float>(samples) /
-                                    data_reader->sample_rate() * 1000);
-    int extract_time = 0;
-    wenet::Timer timer;
-    speaker_engine->ExtractEmbedding(data, samples, &embs);
-    extract_time = timer.Elapsed();
-    for (size_t i = 0; i < embs.size(); i++) {
-      buffer << " " << embs[i];
+  if (!FLAGS_wav_path.empty()) {
+    waves.emplace_back(make_pair("test", FLAGS_wav_path));
+  } else {
+    std::ifstream wav_scp(FLAGS_wav_scp);
+    std::string line;
+    while (getline(wav_scp, line)) {
+      std::vector<std::string> strs;
+      wespeaker::SplitString(line, &strs);
+      CHECK_EQ(strs.size(), 2);
+      waves.emplace_back(make_pair(strs[0], strs[1]));
     }
-    buffer << std::endl;
-    LOG(INFO) << "process: " << wav.first
-              << " RTF: " << static_cast<float>(extract_time) / wave_dur;
-    total_waves_dur += wave_dur;
-    total_extract_time += extract_time;
+    if (waves.empty()) {
+      LOG(FATAL) << "Please provide non-empty wav scp.";
+    }
   }
-  result.close();
-  LOG(INFO) << "Total: process " << total_waves_dur << "ms audio taken "
-            << total_extract_time << "ms.";
-  LOG(INFO) << "RTF: "
-            << static_cast<float>(total_extract_time) / total_waves_dur;
+
+  if (!FLAGS_result.empty()) {
+    g_result.open(FLAGS_result, std::ios::out);
+  }
+
+  {
+    ThreadPool pool(std::min(FLAGS_thread_num, static_cast<int>(waves.size())));
+    for (auto& wav : waves) {
+      pool.enqueue(extract_emb, wav);
+    }
+  }
+  LOG(INFO) << "Total: process " << g_total_waves_dur << "ms audio taken "
+            << g_total_extract_time << "ms.";
+  LOG(INFO) << "RTF: " << std::setprecision(4)
+            << static_cast<float>(g_total_extract_time) / g_total_waves_dur;
   return 0;
 }
