@@ -246,7 +246,7 @@ def ResNet293(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
 
 
 if __name__ == '__main__':
-    x = torch.zeros(10, 200, 80)
+    x = torch.zeros(1, 200, 80)
     model = ResNet34(feat_dim=80, embed_dim=256, two_emb_layer=False)
     model.eval()
     out = model(x)
@@ -258,4 +258,4 @@ if __name__ == '__main__':
     # from thop import profile
     # x_np = torch.randn(1, 200, 80)
     # flops, params = profile(model, inputs=(x_np, ))
-    # print("FLOPS: {} G, Params: {} M".format(flops / 1e9, params / 1e6))
+    # print("FLOPs: {} G, Params: {} M".format(flops / 1e9, params / 1e6))

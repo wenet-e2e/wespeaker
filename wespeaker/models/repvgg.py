@@ -894,7 +894,7 @@ def REPVGG_D2SE(feat_dim,
 
 
 if __name__ == '__main__':
-    x = torch.zeros(10, 200, 80)
+    x = torch.zeros(1, 200, 80)
     model = REPVGG_TINY_A0(feat_dim=80,
                            embed_dim=256,
                            pooling_func='TSTP',
