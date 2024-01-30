@@ -4,11 +4,11 @@
 * Scoring: cosine & PLDA & PLDA Adaptation
 * Metric: EER(%)
 
-| Model                | Params |  Backend   | Pooled | Tagalog | Cantonese |
-|:---------------------|:------:|:----------:|:------:|:-------:|:---------:|
-| ResNet34-TSTP-emb256 | 6.63M  |   Cosine   |  15.4  |  19.82  |   10.39   |
-|                      |        |    PLDA    | 11.689 | 16.961  |   6.239   |
-|                      |        | Adapt PLDA | 5.788  |  8.974  |   2.674   |
+| Model                | Params | FLOPs  |  Backend   | Pooled | Tagalog | Cantonese |
+|:---------------------|:------:|:------:|:----------:|:------:|:-------:|:---------:|
+| ResNet34-TSTP-emb256 | 6.63M  | 4.55G  |   Cosine   |  15.4  |  19.82  |   10.39   |
+|                      |        |        |    PLDA    | 11.689 | 16.961  |   6.239   |
+|                      |        |        | Adapt PLDA | 5.788  |  8.974  |   2.674   |
 
 Current PLDA implementation is fully compatible with the Kaldi version, note that
 we can definitely improve the results with out adaptation with parameter tuning and extra LDA as shown in the Kaldi
