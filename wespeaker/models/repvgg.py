@@ -894,13 +894,14 @@ def REPVGG_D2SE(feat_dim,
 
 
 if __name__ == '__main__':
+    x = torch.zeros(1, 200, 80)
     model = REPVGG_TINY_A0(feat_dim=80,
                            embed_dim=256,
-                           pooling_func='TAP',
-                           deploy=False,
+                           pooling_func='TSTP',
+                           deploy=True,
                            use_se=False)
     model.eval()
-    y = model(torch.randn(10, 200, 80))
+    y = model(x)
     print(y.size())
 
     num_params = sum(p.numel() for p in model.parameters())

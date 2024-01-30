@@ -1,6 +1,5 @@
 ## Overview
 
-* Compared with [v1](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxconverse/v1) version, here we split the Fbank extraction, embedding extraction and clustering modules to different stages.
 * We suggest to run this recipe on a gpu-available machine, with onnxruntime-gpu supported.
 * Dataset: voxconverse_dev that consists of 216 utterances
 * Speaker model: ResNet34 model pretrained by wespeaker

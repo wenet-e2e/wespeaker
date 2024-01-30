@@ -402,7 +402,7 @@ class CAMPPlus(nn.Module):
 
 
 if __name__ == '__main__':
-    x = torch.zeros(10, 200, 80)
+    x = torch.zeros(1, 200, 80)
     model = CAMPPlus(feat_dim=80, embed_dim=512, pooling_func='TSTP')
     model.eval()
     out = model(x)
@@ -410,3 +410,8 @@ if __name__ == '__main__':
 
     num_params = sum(param.numel() for param in model.parameters())
     print("{} M".format(num_params / 1e6))
+
+    # from thop import profile
+    # x_np = torch.randn(1, 200, 80)
+    # flops, params = profile(model, inputs=(x_np, ))
+    # print("FLOPs: {} G, Params: {} M".format(flops / 1e9, params / 1e6))
