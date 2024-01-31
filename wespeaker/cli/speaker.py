@@ -32,11 +32,14 @@ from wespeaker.utils.checkpoint import load_checkpoint
 from wespeaker.diar.spectral_clusterer import cluster
 from wespeaker.diar.extract_emb import subsegment
 from wespeaker.diar.make_rttm import merge_segments
+from wespeaker.utils.utils import set_seed
 
 
 class Speaker:
 
     def __init__(self, model_dir: str):
+        set_seed()
+
         config_path = os.path.join(model_dir, 'config.yaml')
         model_path = os.path.join(model_dir, 'avg_model.pt')
         with open(config_path, 'r') as fin:
