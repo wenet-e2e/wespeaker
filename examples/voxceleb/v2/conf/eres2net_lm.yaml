@@ -5,7 +5,7 @@
 #   In this fine-tuning stage, large margin and longer segment will
 #   be used.
 
-exp_dir: exp/ERes2Net_Base-TSTP-emb512-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150-LM
+exp_dir: exp/ERes2Net34_Base-TSTP-emb512-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150-LM
 gpus: "[0,1]"
 num_avg: 1
 enable_amp: False # whether enable automatic mixed precision training
@@ -51,13 +51,12 @@ dataset_args:
     max_f: 8
     prob: 0.6
 
-model: ERes2Net
+model: ERes2Net34_Base # ERes2Net34_Base, ERes2Net34_Large
 model_init: null
 model_args:
   feat_dim: 80
   embed_dim: 512 # 512, 192
-  m_channels: 32 # base: 32, large: 64
-  pooling_func: "TSTP" # TSTP, ASTP, MQMHASTP
+  pooling_func: "TSTP"
   two_emb_layer: False
 projection_args:
   project_type: "arc_margin" # add_margin, arc_margin, sphere, softmax, arc_margin_intertopk_subcenter

@@ -230,10 +230,10 @@ class BasicBlockERes2Net_diff_AFF(nn.Module):
 class ERes2Net(nn.Module):
 
     def __init__(self,
+                 m_channels,
+                 num_blocks,
                  block=BasicBlockERes2Net,
                  block_fuse=BasicBlockERes2Net_diff_AFF,
-                 num_blocks=[3, 4, 6, 3],
-                 m_channels=32,
                  feat_dim=80,
                  embed_dim=192,
                  pooling_func='TSTP',
@@ -340,9 +340,31 @@ class ERes2Net(nn.Module):
             return embed_a
 
 
+def ERes2Net34_Base(feat_dim,
+                    embed_dim,
+                    pooling_func='TSTP',
+                    two_emb_layer=False):
+    return ERes2Net(32, [3, 4, 6, 3],
+                    feat_dim=feat_dim,
+                    embed_dim=embed_dim,
+                    pooling_func=pooling_func,
+                    two_emb_layer=two_emb_layer)
+
+
+def ERes2Net34_Large(feat_dim,
+                     embed_dim,
+                     pooling_func='TSTP',
+                     two_emb_layer=False):
+    return ERes2Net(64, [3, 4, 6, 3],
+                    feat_dim=feat_dim,
+                    embed_dim=embed_dim,
+                    pooling_func=pooling_func,
+                    two_emb_layer=two_emb_layer)
+
+
 if __name__ == '__main__':
     x = torch.zeros(1, 200, 80)
-    model = ERes2Net(feat_dim=80, embed_dim=512, m_channels=32)
+    model = ERes2Net34_Base(feat_dim=80, embed_dim=512, two_emb_layer=False)
     model.eval()
     out = model(x)
     print(out.size())
