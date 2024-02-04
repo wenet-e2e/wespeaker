@@ -1,0 +1,89 @@
+### Large margin fine-tuning configuration
+#
+#   The large margin fine-tuning operation is often used in speaker
+#   verification challenge system to further improve the performance.
+#   In this fine-tuning stage, large margin and longer segment will
+#   be used.
+
+exp_dir: exp/ERes2Net34_Base-TSTP-emb512-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150-LM
+gpus: "[0,1]"
+num_avg: 1
+enable_amp: False # whether enable automatic mixed precision training
+do_lm: True
+
+seed: 42
+num_epochs: 5
+save_epoch_interval: 1 # save model per epoch
+log_batch_interval: 100 # log every 100 batchs
+
+dataloader_args:
+  batch_size: 32
+  num_workers: 16
+  pin_memory: False
+  prefetch_factor: 8
+  drop_last: True
+
+dataset_args:
+  # the sample number which will be traversed within one epoch, if the value equals to 0,
+  # the utterance number in the dataset will be used as the sample_num_per_epoch.
+  sample_num_per_epoch: 0
+  shuffle: True
+  shuffle_args:
+    shuffle_size: 2500
+  filter: True
+  filter_args:
+    min_num_frames: 100
+    max_num_frames: 800
+  resample_rate: 16000
+  speed_perturb: True
+  num_frms: 600
+  aug_prob: 0.6 # prob to add reverb & noise aug per sample
+  fbank_args:
+    num_mel_bins: 80
+    frame_shift: 10
+    frame_length: 25
+    dither: 1.0
+  spec_aug: False
+  spec_aug_args:
+    num_t_mask: 1
+    num_f_mask: 1
+    max_t: 10
+    max_f: 8
+    prob: 0.6
+
+model: ERes2Net34_Base # ERes2Net34_Base, ERes2Net34_Large
+model_init: null
+model_args:
+  feat_dim: 80
+  embed_dim: 512 # 512, 192
+  pooling_func: "TSTP"
+  two_emb_layer: False
+projection_args:
+  project_type: "arc_margin" # add_margin, arc_margin, sphere, softmax, arc_margin_intertopk_subcenter
+  scale: 32.0
+  easy_margin: False
+
+margin_scheduler: MarginScheduler
+margin_update:
+  initial_margin: 0.5
+  final_margin: 0.5
+  increase_start_epoch: 1
+  fix_start_epoch: 1
+  update_margin: True
+  increase_type: "exp" # exp, linear
+
+loss: CrossEntropyLoss
+loss_args: {}
+
+optimizer: SGD
+optimizer_args:
+  momentum: 0.9
+  nesterov: True
+  weight_decay: 0.0001
+
+scheduler: ExponentialDecrease
+scheduler_args:
+  initial_lr: 1.0e-4
+  final_lr: 2.5e-5
+  warm_up_epoch: 1
+  warm_from_zero: True
