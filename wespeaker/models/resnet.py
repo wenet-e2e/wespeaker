@@ -259,3 +259,6 @@ if __name__ == '__main__':
     # x_np = torch.randn(1, 200, 80)
     # flops, params = profile(model, inputs=(x_np, ))
     # print("FLOPs: {} G, Params: {} M".format(flops / 1e9, params / 1e6))
+
+    # from torchinfo import summary
+    # summary(model, (16, 100, 80))
