@@ -66,6 +66,7 @@ This is the roadmap for wespeaker version 1.0.
     - [x] [ECAPA_TDNN](https://arxiv.org/pdf/2005.07143.pdf)
     - [x] [RepVGG](https://arxiv.org/pdf/2101.03697.pdf)
     - [x] [CAM++](https://arxiv.org/pdf/2303.00332.pdf)
+    - [x] [ERes2Net](https://arxiv.org/pdf/2305.12838.pdf)
 * Pooling Functions
     - [x] TAP(mean) / TSDP(std) / TSTP(mean+std)
         - Comparison of mean/std pooling can be found in [shuai_iscslp](https://x-lance.sjtu.edu.cn/en/papers/2021/iscslp21_shuai_1_.pdf), [anna_arxiv](https://arxiv.org/pdf/2203.10300.pdf)

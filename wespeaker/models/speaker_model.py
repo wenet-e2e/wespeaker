@@ -17,6 +17,8 @@ import wespeaker.models.ecapa_tdnn as ecapa_tdnn
 import wespeaker.models.resnet as resnet
 import wespeaker.models.repvgg as repvgg
 import wespeaker.models.campplus as campplus
+import wespeaker.models.eres2net as eres2net
+import wespeaker.models.res2net as res2net
 
 
 def get_speaker_model(model_name: str):
@@ -30,6 +32,10 @@ def get_speaker_model(model_name: str):
         return getattr(repvgg, model_name)
     elif model_name.startswith("CAMPPlus"):
         return getattr(campplus, model_name)
+    elif model_name.startswith("ERes2Net"):
+        return getattr(eres2net, model_name)
+    elif model_name.startswith("Res2Net"):
+        return getattr(res2net, model_name)
     else:  # model_name error !!!
         print(model_name + " not found !!!")
         exit(1)

@@ -115,7 +115,7 @@ class ResNet(nn.Module):
                  feat_dim=40,
                  embed_dim=128,
                  pooling_func='TSTP',
-                 two_emb_layer=True):
+                 two_emb_layer=False):
         super(ResNet, self).__init__()
         self.in_planes = m_channels
         self.feat_dim = feat_dim
@@ -189,7 +189,7 @@ class ResNet(nn.Module):
             return torch.tensor(0.0), embed_a
 
 
-def ResNet18(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
+def ResNet18(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
     return ResNet(BasicBlock, [2, 2, 2, 2],
                   feat_dim=feat_dim,
                   embed_dim=embed_dim,
@@ -197,7 +197,7 @@ def ResNet18(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
                   two_emb_layer=two_emb_layer)
 
 
-def ResNet34(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
+def ResNet34(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
     return ResNet(BasicBlock, [3, 4, 6, 3],
                   feat_dim=feat_dim,
                   embed_dim=embed_dim,
@@ -205,7 +205,7 @@ def ResNet34(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
                   two_emb_layer=two_emb_layer)
 
 
-def ResNet50(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
+def ResNet50(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
     return ResNet(Bottleneck, [3, 4, 6, 3],
                   feat_dim=feat_dim,
                   embed_dim=embed_dim,
@@ -213,7 +213,7 @@ def ResNet50(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
                   two_emb_layer=two_emb_layer)
 
 
-def ResNet101(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
+def ResNet101(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
     return ResNet(Bottleneck, [3, 4, 23, 3],
                   feat_dim=feat_dim,
                   embed_dim=embed_dim,
@@ -221,7 +221,7 @@ def ResNet101(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
                   two_emb_layer=two_emb_layer)
 
 
-def ResNet152(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
+def ResNet152(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
     return ResNet(Bottleneck, [3, 8, 36, 3],
                   feat_dim=feat_dim,
                   embed_dim=embed_dim,
@@ -229,7 +229,7 @@ def ResNet152(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
                   two_emb_layer=two_emb_layer)
 
 
-def ResNet221(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
+def ResNet221(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
     return ResNet(Bottleneck, [6, 16, 48, 3],
                   feat_dim=feat_dim,
                   embed_dim=embed_dim,
@@ -237,7 +237,7 @@ def ResNet221(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
                   two_emb_layer=two_emb_layer)
 
 
-def ResNet293(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
+def ResNet293(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
     return ResNet(Bottleneck, [10, 20, 64, 3],
                   feat_dim=feat_dim,
                   embed_dim=embed_dim,
@@ -246,8 +246,8 @@ def ResNet293(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=True):
 
 
 if __name__ == '__main__':
-    x = torch.zeros(10, 200, 80)
-    model = ResNet34(feat_dim=80, embed_dim=256, pooling_func='MQMHASTP')
+    x = torch.zeros(1, 200, 80)
+    model = ResNet34(feat_dim=80, embed_dim=256, two_emb_layer=False)
     model.eval()
     out = model(x)
     print(out[-1].size())
@@ -258,4 +258,7 @@ if __name__ == '__main__':
     # from thop import profile
     # x_np = torch.randn(1, 200, 80)
     # flops, params = profile(model, inputs=(x_np, ))
-    # print("FLOPS: {} G, Params: {} M".format(flops / 1e9, params / 1e6))
+    # print("FLOPs: {} G, Params: {} M".format(flops / 1e9, params / 1e6))
+
+    # from torchinfo import summary
+    # summary(model, (16, 100, 80))
