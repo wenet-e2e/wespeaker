@@ -139,10 +139,14 @@ class Speaker:
             segments = vad.get_speech_timestamps(self.vad_model,
                                                  audio_path,
                                                  return_seconds=True)
-            if len(segments) > 0:  # remove head and tail silence
-                start = int(segments[0]['start'] * sample_rate)
-                end = int(segments[-1]['end'] * sample_rate)
-                pcm = pcm[0, start:end].unsqueeze(0)
+            pcmTotal = torch.Tensor()
+            if len(segments) > 0:  # remove all the silence
+                for segment in segments:
+                    start = int(segment['start'] * sample_rate)
+                    end = int(segment['end'] * sample_rate)
+                    pcmTemp = pcm[0, start:end]
+                    pcmTotal = torch.cat([pcmTotal, pcmTemp], 0)
+                pcm = pcmTotal.unsqueeze(0)
             else:  # all silence, nospeech
                 return None
         pcm = pcm.to(torch.float)
