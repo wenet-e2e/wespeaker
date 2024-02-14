@@ -1,0 +1,13 @@
+Changed a little in make_system_sad.py to make split a large data set in parts
+when extracting VAD. It took ages to start otherwise and this will also be 
+helpful in case there is a crash since output is saved after each part instead
+of after the whole set.
+
+# We use some scripts from Kaldi (combine_data.sh and fix_data_dir.sh)
+
+ln -s $KALDI_ROOT/egs/wsj/s5/utils
+export PATH=$PATH:$(pwd)/utils/ # This is necessary since some Kaldi scripts assume other Kaldi scripts exists in the path.
+export PATH=$PATH:$KALDI_ROOT/
+
+v4/data/vox_gsmfr/vad
+less v4/data/cts/vad
