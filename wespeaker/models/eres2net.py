@@ -103,14 +103,20 @@ class AFF(nn.Module):
 
 
 class BasicBlockERes2Net(nn.Module):
-    expansion = 2
 
-    def __init__(self, in_planes, planes, stride=1, baseWidth=32, scale=2):
+    def __init__(self,
+                 in_planes,
+                 planes,
+                 stride=1,
+                 baseWidth=32,
+                 scale=2,
+                 expansion=2):
         super(BasicBlockERes2Net, self).__init__()
         width = int(math.floor(planes * (baseWidth / 64.0)))
         self.conv1 = conv1x1(in_planes, width * scale, stride)
         self.bn1 = nn.BatchNorm2d(width * scale)
         self.nums = scale
+        self.expansion = expansion
 
         convs = []
         bns = []
@@ -162,14 +168,20 @@ class BasicBlockERes2Net(nn.Module):
 
 
 class BasicBlockERes2Net_diff_AFF(nn.Module):
-    expansion = 2
 
-    def __init__(self, in_planes, planes, stride=1, baseWidth=32, scale=2):
+    def __init__(self,
+                 in_planes,
+                 planes,
+                 stride=1,
+                 baseWidth=32,
+                 scale=2,
+                 expansion=2):
         super(BasicBlockERes2Net_diff_AFF, self).__init__()
         width = int(math.floor(planes * (baseWidth / 64.0)))
         self.conv1 = conv1x1(in_planes, width * scale, stride)
         self.bn1 = nn.BatchNorm2d(width * scale)
         self.nums = scale
+        self.expansion = expansion
 
         # to meet the torch.jit.script export requirements
         self.conv2_1 = conv3x3(width, width)
@@ -232,6 +244,9 @@ class ERes2Net(nn.Module):
     def __init__(self,
                  m_channels,
                  num_blocks,
+                 baseWidth=32,
+                 scale=2,
+                 expansion=2,
                  block=BasicBlockERes2Net,
                  block_fuse=BasicBlockERes2Net_diff_AFF,
                  feat_dim=80,
@@ -244,6 +259,7 @@ class ERes2Net(nn.Module):
         self.embed_dim = embed_dim
         self.stats_dim = int(feat_dim / 8) * m_channels * 8
         self.two_emb_layer = two_emb_layer
+        self.expansion = expansion
 
         self.conv1 = nn.Conv2d(1,
                                m_channels,
@@ -255,48 +271,59 @@ class ERes2Net(nn.Module):
         self.layer1 = self._make_layer(block,
                                        m_channels,
                                        num_blocks[0],
-                                       stride=1)
+                                       stride=1,
+                                       baseWidth=baseWidth,
+                                       scale=scale,
+                                       expansion=expansion)
         self.layer2 = self._make_layer(block,
                                        m_channels * 2,
                                        num_blocks[1],
-                                       stride=2)
+                                       stride=2,
+                                       baseWidth=baseWidth,
+                                       scale=scale,
+                                       expansion=expansion)
         self.layer3 = self._make_layer(block_fuse,
                                        m_channels * 4,
                                        num_blocks[2],
-                                       stride=2)
+                                       stride=2,
+                                       baseWidth=baseWidth,
+                                       scale=scale,
+                                       expansion=expansion)
         self.layer4 = self._make_layer(block_fuse,
                                        m_channels * 8,
                                        num_blocks[3],
-                                       stride=2)
+                                       stride=2,
+                                       baseWidth=baseWidth,
+                                       scale=scale,
+                                       expansion=expansion)
 
         # Downsampling module for each layer
-        self.layer1_downsample = nn.Conv2d(m_channels * 2,
-                                           m_channels * 4,
+        self.layer1_downsample = nn.Conv2d(m_channels * expansion,
+                                           m_channels * expansion * 2,
                                            kernel_size=3,
                                            stride=2,
                                            padding=1,
                                            bias=False)
-        self.layer2_downsample = nn.Conv2d(m_channels * 4,
-                                           m_channels * 8,
+        self.layer2_downsample = nn.Conv2d(m_channels * expansion * 2,
+                                           m_channels * expansion * 4,
                                            kernel_size=3,
                                            padding=1,
                                            stride=2,
                                            bias=False)
-        self.layer3_downsample = nn.Conv2d(m_channels * 8,
-                                           m_channels * 16,
+        self.layer3_downsample = nn.Conv2d(m_channels * expansion * 4,
+                                           m_channels * expansion * 8,
                                            kernel_size=3,
                                            padding=1,
                                            stride=2,
                                            bias=False)
 
         # Bottom-up fusion module
-        self.fuse_mode12 = AFF(channels=m_channels * 4)
-        self.fuse_mode123 = AFF(channels=m_channels * 8)
-        self.fuse_mode1234 = AFF(channels=m_channels * 16)
+        self.fuse_mode12 = AFF(channels=m_channels * expansion * 2)
+        self.fuse_mode123 = AFF(channels=m_channels * expansion * 4)
+        self.fuse_mode1234 = AFF(channels=m_channels * expansion * 8)
 
         self.pool = getattr(pooling_layers,
-                            pooling_func)(in_dim=self.stats_dim *
-                                          block.expansion)
+                            pooling_func)(in_dim=self.stats_dim * expansion)
         self.pool_out_dim = self.pool.get_out_dim()
         self.seg_1 = nn.Linear(self.pool_out_dim, embed_dim)
         if self.two_emb_layer:
@@ -306,12 +333,21 @@ class ERes2Net(nn.Module):
             self.seg_bn_1 = nn.Identity()
             self.seg_2 = nn.Identity()
 
-    def _make_layer(self, block, planes, num_blocks, stride):
+    def _make_layer(self,
+                    block,
+                    planes,
+                    num_blocks,
+                    stride,
+                    baseWidth=32,
+                    scale=2,
+                    expansion=2):
         strides = [stride] + [1] * (num_blocks - 1)
         layers = []
         for stride in strides:
-            layers.append(block(self.in_planes, planes, stride))
-            self.in_planes = planes * block.expansion
+            layers.append(
+                block(self.in_planes, planes, stride, baseWidth, scale,
+                      expansion))
+            self.in_planes = planes * self.expansion
         return nn.Sequential(*layers)
 
     def forward(self, x):
@@ -356,6 +392,23 @@ def ERes2Net34_Large(feat_dim,
                      pooling_func='TSTP',
                      two_emb_layer=False):
     return ERes2Net(64, [3, 4, 6, 3],
+                    feat_dim=feat_dim,
+                    embed_dim=embed_dim,
+                    pooling_func=pooling_func,
+                    two_emb_layer=two_emb_layer)
+
+
+def ERes2Net34_aug(feat_dim,
+                   embed_dim,
+                   pooling_func='TSTP',
+                   two_emb_layer=False,
+                   expansion=4,
+                   baseWidth=24,
+                   scale=3):
+    return ERes2Net(64, [3, 4, 6, 3],
+                    expansion=expansion,
+                    baseWidth=baseWidth,
+                    scale=scale,
                     feat_dim=feat_dim,
                     embed_dim=embed_dim,
                     pooling_func=pooling_func,

@@ -72,6 +72,8 @@ class Hub(object):
     Assets = {
         "chinese": "cnceleb_resnet34.tar.gz",
         "english": "voxceleb_resnet221_LM.tar.gz",
+        "campplus": "campplus_cn_common_200k.tar.gz",
+        "eres2net": "eres2net_cn_commom_200k.tar.gz",
     }
 
     def __init__(self) -> None:
