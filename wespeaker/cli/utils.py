@@ -37,6 +37,16 @@ def get_args():
                         ],
                         default='chinese',
                         help='language type')
+    parser.add_argument(
+        '--campplus',
+        action='store_true',
+        help='whether to use the damo/speech_campplus_sv_zh-cn_16k-common model'
+    )
+    parser.add_argument(
+        '--eres2net',
+        action='store_true',
+        help='whether to use the damo/speech_eres2net_sv_zh-cn_16k-common model'
+    )
     parser.add_argument('-p',
                         '--pretrain',
                         type=str,
