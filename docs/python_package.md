@@ -35,6 +35,8 @@ You can specify the following parameters. (use `-h` for details)
 * `-l` or `--language`: use Chinese/English speaker models
 * `-p` or `--pretrain`: the path of pretrained model, `avg_model.pt` and `config.yaml` should be contained
 * `-g` or `--gpu`: use GPU for inference, number $< 0$ means using CPU
+* `--campplus`: use [`campplus_cn_common_200k` of damo](https://www.modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary)
+* `--eres2net`: use [`res2net_cn_common_200k` of damo](https://www.modelscope.cn/models/iic/speech_eres2net_sv_zh-cn_16k-common/summary)
 * `--audio_file`: input audio file path
 * `--audio_file2`: input audio file2 path, specifically for the similarity task
 * `--wav_scp`: input wav.scp file in kaldi format (each line: key wav_path)
