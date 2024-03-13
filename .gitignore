@@ -39,7 +39,7 @@ raw_wav
 tensorboard
 **/*build*
 log
-result.txt
+*.txt
 
 *.onnx
 external_tools
