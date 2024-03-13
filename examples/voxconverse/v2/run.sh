@@ -60,7 +60,11 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
 
     # Download dev audios
     mkdir -p data/dev
-    wget -c https://mm.kaist.ac.kr/datasets/voxconverse/data/voxconverse_dev_wav.zip -O data/voxconverse_dev_wav.zip
+
+    #wget --no-check-certificate -c https://mm.kaist.ac.kr/datasets/voxconverse/data/voxconverse_dev_wav.zip -O data/voxconverse_dev_wav.zip 
+    # The above url maybe not connected, you can try the below url
+    ## This  url is from https://github.com/joonson/voxconverse/blob/master/README.md
+    wget --no-check-certificate -c https://www.robots.ox.ac.uk/~vgg/data/voxconverse/data/voxconverse_dev_wav.zip -O data/voxconverse_dev_wav.zip
     unzip -o data/voxconverse_dev_wav.zip -d data/dev
 
     # Create wav.scp for dev audios
@@ -68,7 +72,11 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
 
     # Test audios
     mkdir -p data/test
-    wget -c https://mm.kaist.ac.kr/datasets/voxconverse/data/voxconverse_test_wav.zip -O data/voxconverse_test_wav.zip
+    # # this url maybe not connect, you can try the below url
+    #wget --no-check-certificate -c https://mm.kaist.ac.kr/datasets/voxconverse/data/voxconverse_test_wav.zip -O data/voxconverse_test_wav.zip 
+    # the above url maybe not connected, you can try the below url
+    # this  url is from https://github.com/joonson/voxconverse/blob/master/README.md
+    wget  --no-check-certificate -c https://www.robots.ox.ac.uk/~vgg/data/voxconverse/data/voxconverse_test_wav.zip -O data/voxconverse_test_wav.zip
     unzip -o data/voxconverse_test_wav.zip -d data/test
 
     # Create wav.scp for test audios
@@ -161,7 +169,12 @@ fi
 if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
     ref_dir=data/voxconverse-master/
     #ref_dir=data/VoxSRC2023/voxconverse/
-
+    #export LANGUAGE = "en_US.UTF-8"
+	#export LC_ALL = "en_US.UTF-8"
+	#export LC_CTYPE = "en_US.UTF-8"
+	#export LANG = "en_US.UTF-8"
+    #export LC_CTYPE=en_US.UTF-8
+    #export LC_ALL=en_US.UTF-8
     echo -e "Get the DER results\n..."
     perl external_tools/SCTK-2.4.12/src/md-eval/md-eval.pl \
          -c 0.25 \
