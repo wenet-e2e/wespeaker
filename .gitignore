@@ -38,8 +38,6 @@ data
 raw_wav
 tensorboard
 **/*build*
-logs
-result.txt
 
 *.onnx
 external_tools
