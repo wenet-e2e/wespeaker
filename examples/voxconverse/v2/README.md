@@ -27,7 +27,7 @@
 
     | system | MISS | FA | SC | DER |
     |:---|:---:|:---:|:---:|:---:|
-    | This repo (with system SAD) | 4.0 | 2.4 | 3.5 | 9.8 |
+    | This repo (with system SAD) | 4.0 | 2.4 | 3.4 | 9.8 |
 
 
 [^1]: Spot the conversation: speaker diarisation in the wild, https://arxiv.org/pdf/2007.01216.pdf
