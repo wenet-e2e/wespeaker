@@ -56,14 +56,14 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     unzip -o data/voxconverse_master.zip -d data
 
     # Download annotations from VoxSRC-23 validation toolkit (looks like version 0.0.2)
-    #cd data && git clone https://github.com/JaesungHuh/VoxSRC2023.git --recursive && cd -
+    # cd data && git clone https://github.com/JaesungHuh/VoxSRC2023.git --recursive && cd -
 
     # Download dev audios
     mkdir -p data/dev
 
-    #wget --no-check-certificate -c https://mm.kaist.ac.kr/datasets/voxconverse/data/voxconverse_dev_wav.zip -O data/voxconverse_dev_wav.zip 
+    #wget --no-check-certificate -c https://mm.kaist.ac.kr/datasets/voxconverse/data/voxconverse_dev_wav.zip -O data/voxconverse_dev_wav.zip
     # The above url may not be reachable, you can try the link below.
-    ## This  url is from https://github.com/joonson/voxconverse/blob/master/README.md
+    # This url is from https://github.com/joonson/voxconverse/blob/master/README.md
     wget --no-check-certificate -c https://www.robots.ox.ac.uk/~vgg/data/voxconverse/data/voxconverse_dev_wav.zip -O data/voxconverse_dev_wav.zip
     unzip -o data/voxconverse_dev_wav.zip -d data/dev
 
@@ -72,10 +72,10 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
 
     # Test audios
     mkdir -p data/test
-    
-    #wget --no-check-certificate -c https://mm.kaist.ac.kr/datasets/voxconverse/data/voxconverse_test_wav.zip -O data/voxconverse_test_wav.zip 
+
+    #wget --no-check-certificate -c https://mm.kaist.ac.kr/datasets/voxconverse/data/voxconverse_test_wav.zip -O data/voxconverse_test_wav.zip
     # The above url may not be reachable, you can try the link below.
-    # This  url is from https://github.com/joonson/voxconverse/blob/master/README.md
+    # This url is from https://github.com/joonson/voxconverse/blob/master/README.md
     wget  --no-check-certificate -c https://www.robots.ox.ac.uk/~vgg/data/voxconverse/data/voxconverse_test_wav.zip -O data/voxconverse_test_wav.zip
     unzip -o data/voxconverse_test_wav.zip -d data/test
 
