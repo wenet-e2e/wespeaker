@@ -19,6 +19,19 @@ stop_stage=-1
 sre_data_dir=
 data=data
 
+###
+sre18_devset_dir="" 
+sre18_evalset_dir=""
+sre18_evalset_keys="" 
+###
+sre21_devset_dir="" 
+sre21_evalset_dir=""
+sre21_evalset_keys=""
+###
+cts_superset_dir=""
+###
+voxceleb_dir=""
+
 . tools/parse_options.sh || exit 1
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
@@ -28,63 +41,172 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     unzip -o external_tools/silero-vad-v4.0.zip -d external_tools
 fi
 
+
+### SRE16
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     # The meta data for SRE16 should be pre-prepared using Kaldi recipe:
     # https://github.com/kaldi-asr/kaldi/tree/master/egs/sre16/v2
+    echo "Preparing SRE16"
     for dset in sre16_major sre16_eval_enroll sre16_eval_test; do
-        mkdir -p ${data}/${dset}
-        cp ${sre_data_dir}/${dset}/wav.scp ${data}/${dset}/wav.scp
-        [ -f ${sre_data_dir}/${dset}/utt2spk ] && cp ${sre_data_dir}/${dset}/utt2spk ${data}/${dset}/utt2spk
-        [ -f ${sre_data_dir}/${dset}/spk2utt ] && cp ${sre_data_dir}/${dset}/spk2utt ${data}/${dset}/spk2utt
+	new_dset=$(echo ${dset} | sed "s:_:/:g" | sed "s:enroll:enrollment:g" ) # To get organization and naming consistent with other sets. 
+	echo "Renaming $dset to $new_dset"
+        mkdir -p ${data}/${new_dset}
+        cp ${sre_data_dir}/${dset}/wav.scp ${data}/${new_dset}/wav.scp
+        [ -f ${sre_data_dir}/${dset}/utt2spk ] && cp ${sre_data_dir}/${dset}/utt2spk ${data}/${new_dset}/utt2spk
+        [ -f ${sre_data_dir}/${dset}/spk2utt ] && cp ${sre_data_dir}/${dset}/spk2utt ${data}/${new_dset}/spk2utt
     done
+    cp -r ${sre_data_dir}/sre16_eval_test/trials ${data}/sre16/eval/
+    cp -r ${sre_data_dir}/sre16_eval_test/trials_tgl ${data}/sre16/eval/
+    cp -r ${sre_data_dir}/sre16_eval_test/trials_yue ${data}/sre16/eval/
 fi
 
+
+### SRE18 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
+    echo "Preparing SRE18"
+    local/prepare_sre18.sh --stage 1 --stop_stage 1 --sre18_dev_dir $sre18_devset_dir --sre18_eval_dir $sre18_evalset_dir --sre18_eval_keys_file $sre18_evalset_keys --data_dir $data/sre18
+fi
+
+
+### SRE21
+if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
+    echo "Preparing SRE21"
+    local/prepare_sre21.sh --stage 1 --stop_stage 1 --sre21_dev_dir $sre21_devset_dir --sre21_eval_dir $sre21_evalset_dir --sre21_eval_keys_file $sre21_evalset_keys --data_dir $data/sre21
+fi
+
+
+### CTS
+if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
+    echo "Preparing CTS"
+    local/prepare_cts_superset.sh --cts_superset_dir $cts_superset_dir --data_cts $data/cts --wav_dir `pwd`/wav/cts
+
+
+    # Only mixer data. Used for backend training. Create only lists here. 
+    # The data directory will be created later, after VAD.
+    awk -F"\t" '{if($7 == "mx3" || $7 ==  "mx45" || $7 == "mx6"){print $0}  }' ${cts_superset_dir}/docs/cts_superset_segment_key.tsv \
+	> data/cts_superset_segment_key_mx3456.tsv
+    cut -f 1  data/cts_superset_segment_key_mx3456.tsv | sed s:\\.sph$:: > data/mx_3456.list  
+    
+fi
+
+
+### VoxCeleb
+# We are using all of VoxCeleb 1 and the training (aka "development") part of VoxCeleb 2.
+# (The test part of VoxCeleb 2) may have some overlap with VoxCeleb 1. See 
+# https://www.robots.ox.ac.uk/~vgg/publications/2019/Nagrani19/nagrani19.pdf, Table 4.)
+if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then    
+    
+    echo "Preparing VoxCeleb"
+    if [[ $vox_dir == "" ]];then
+        echo "Preparing Voxceleb, rirs and Musan"
+	vox_dir=${data}_vox
+	mkdir ${vox_dir}
+        local/prepare_vox.sh --stage 3 --stop_stage 4 --data ${data}_vox
+    fi
+    
+    if [[ ! -d $vox_dir/vox1  ||  ! -d $vox_dir/vox2_dev ]];then
+        echo "ERROR: Problem with Voxceleb data directory."
+        exit 1
+    fi
+
+    # Downsample VoxCeleb and apply GSM. We create a new wav.scp with this command in the 
+    # extraction chain rather than creating the new wav files explicitly.
+    sox_command='-t gsm -r 8000 - | sox -t gsm -r 8000 - -t wav -r 8000 -c 1 -e signed-integer -' 
+    for dset in vox1 vox2_dev;do
+	tools/copy_data_dir.sh $vox_dir/$dset $data/${dset}_gsmfr
+	awk -v sc="$sox_command" '{print $1 " sox " $2 " " sc " |" }' $vox_dir/$dset/wav.scp > $data/${dset}_gsmfr/wav.scp
+    done
+
+    # Combine all Voxceleb data
+    utils/combine_data.sh data/vox_gsmfr data/vox1_gsmfr/ data/vox2_dev_gsmfr/      
+
+    # Copy rirs and musan from voxceleb. We don't need to downsample as this will be 
+    # done on-the-fly. If the direcotires already contain the data in lmdb format 
+    # we just link it. Otherwise we copy it and let later stages create the lmdb
+    # format data here. Since we don't want to affect the original data.
+    for x in rirs musan;do
+	if [ -d $vox_dir/$x/lmdb ];then
+	    ln -s $vox_dir/$x $data/
+	else
+	    mkdir $data/$x
+	    cp -r $vox_dir/$x/wav.scp $data/$x/wav.scp 	    
+	fi
+    done
+
+fi
+
+
+if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
     
     echo "Get vad segmentation for dataset."
     true && { 
 	# Set VAD min duration
-	min_duration=0.255
-	for dset in vox_gsmfr sre18/dev/test sre18/dev/enrollment sre18/dev/unlabeled sre18/eval/test sre18/eval/enrollment sre21/dev/test sre21/dev/enrollment sre21/eval/test sre21/eval/enrollment sre16_major sre16_eval_enroll sre16_eval_test cts vox_gsmfr; do
+	min_duration=0.25
+	for dset in vox_gsmfr cts sre18/dev/test sre18/dev/enrollment sre18/dev/unlabeled sre18/eval/test sre18/eval/enrollment sre21/dev/test sre21/dev/enrollment sre21/eval/test sre21/eval/enrollment sre16_major sre16/eval/enrollment sre16/eval/test; do
             python3 local/make_system_sad.py \
 		--repo-path external_tools/silero-vad-4.0 \
 		--scp ${data}/${dset}/wav.scp \
 		--min-duration $min_duration > ${data}/${dset}/vad
-	    cp -r  ${data}/${dset} ${data}/${dset}-bk
+	    cp -r  ${data}/${dset} ${data}/${dset}-bk # Since VAD is quite time-consuming, it is good to have a backup.
 	done
     }
     
     true && { 
+	# We may consider to use only the mixer portion of the CTS data for backen training
+	# as it may be closer to the SRE data.
 
 	utils/subset_data_dir.sh --utt-list data/mx_3456.list data/cts data/mx_3456
 	tools/filter_scp.pl -f 2 ${data}/mx_3456/wav.scp ${data}/cts/vad > ${data}/mx_3456/vad
+ 
 
 	# For PLDA training, it is better to augment the training data
 	python3 local/generate_sre_aug.py --ori_dir ${data}/mx_3456 \
             --aug_dir ${data}/mx_3456_aug \
             --aug_copy_num 2
 
-	tools/utt2spk_to_spk2utt.pl ${data}/mx_3456_aug/utt2spk > ${data}/mx_3456_aug/spk2utt
+	tools/utt2spk_to_spk2utt.pl ${data}/mx_3456_aug/utt2spk > ${data}/mx_3456_aug/spk2utt	
+    }
 
+    true && { 
+	# We may consider to use only the mixer portion of the CTS data for backen training
+	# as it may be closer to the SRE data.
+
+	# For PLDA training, it is better to augment the training data
+	python3 local/generate_sre_aug.py --ori_dir ${data}/cts \
+            --aug_dir ${data}/cts_aug \
+            --aug_copy_num 2
+
+	tools/utt2spk_to_spk2utt.pl ${data}/cts_aug/utt2spk > ${data}/cts_aug/spk2utt	
     }
 
 fi
 
+if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
 
-if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
-    for dset in cts; do
-        python3 local/utt2voice_duration.py \
-            --vad_file ${data}/${dset}/vad \
-            --utt2voice_dur ${data}/${dset}/utt2voice_dur
+    for dset in cts vox_gsmfr; do
+        if [ -f ${data}/${dset}/vad ];then
+            echo "Using VAD info"
+            python3 local/utt2voice_duration.py \
+                --vad_file ${data}/${dset}/vad \
+                --utt2voice_dur ${data}/${dset}/utt2voice_dur
+        else
+	    # We may, for example, avoid applying VAD on VoxCeleb in which case we need this.
+            echo "Using soxi"
+            for w in $(cut -f2 -d" " ${data}/${dset}/wav.scp); do
+                dur=$(soxi -D $w)
+                echo "$w $dur"
+            done > ${data}/${dset}/wav2dur
+            awk 'NR==FNR{w2d[$1]=$2;next}  $2 in w2d {print $1 " " w2d[$2]}' ${data}/${dset}/wav2dur ${data}/${dset}/wav.scp > ${data}/${dset}/utt2voice_dur
+        fi
     done
 fi
 
-if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
+if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
 
     # Following the Kaldi recipe: https://github.com/kaldi-asr/kaldi/blob/71f38e62cad01c3078555bfe78d0f3a527422d75/egs/sre16/v2/run.sh#L189
     # We filter out the utterances with duration less than 5s
     echo "Stage 5, block 1"
-    for dset in cts; do
+    for dset in cts vox_gsmfr; do
         python3 local/filter_utt_accd_dur.py \
             --wav_scp ${data}/${dset}/wav.scp \
             --utt2voice_dur ${data}/${dset}/utt2voice_dur \
@@ -97,7 +219,7 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
     # Similarly, following the Kaldi recipe,
     # we throw out speakers with fewer than 3 utterances.
     echo "Stage 5, block 2"
-    for dset in cts; do
+    for dset in cts vox_gsmfr; do
         tools/fix_data_dir.sh ${data}/${dset}
         cp ${data}/${dset}/spk2utt ${data}/${dset}/spk2utt.bak
         awk '{if(NF>2){print $0}}' ${data}/${dset}/spk2utt.bak > ${data}/${dset}/spk2utt
@@ -105,4 +227,8 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
         tools/fix_data_dir.sh ${data}/${dset}
     done
 
+    ./utils/combine_data.sh data/cts_vox data/cts/ data/vox_gsmfr 
+    cat data/cts/vad data/vox_gsmfr/vad > data/cts_vox/vad              # Not combined byt the obove script 
 fi
+
+

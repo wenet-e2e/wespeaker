@@ -70,7 +70,7 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
 			# suffix is .flac
 			# From http://trac.ffmpeg.org/wiki/audio%20types:"The default for muxing 
 			# into WAV files is pcm_s16le." so the below should be ok.
-			echo "$name ffmpeg -i $src_dir/data/${s}/$x -ar 8000 -f wav pipe:1 |" >> $tgt_dir/wav.scp
+			echo "$name ffmpeg -nostdin -i $src_dir/data/${s}/$x -ar 8000 -f wav pipe:1 |" >> $tgt_dir/wav.scp
 		    else
 			echo "ERROR: Invalid suffix in file $x"
 			exit 1
@@ -102,7 +102,7 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
 	fi 
 	}
 
-	tail -n+2 $key_file | cut -f1,2,4 | sed "s:\.sph::" | sed "s:\.flac::" | sed "s:\t: :g" > $data_dir/$z/sre18_${z}.trials      
+	tail -n+2 $key_file | cut -f1,2,4 | sed "s:\.sph::" | sed "s:\.flac::" | sed "s:\t: :g" > $data_dir/$z/sre18_${z}_trials      
 
 
     done

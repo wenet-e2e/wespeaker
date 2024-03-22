@@ -80,12 +80,10 @@ if [ ! -f $src_dir/wav.scp ]; then
     exit 1;
 else
     if [ $update_wav_path == true ];then
-	echo "A"
 	src_root_dir=$(readlink -f $src_dir | sed "s:data/.*::")
 	dest_root_dir=$(readlink -f $dest_dir | sed "s:data/.*::")
 	cat $src_dir/wav.scp | sed "s:$src_root_dir:$dest_root_dir:" > $dest_dir/wav.scp
     else
-	echo "B"
 	cp $src_dir/wav.scp $dest_dir/wav.scp
     fi
 fi
