@@ -52,6 +52,7 @@ class Speaker:
         self.resample_rate = 16000
         self.apply_vad = False
         self.device = torch.device('cpu')
+        self.wavform_norm = False
 
         # diarization parmas
         self.diar_num_spks = None
@@ -63,6 +64,9 @@ class Speaker:
         self.diar_frame_shift = 10
         self.diar_batch_size = 32
         self.diar_subseg_cmn = True
+
+    def set_wavform_norm(self, wavform_norm: bool):
+        self.wavform_norm = wavform_norm
 
     def set_resample_rate(self, resample_rate: int):
         self.resample_rate = resample_rate
@@ -132,17 +136,22 @@ class Speaker:
         return embeddings
 
     def extract_embedding(self, audio_path: str):
-        pcm, sample_rate = torchaudio.load(audio_path, normalize=False)
+        pcm, sample_rate = torchaudio.load(audio_path,
+                                           normalize=self.wavform_norm)
         if self.apply_vad:
             # TODO(Binbin Zhang): Refine the segments logic, here we just
             # suppose there is only silence at the start/end of the speech
             segments = vad.get_speech_timestamps(self.vad_model,
                                                  audio_path,
                                                  return_seconds=True)
-            if len(segments) > 0:  # remove head and tail silence
-                start = int(segments[0]['start'] * sample_rate)
-                end = int(segments[-1]['end'] * sample_rate)
-                pcm = pcm[0, start:end].unsqueeze(0)
+            pcmTotal = torch.Tensor()
+            if len(segments) > 0:  # remove all the silence
+                for segment in segments:
+                    start = int(segment['start'] * sample_rate)
+                    end = int(segment['end'] * sample_rate)
+                    pcmTemp = pcm[0, start:end]
+                    pcmTotal = torch.cat([pcmTotal, pcmTemp], 0)
+                pcm = pcmTotal.unsqueeze(0)
             else:  # all silence, nospeech
                 return None
         pcm = pcm.to(torch.float)
@@ -156,7 +165,6 @@ class Speaker:
         feats = feats.to(self.device)
         self.model.eval()
         with torch.no_grad():
-            # _, outputs = self.model(feats)
             outputs = self.model(feats)
             outputs = outputs[-1] if isinstance(outputs, tuple) else outputs
         embedding = outputs[0].to(torch.device('cpu'))
@@ -297,7 +305,14 @@ def load_model_local(model_dir: str) -> Speaker:
 def main():
     args = get_args()
     if args.pretrain == "":
-        model = load_model(args.language)
+        if args.campplus:
+            model = load_model("campplus")
+            model.set_wavform_norm(True)
+        elif args.eres2net:
+            model = load_model("eres2net")
+            model.set_wavform_norm(True)
+        else:
+            model = load_model(args.language)
     else:
         model = load_model_local(args.pretrain)
     model.set_resample_rate(args.resample_rate)
