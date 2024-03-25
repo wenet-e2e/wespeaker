@@ -3,6 +3,8 @@
 * Setup: fbank80, num_frms200, epoch75 (pretrain), epoch50 (finetune), ArcMargin, aug_prob0.6, speed_perturb (no spec_aug)
 * [Pre-trained ECAPA-TDNN checkpoints](https://drive.google.com/drive/folders/1XDIUjnKPrvJE5auBWT5CcE4mqcglCwzq?usp=drive_link): teacher models extracted from `model_75.pt` (please refer to `wespeaker/ssl/bin/average_dino_model.py` for information on the extraction process)
 * test_trials: CNC-Eval-Avg.lst
+* These results are obtained by pretraining on different datasets and then finetuning with CNCeleb.
+
 
 | Model                             | Params  |  FLOPs  |    Pretraining Data    | LM  | AS-Norm   | EER (%)   | minDCF (p=0.01)  |
 | :------------------------------   | :-----: | :-----: | :--------------------: | :-: | :-------: | :-------: | :--------------: |
