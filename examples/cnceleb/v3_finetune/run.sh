@@ -70,7 +70,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
       --train_label ${data}/cnceleb_train/utt2spk \
       --reverb_data ${data}/rirs/lmdb \
       --noise_data ${data}/musan/lmdb \
-      --model_init ${model_init} \
+      ${model_init:+--model_init $model_init} \
       ${checkpoint:+--checkpoint $checkpoint}
 fi
 
@@ -148,6 +148,7 @@ if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
       --exp_dir ${lm_exp_dir} \
       --gpus $gpus \
       --num_avg 1 \
+      --model_init "" \
       --checkpoint ${lm_exp_dir}/models/model_0.pt \
       --trials "$trials" \
       --score_norm_method ${score_norm_method} \
