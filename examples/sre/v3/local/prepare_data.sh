@@ -139,7 +139,7 @@ fi
 if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
     
     echo "Get vad segmentation for dataset."
-    false && { 
+    true && { 
 	# Set VAD min duration
 	min_duration=0.25
 	for dset in vox_gsmfr cts sre18/dev/test sre18/dev/enrollment sre18/dev/unlabeled sre18/eval/test sre18/eval/enrollment sre21/dev/test sre21/dev/enrollment sre21/eval/test sre21/eval/enrollment sre16_major sre16/eval/enrollment sre16/eval/test; do
