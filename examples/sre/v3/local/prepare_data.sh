@@ -97,14 +97,14 @@ fi
 if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then    
     
     echo "Preparing VoxCeleb"
-    if [[ $vox_dir == "" ]];then
+    if [[ $voxceleb_dir == "" ]];then
         echo "Preparing Voxceleb, rirs and Musan"
-	vox_dir=${data}_vox
-	mkdir ${vox_dir}
-        local/prepare_vox.sh --stage 3 --stop_stage 4 --data ${data}_vox
+	voxceleb_dir=${data}_vox
+	mkdir ${voxceleb_dir}
+        local/prepare_vox.sh --stage 1 --stop_stage 4 --data ${data}_vox
     fi
     
-    if [[ ! -d $vox_dir/vox1  ||  ! -d $vox_dir/vox2_dev ]];then
+    if [[ ! -d $voxceleb_dir/vox1  ||  ! -d $voxceleb_dir/vox2_dev ]];then
         echo "ERROR: Problem with Voxceleb data directory."
         exit 1
     fi
@@ -113,23 +113,23 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
     # extraction chain rather than creating the new wav files explicitly.
     sox_command='-t gsm -r 8000 - | sox -t gsm -r 8000 - -t wav -r 8000 -c 1 -e signed-integer -' 
     for dset in vox1 vox2_dev;do
-	tools/copy_data_dir.sh $vox_dir/$dset $data/${dset}_gsmfr
-	awk -v sc="$sox_command" '{print $1 " sox " $2 " " sc " |" }' $vox_dir/$dset/wav.scp > $data/${dset}_gsmfr/wav.scp
+	tools/copy_data_dir.sh $voxceleb_dir/$dset $data/${dset}_gsmfr
+	awk -v sc="$sox_command" '{print $1 " sox " $2 " " sc " |" }' $voxceleb_dir/$dset/wav.scp > $data/${dset}_gsmfr/wav.scp
     done
 
     # Combine all Voxceleb data
-    utils/combine_data.sh data/vox_gsmfr data/vox1_gsmfr/ data/vox2_dev_gsmfr/      
+    tools/combine_data.sh data/vox_gsmfr data/vox1_gsmfr/ data/vox2_dev_gsmfr/      
 
     # Copy rirs and musan from voxceleb. We don't need to downsample as this will be 
     # done on-the-fly. If the direcotires already contain the data in lmdb format 
     # we just link it. Otherwise we copy it and let later stages create the lmdb
     # format data here. Since we don't want to affect the original data.
     for x in rirs musan;do
-	if [ -d $vox_dir/$x/lmdb ];then
-	    ln -s $vox_dir/$x $data/
+	if [ -d $voxceleb_dir/$x/lmdb ];then
+	    ln -s $voxceleb_dir/$x $data/
 	else
 	    mkdir $data/$x
-	    cp -r $vox_dir/$x/wav.scp $data/$x/wav.scp 	    
+	    cp -r $voxceleb_dir/$x/wav.scp $data/$x/wav.scp 	    
 	fi
     done
 
@@ -139,7 +139,7 @@ fi
 if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
     
     echo "Get vad segmentation for dataset."
-    true && { 
+    false && { 
 	# Set VAD min duration
 	min_duration=0.25
 	for dset in vox_gsmfr cts sre18/dev/test sre18/dev/enrollment sre18/dev/unlabeled sre18/eval/test sre18/eval/enrollment sre21/dev/test sre21/dev/enrollment sre21/eval/test sre21/eval/enrollment sre16_major sre16/eval/enrollment sre16/eval/test; do
@@ -155,7 +155,7 @@ if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
 	# We may consider to use only the mixer portion of the CTS data for backen training
 	# as it may be closer to the SRE data.
 
-	utils/subset_data_dir.sh --utt-list data/mx_3456.list data/cts data/mx_3456
+	tools/subset_data_dir.sh --utt-list data/mx_3456.list data/cts data/mx_3456
 	tools/filter_scp.pl -f 2 ${data}/mx_3456/wav.scp ${data}/cts/vad > ${data}/mx_3456/vad
  
 
@@ -168,7 +168,7 @@ if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
     }
 
     true && { 
-	# We may consider to use only the mixer portion of the CTS data for backen training
+	# We may consider to use only the mixer portion of the CTS data for backend training
 	# as it may be closer to the SRE data.
 
 	# For PLDA training, it is better to augment the training data
@@ -205,7 +205,7 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
 
     # Following the Kaldi recipe: https://github.com/kaldi-asr/kaldi/blob/71f38e62cad01c3078555bfe78d0f3a527422d75/egs/sre16/v2/run.sh#L189
     # We filter out the utterances with duration less than 5s
-    echo "Stage 5, block 1"
+    echo "Stage 9, block 1"
     for dset in cts vox_gsmfr; do
         python3 local/filter_utt_accd_dur.py \
             --wav_scp ${data}/${dset}/wav.scp \
@@ -218,7 +218,7 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
 
     # Similarly, following the Kaldi recipe,
     # we throw out speakers with fewer than 3 utterances.
-    echo "Stage 5, block 2"
+    echo "Stage 9, block 2"
     for dset in cts vox_gsmfr; do
         tools/fix_data_dir.sh ${data}/${dset}
         cp ${data}/${dset}/spk2utt ${data}/${dset}/spk2utt.bak
@@ -227,7 +227,7 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
         tools/fix_data_dir.sh ${data}/${dset}
     done
 
-    ./utils/combine_data.sh data/cts_vox data/cts/ data/vox_gsmfr 
+    ./tools/combine_data.sh data/cts_vox data/cts/ data/vox_gsmfr 
     cat data/cts/vad data/vox_gsmfr/vad > data/cts_vox/vad              # Not combined byt the obove script 
 fi
 

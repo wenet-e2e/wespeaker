@@ -7,8 +7,8 @@
 
 . ./path.sh || exit 1
 
-stage=9
-stop_stage=9
+stage=3
+stop_stage=3
 
 data=data
 data_type="shard"  # shard/raw
@@ -18,9 +18,12 @@ aug_plda_data=1
 config=conf/resnet.yaml
 exp_dir=exp/ResNet34-TSTP-emb256-fbank40-num_frms200-aug0.6-spFalse-saFalse-Softmax-SGD-epoch10
 
-# gpus="[0,1]" # Is set below at the relevant stage
-# num_gpus=2
-
+# gpus="[0,1]" # For slurm, just specify this according to the number of GPUs you have. 
+num_gpus=2     # If this variable is defined, safe_gpu will be used to select the free GPUs. 
+               # If so, it will override whatever may have been specified in gpus="[x,x]
+               # Typically, you would want to use this option for SGE.  
+               # If this variable is not set, or set to '', the script will assume that 
+               # the GPUs to use are specified in the variable "gpus" as above.
 num_avg=10
 checkpoint=
 
@@ -105,14 +108,7 @@ fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     
-  #false && {
-  #    cp -r data/cts cts_tmp
-  #    ./utils/fix_data_dir.sh cts_tmp/
-  #    mv cts_tmp/vad cts_tmp/vad.org
-  #    LC_ALL=C sort -k2 cts_tmp/vad.org > cts_tmp/vad
-  #}
-
-  false && {  
+  true && {  
   echo "Convert train data to ${data_type}..."
   for dset in cts_vox; do
         python tools/make_shard_list.py --num_utts_per_shard 1000 \
@@ -125,7 +121,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
   done
   }
 
-  false && {  
+  true && {  
       echo "Convert data for PLDA backend training and evaluation to raw format..."
       if [ $aug_plda_data = 0 ];then
 	  sre_plda_data=cts
@@ -134,8 +130,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
       fi
 
       # Raw format for backend and evaluation data
-      #for dset in ${sre_plda_data} sre16_major sre16_eval_enroll sre16_eval_test sre18/dev/enrollment sre18/dev/test sre18/dev/unlabeled sre18/eval/enrollment sre18/eval/test sre21/dev/enrollment sre21/dev/test sre21/eval/enrollment sre21/eval/test; do
-      for dset in $sre_plda_data sre16/major sre16/eval/enrollment sre16/eval/test; do
+      for dset in ${sre_plda_data} sre16/major sre16/eval/enrollment sre16/eval/test sre18/dev/enrollment sre18/dev/test sre18/dev/unlabeled sre18/eval/enrollment sre18/eval/test sre21/dev/enrollment sre21/dev/test sre21/eval/enrollment sre21/eval/test;do
 	  # The below requires utt2spk to be present. So create a "dummy" one if we don't have it.
 	  # This is for example the case with sre21 eval data.
 	  if [ ! -f $data/$dset/utt2spk ];then
@@ -158,26 +153,17 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
       done
   }
   
-  for dset in $sre_plda_data; do
-      # The below requires utt2spk to be present. So create a "dummy" one if we don't have it.
-      # This is for example the case with sre21 eval data.
-      if [ ! -f $data/$dset/utt2spk ];then
-          awk '{print $1 " unk"}' ${data}/${dset}/wav.scp > ${data}/${dset}/utt2spk
-      fi
-      
-      python tools/make_raw_list.py --vad_file ${data}/$dset/vad \
-          ${data}/$dset/wav.scp \
-          ${data}/$dset/utt2spk ${data}/$dset/raw.list
-      
-  done
 fi
 
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   echo "Start training ..."
-  num_gpus=2
-  gpus=$(python -c "from sys import argv; from safe_gpu import safe_gpu; safe_gpu.claim_gpus(int(argv[1])); print( safe_gpu.gpu_owner.devices_taken )" $num_gpus | sed "s: ::g")
-  echo $gpus
+  if [ ! -z $num_gpus ];then
+      gpus=$(python -c "from sys import argv; from safe_gpu import safe_gpu; safe_gpu.claim_gpus(int(argv[1])); print( safe_gpu.gpu_owner.devices_taken )" $num_gpus | sed "s: ::g")
+  else
+      num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
+  fi
+  echo "Using $num_gpus GPUs: $gpus"
   #torchrun --standalone --nnodes=1 --nproc_per_node=$num_gpus \  # The below is to prevent problems if many jobs run on the same machine 
   torchrun --rdzv_backend=c10d --rdzv_endpoint=$(hostname):$((RANDOM)) --nnodes=1 --nproc_per_node=$num_gpus \
       wespeaker/bin/train.py --config $config \
