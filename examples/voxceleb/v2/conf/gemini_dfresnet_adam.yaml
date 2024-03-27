@@ -71,11 +71,11 @@ loss_args: {}
 
 optimizer: AdamW
 optimizer_args:
-  weight_decay: 0.05 
+  weight_decay: 0.05
 
 scheduler: ExponentialDecrease
 scheduler_args:
   initial_lr: 0.000125
   final_lr: 0.000001
   warm_up_epoch: 0
-  warm_from_zero: False 
+  warm_from_zero: False

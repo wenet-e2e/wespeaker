@@ -50,8 +50,8 @@ class Inverted_Bottleneck(nn.Module):
 class Gemini_DF_ResNet(nn.Module):
     # DF_ResNet with T14c stride strategy of Golden Gemini
     def __init__(self,
-                 depths=[3, 3, 9, 3],
-                 dims=[32, 64, 128, 256],
+                 depths,
+                 dims,
                  feat_dim=40,
                  embed_dim=128,
                  pooling_func='TSTP',
@@ -79,7 +79,7 @@ class Gemini_DF_ResNet(nn.Module):
                     dims[i], dims[i + 1], kernel_size=3,
                     stride=(stride_f[i], stride_t[i]),
                     padding=1, bias=False),
-                    nn.BatchNorm2d(dims[i + 1])
+                nn.BatchNorm2d(dims[i + 1])
             )
             self.downsample_layers.append(downsample_layer)
 
@@ -154,7 +154,7 @@ def Gemini_DF_ResNet183(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=
                             two_emb_layer=two_emb_layer)
 
 
-def Gemini_DF_ResNet237(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):  # not used
+def Gemini_DF_ResNet237(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
     return Gemini_DF_ResNet(depths=[3, 8, 63, 3],
                             dims=[32, 32, 64, 128, 256],
                             feat_dim=feat_dim,
