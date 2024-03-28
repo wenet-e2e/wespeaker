@@ -78,4 +78,4 @@ scheduler_args:
   initial_lr: 0.000125
   final_lr: 0.000001
   warm_up_epoch: 6
-  warm_from_zero: True
+  warm_from_zero: False
