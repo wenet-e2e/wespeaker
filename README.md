@@ -3,8 +3,8 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python-Version](https://img.shields.io/badge/Python-3.8%7C3.9-brightgreen)](https://github.com/wenet-e2e/wespeaker)
 
-[**Roadmap (Current support List)**](ROADMAP.md)
-| [**Documents**](https://github.com/wenet-e2e/wespeaker/tree/master/docs)
+[**Roadmap**](ROADMAP.md)
+| [**Docs**](https://github.com/wenet-e2e/wespeaker/tree/master/docs)
 | [**Paper**](https://arxiv.org/abs/2210.17016)
 | [**Runtime**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime)
 | [**Pretrained Models**](docs/pretrained.md)
@@ -12,7 +12,7 @@
 | [**Modelscope Demo**](https://www.modelscope.cn/studios/wenet/Speaker_Verification_in_WeSpeaker/summary)
 
 
-WeSpeaker mainly focuses on speaker embedding learning, with application to the speaker verification task. We support
+WeSpeaker mainly focuses on [**speaker embedding learning**](https://wsstriving.github.io/talk/ncmmsc_slides_shuai.pdf), with application to the speaker verification task. We support
 online feature extraction or loading pre-extracted features in kaldi-format.
 
 ## Installation
