@@ -1,4 +1,4 @@
-# Contributing to Wespeaker
+## Contributing to Wespeaker
 
 Thank you for your interest in contributing to Wespeaker!
 Our community is open to everyone and welcomes all kinds of contributions, no matter how small or large.
@@ -15,7 +15,6 @@ are highly regarded and beneficial contributions.
 Finally, one of the most impactful ways to support us is by raising awareness about Wespeaker.
 Talk about it in your blog posts, highlighting how it's driving your incredible projects.
 
-## Contributing Guidelines
 
 ### Issue Reporting
 
