@@ -7,3 +7,4 @@ Reference
 
    ./paper.md
    ./speaker_recognition_papers.md
+   ./python_api/modules.rst

@@ -15,6 +15,11 @@ help:
 
 .PHONY: help Makefile
 
+api:
+	sphinx-apidoc -f --separate --module-first -d 2 -o ./python_api ../wespeaker
+	sed -i 's:^wespeaker:Python API Reference:g' ./python_api/modules.rst
+	sed -i 's:^=====:====================:g' ./python_api/modules.rst
+
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
