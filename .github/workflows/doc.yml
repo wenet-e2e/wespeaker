@@ -34,6 +34,7 @@ jobs:
         run: |
           cd docs
           python3 -m pip install -r ./requirements.txt
+          make api
           make html
 
       # add .nojekyll to notice Pages use the _* dirs
