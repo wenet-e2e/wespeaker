@@ -4,7 +4,7 @@
 [![Python-Version](https://img.shields.io/badge/Python-3.8%7C3.9-brightgreen)](https://github.com/wenet-e2e/wespeaker)
 
 [**Roadmap**](ROADMAP.md)
-| [**Docs**](https://github.com/wenet-e2e/wespeaker/tree/master/docs)
+| [**Docs**](http://wenet.org.cn/wespeaker)
 | [**Paper**](https://arxiv.org/abs/2210.17016)
 | [**Runtime**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime)
 | [**Pretrained Models**](docs/pretrained.md)
