@@ -39,7 +39,7 @@ jobs:
 
       # add .nojekyll to notice Pages use the _* dirs
       - name: copy the generated site
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         run: |
           mkdir public
           touch public/.nojekyll
@@ -47,7 +47,7 @@ jobs:
 
       # push to gh-pages branch
       - name: github pages deploy
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         uses: peaceiris/actions-gh-pages@v2.3.1
         env:
           PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN  }}

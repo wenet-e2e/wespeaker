@@ -15,6 +15,7 @@ The Wespeaker runtime supports the following platforms.
         - macOS
         - windows
     - Android (coming)
+    - ncnn (coming)
 
 ## onnxruntime
 
