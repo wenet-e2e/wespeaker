@@ -255,7 +255,7 @@ in `exp/your_exp/scores/vox1_${}${top_n}_result` file.
 this [paper](https://www.isca-speech.org/archive/pdfs/interspeech_2017/matejka17_interspeech.pdf).
 `--top_n`: the negative cohort size to calculate the adaptive statistics
 
-## Stage 7(Optional): Export the trained model
+### Stage 7(Optional): Export the trained model
 
 ```
 if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
@@ -270,7 +270,7 @@ fi
 `wenet/bin/export_jit.py` will export the trained model using Libtorch. The exported model files can be easily used for
 C++ inference in our runtime.
 
-## Stage 8(Optional): Large Margin Finetuning
+### Stage 8(Optional): Large Margin Finetuning
 
 ```
 if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
