@@ -1,0 +1,25 @@
+wespeaker.models package
+========================
+
+.. automodule:: wespeaker.models
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 2
+
+   wespeaker.models.campplus
+   wespeaker.models.convert_repvgg
+   wespeaker.models.ecapa_tdnn
+   wespeaker.models.eres2net
+   wespeaker.models.pooling_layers
+   wespeaker.models.projections
+   wespeaker.models.repvgg
+   wespeaker.models.res2net
+   wespeaker.models.resnet
+   wespeaker.models.speaker_model
+   wespeaker.models.tdnn

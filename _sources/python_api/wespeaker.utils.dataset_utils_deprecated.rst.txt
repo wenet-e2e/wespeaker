@@ -1,0 +1,7 @@
+wespeaker.utils.dataset\_utils\_deprecated module
+=================================================
+
+.. automodule:: wespeaker.utils.dataset_utils_deprecated
+   :members:
+   :undoc-members:
+   :show-inheritance:

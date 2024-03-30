@@ -1,0 +1,7 @@
+wespeaker.diar.make\_rttm module
+================================
+
+.. automodule:: wespeaker.diar.make_rttm
+   :members:
+   :undoc-members:
+   :show-inheritance:

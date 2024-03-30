@@ -1,0 +1,7 @@
+wespeaker.models.campplus module
+================================
+
+.. automodule:: wespeaker.models.campplus
+   :members:
+   :undoc-members:
+   :show-inheritance:

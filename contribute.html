@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contributing to Wespeaker &mdash; wespeaker 1.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=4c8675c2"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="wespeaker.utils.utils module" href="python_api/wespeaker.utils.utils.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            wespeaker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="train.html">How to train models?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime.html">Runtime for Wespeaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="python_package.html">Python Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pretrained.html">Pretrained Models in Wespeaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing to Wespeaker</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#issue-reporting">Issue Reporting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#coding-style-guide">Coding Style Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pull-requests">Pull Requests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#code-reviews">Code Reviews</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#thank-you">Thank You</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">wespeaker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Contributing to Wespeaker</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/contribute.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="contributing-to-wespeaker">
+<h1>Contributing to Wespeaker<a class="headerlink" href="#contributing-to-wespeaker" title="Permalink to this heading"></a></h1>
+<p>Thank you for your interest in contributing to Wespeaker!
+Our community is open to everyone and welcomes all kinds of contributions, no matter how small or large.
+There are several ways you can contribute to the project:</p>
+<ul class="simple">
+<li><p>Identify and report any issues or bugs.</p></li>
+<li><p>Request or add a new model.</p></li>
+<li><p>Suggest or implement new features.</p></li>
+</ul>
+<p>However, remember that contributions aren’t just about code.
+We believe in the power of community support; thus, answering queries, assisting others, and enhancing the documentation
+are highly regarded and beneficial contributions.</p>
+<p>Finally, one of the most impactful ways to support us is by raising awareness about Wespeaker.
+Talk about it in your blog posts, highlighting how it’s driving your incredible projects.</p>
+<section id="issue-reporting">
+<h2>Issue Reporting<a class="headerlink" href="#issue-reporting" title="Permalink to this heading"></a></h2>
+<p>If you encounter a bug or have a feature request, please check our issues page first to see if someone else has already
+reported it.
+If not, please file a new issue, providing as much relevant information as possible.</p>
+</section>
+<section id="coding-style-guide">
+<h2>Coding Style Guide<a class="headerlink" href="#coding-style-guide" title="Permalink to this heading"></a></h2>
+<p>In general, we adhere to <a class="reference external" href="https://google.github.io/styleguide/pyguide.html">Google Python style guide</a>
+and <a class="reference external" href="https://google.github.io/styleguide/cppguide.html">Google C++ style guide</a>.</p>
+</section>
+<section id="pull-requests">
+<h2>Pull Requests<a class="headerlink" href="#pull-requests" title="Permalink to this heading"></a></h2>
+<p>When submitting a pull request:</p>
+<ol class="simple">
+<li><p>Make sure your code has been rebased on top of the latest commit on the main branch.</p></li>
+<li><p>Ensure code is properly formatted.</p></li>
+<li><p>Include a detailed description of the changes in the pull request.
+Explain why you made the changes you did.
+If your pull request fixes an open issue, please include a reference to it in the description.</p></li>
+</ol>
+</section>
+<section id="code-reviews">
+<h2>Code Reviews<a class="headerlink" href="#code-reviews" title="Permalink to this heading"></a></h2>
+<p>All submissions, including submissions by project members, require a code review.
+To make the review process as smooth as possible, please:</p>
+<ol class="simple">
+<li><p>Keep your changes as concise as possible.
+If your pull request involves multiple unrelated changes, consider splitting it into separate pull requests.</p></li>
+<li><p>Respond to all comments within a reasonable time frame.
+If a comment isn’t clear or you disagree with a suggestion, feel free to ask for clarification or discuss the
+suggestion.</p></li>
+</ol>
+</section>
+<section id="thank-you">
+<h2>Thank You<a class="headerlink" href="#thank-you" title="Permalink to this heading"></a></h2>
+<p>Finally, thank you for taking the time to read these guidelines and for your interest in contributing to Wespeaker.
+Your contributions make Wespeaker a great tool for everyone!</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="python_api/wespeaker.utils.utils.html" class="btn btn-neutral float-left" title="wespeaker.utils.utils module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, wespeaker-team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

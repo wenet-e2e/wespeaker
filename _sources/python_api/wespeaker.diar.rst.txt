@@ -1,0 +1,20 @@
+wespeaker.diar package
+======================
+
+.. automodule:: wespeaker.diar
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 2
+
+   wespeaker.diar.extract_emb
+   wespeaker.diar.make_fbank
+   wespeaker.diar.make_oracle_sad
+   wespeaker.diar.make_rttm
+   wespeaker.diar.make_system_sad
+   wespeaker.diar.spectral_clusterer

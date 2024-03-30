@@ -1,0 +1,7 @@
+wespeaker.models.speaker\_model module
+======================================
+
+.. automodule:: wespeaker.models.speaker_model
+   :members:
+   :undoc-members:
+   :show-inheritance:

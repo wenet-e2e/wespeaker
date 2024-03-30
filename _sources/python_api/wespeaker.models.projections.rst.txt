@@ -1,0 +1,7 @@
+wespeaker.models.projections module
+===================================
+
+.. automodule:: wespeaker.models.projections
+   :members:
+   :undoc-members:
+   :show-inheritance:

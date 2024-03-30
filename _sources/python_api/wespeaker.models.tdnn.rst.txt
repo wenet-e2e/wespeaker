@@ -1,0 +1,7 @@
+wespeaker.models.tdnn module
+============================
+
+.. automodule:: wespeaker.models.tdnn
+   :members:
+   :undoc-members:
+   :show-inheritance:

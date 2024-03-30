@@ -1,0 +1,7 @@
+wespeaker.utils.executor module
+===============================
+
+.. automodule:: wespeaker.utils.executor
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+wespeaker.diar.extract\_emb module
+==================================
+
+.. automodule:: wespeaker.diar.extract_emb
+   :members:
+   :undoc-members:
+   :show-inheritance:

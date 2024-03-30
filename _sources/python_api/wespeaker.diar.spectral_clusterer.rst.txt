@@ -1,0 +1,7 @@
+wespeaker.diar.spectral\_clusterer module
+=========================================
+
+.. automodule:: wespeaker.diar.spectral_clusterer
+   :members:
+   :undoc-members:
+   :show-inheritance:

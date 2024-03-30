@@ -1,0 +1,7 @@
+wespeaker.diar.make\_oracle\_sad module
+=======================================
+
+.. automodule:: wespeaker.diar.make_oracle_sad
+   :members:
+   :undoc-members:
+   :show-inheritance:

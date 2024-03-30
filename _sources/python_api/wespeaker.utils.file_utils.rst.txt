@@ -1,0 +1,7 @@
+wespeaker.utils.file\_utils module
+==================================
+
+.. automodule:: wespeaker.utils.file_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:

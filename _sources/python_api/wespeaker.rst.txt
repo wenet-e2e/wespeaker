@@ -1,0 +1,18 @@
+wespeaker package
+=================
+
+.. automodule:: wespeaker
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 2
+
+   wespeaker.cli
+   wespeaker.diar
+   wespeaker.models
+   wespeaker.utils

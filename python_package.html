@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Python Package &mdash; wespeaker 1.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=4c8675c2"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Pretrained Models in Wespeaker" href="pretrained.html" />
+    <link rel="prev" title="Runtime for Wespeaker" href="runtime.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            wespeaker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="train.html">How to train models?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime.html">Runtime for Wespeaker</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Python Package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#install">Install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#command-line-usage">Command line Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pretrained-model-support">Pretrained model support</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#python-programming-usage">Python Programming Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pretrained.html">Pretrained Models in Wespeaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribute.html">Contributing to Wespeaker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">wespeaker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Python Package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/python_package.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="python-package">
+<h1>Python Package<a class="headerlink" href="#python-package" title="Permalink to this heading"></a></h1>
+<section id="install">
+<h2>Install<a class="headerlink" href="#install" title="Permalink to this heading"></a></h2>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/wenet-e2e/wespeaker.git
+</pre></div>
+</div>
+<p>for development install:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/wenet-e2e/wespeaker.git
+<span class="nb">cd</span><span class="w"> </span>wespeaker
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="command-line-usage">
+<h2>Command line Usage<a class="headerlink" href="#command-line-usage" title="Permalink to this heading"></a></h2>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>wespeaker<span class="w"> </span>--task<span class="w"> </span>embedding<span class="w"> </span>--audio_file<span class="w"> </span>audio.wav<span class="w"> </span>--output_file<span class="w"> </span>embedding.txt
+$<span class="w"> </span>wespeaker<span class="w"> </span>--task<span class="w"> </span>embedding_kaldi<span class="w"> </span>--wav_scp<span class="w"> </span>wav.scp<span class="w"> </span>--output_file<span class="w"> </span>/path/to/embedding
+$<span class="w"> </span>wespeaker<span class="w"> </span>--task<span class="w"> </span>similarity<span class="w"> </span>--audio_file<span class="w"> </span>audio.wav<span class="w"> </span>--audio_file2<span class="w"> </span>audio2.wav
+$<span class="w"> </span>wespeaker<span class="w"> </span>--task<span class="w"> </span>diarization<span class="w"> </span>--audio_file<span class="w"> </span>audio.wav
+</pre></div>
+</div>
+<p>You can specify the following parameters. (use <code class="docutils literal notranslate"><span class="pre">-h</span></code> for details)</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-t</span></code> or <code class="docutils literal notranslate"><span class="pre">--task</span></code>: five tasks are supported now</p>
+<ul>
+<li><p>embedding: extract embedding for an audio and save it into an output file</p></li>
+<li><p>embedding_kaldi: extract embeddings from kaldi-style wav.scp and save it to ark/scp files.</p></li>
+<li><p>similarity: compute similarity of two audios (in the range of [0, 1])</p></li>
+<li><p>diarization: apply speaker diarization for an input audio</p></li>
+<li><p>diarization_list: apply speaker diarization for a kaldi-style wav.scp</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-l</span></code> or <code class="docutils literal notranslate"><span class="pre">--language</span></code>: use Chinese/English speaker models</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-p</span></code> or <code class="docutils literal notranslate"><span class="pre">--pretrain</span></code>: the path of pretrained model, <code class="docutils literal notranslate"><span class="pre">avg_model.pt</span></code> and <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> should be contained</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-g</span></code> or <code class="docutils literal notranslate"><span class="pre">--gpu</span></code>: use GPU for inference, number $&lt; 0$ means using CPU</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--campplus</span></code>:
+use <a class="reference external" href="https://www.modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary"><code class="docutils literal notranslate"><span class="pre">campplus_cn_common_200k</span></code> of damo</a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--eres2net</span></code>:
+use <a class="reference external" href="https://www.modelscope.cn/models/iic/speech_eres2net_sv_zh-cn_16k-common/summary"><code class="docutils literal notranslate"><span class="pre">res2net_cn_common_200k</span></code> of damo</a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--audio_file</span></code>: input audio file path</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--audio_file2</span></code>: input audio file2 path, specifically for the similarity task</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--wav_scp</span></code>: input wav.scp file in kaldi format (each line: key wav_path)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--resample_rate</span></code>: resample rate (default: 16000)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--vad</span></code>: apply vad or not for the input audios (default: true)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--output_file</span></code>: output file to save speaker embedding, if you use kaldi wav_scp, output will be <code class="docutils literal notranslate"><span class="pre">output_file.ark</span></code>
+and <code class="docutils literal notranslate"><span class="pre">output_file.scp</span></code></p></li>
+</ul>
+<section id="pretrained-model-support">
+<h3>Pretrained model support<a class="headerlink" href="#pretrained-model-support" title="Permalink to this heading"></a></h3>
+<p>We provide different pretrained models, which can be found
+at <a class="reference external" href="https://github.com/wenet-e2e/wespeaker/blob/master/docs/pretrained.md">pretrained models</a></p>
+<p><strong>Warning</strong> If you want to use the models provided in the above link, be sure to rename the model and config file
+to <code class="docutils literal notranslate"><span class="pre">avg_model.pt</span></code> and <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code></p>
+<p>By default, specifying the <code class="docutils literal notranslate"><span class="pre">language</span></code> option will download the pretrained models as</p>
+<ul class="simple">
+<li><p>english: <code class="docutils literal notranslate"><span class="pre">ResNet221_LM</span></code> pretrained on VoxCeleb</p></li>
+<li><p>chinese: <code class="docutils literal notranslate"><span class="pre">ResNet34_LM</span></code> pretrained on CnCeleb</p></li>
+</ul>
+<p>if you want to use other pretrained models, please use the <code class="docutils literal notranslate"><span class="pre">-p</span></code> or <code class="docutils literal notranslate"><span class="pre">--pretrain</span></code> to specify the directory
+containing <code class="docutils literal notranslate"><span class="pre">avg_model.pt</span></code> and <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>,
+which can either be the ones we provided and trained by yourself.</p>
+</section>
+</section>
+<section id="python-programming-usage">
+<h2>Python Programming Usage<a class="headerlink" href="#python-programming-usage" title="Permalink to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">wespeaker</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">wespeaker</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s1">&#39;chinese&#39;</span><span class="p">)</span>
+<span class="c1"># set_gpu to enable the cuda inference, number &lt; 0 means using CPU</span>
+<span class="n">model</span><span class="o">.</span><span class="n">set_gpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># embedding/embedding_kaldi/similarity/diarization</span>
+<span class="n">embedding</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">extract_embedding</span><span class="p">(</span><span class="s1">&#39;audio.wav&#39;</span><span class="p">)</span>
+<span class="n">utt_names</span><span class="p">,</span> <span class="n">embeddings</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">extract_embedding_list</span><span class="p">(</span><span class="s1">&#39;wav.scp&#39;</span><span class="p">)</span>
+<span class="n">similarity</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">compute_similarity</span><span class="p">(</span><span class="s1">&#39;audio1.wav&#39;</span><span class="p">,</span> <span class="s1">&#39;audio2.wav&#39;</span><span class="p">)</span>
+<span class="n">diar_result</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">diarize</span><span class="p">(</span><span class="s1">&#39;audio.wav&#39;</span><span class="p">)</span>
+
+<span class="c1"># register and recognize</span>
+<span class="n">model</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;spk1&#39;</span><span class="p">,</span> <span class="s1">&#39;spk1_audio1.wav&#39;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;spk2&#39;</span><span class="p">,</span> <span class="s1">&#39;spk2_audio1.wav&#39;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;spk3&#39;</span><span class="p">,</span> <span class="s1">&#39;spk3_audio1.wav&#39;</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">recognize</span><span class="p">(</span><span class="s1">&#39;spk1_audio2.wav&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="runtime.html" class="btn btn-neutral float-left" title="Runtime for Wespeaker" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pretrained.html" class="btn btn-neutral float-right" title="Pretrained Models in Wespeaker" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, wespeaker-team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

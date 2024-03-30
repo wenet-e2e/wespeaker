@@ -1,0 +1,7 @@
+wespeaker.models.ecapa\_tdnn module
+===================================
+
+.. automodule:: wespeaker.models.ecapa_tdnn
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+wespeaker.models.eres2net module
+================================
+
+.. automodule:: wespeaker.models.eres2net
+   :members:
+   :undoc-members:
+   :show-inheritance:

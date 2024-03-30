@@ -1,0 +1,7 @@
+wespeaker.utils.executor\_deprecated module
+===========================================
+
+.. automodule:: wespeaker.utils.executor_deprecated
+   :members:
+   :undoc-members:
+   :show-inheritance:

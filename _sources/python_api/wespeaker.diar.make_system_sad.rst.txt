@@ -1,0 +1,7 @@
+wespeaker.diar.make\_system\_sad module
+=======================================
+
+.. automodule:: wespeaker.diar.make_system_sad
+   :members:
+   :undoc-members:
+   :show-inheritance:

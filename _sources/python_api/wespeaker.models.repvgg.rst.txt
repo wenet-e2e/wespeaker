@@ -1,0 +1,7 @@
+wespeaker.models.repvgg module
+==============================
+
+.. automodule:: wespeaker.models.repvgg
+   :members:
+   :undoc-members:
+   :show-inheritance:

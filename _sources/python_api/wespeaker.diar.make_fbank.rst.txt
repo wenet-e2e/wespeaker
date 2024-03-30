@@ -1,0 +1,7 @@
+wespeaker.diar.make\_fbank module
+=================================
+
+.. automodule:: wespeaker.diar.make_fbank
+   :members:
+   :undoc-members:
+   :show-inheritance:

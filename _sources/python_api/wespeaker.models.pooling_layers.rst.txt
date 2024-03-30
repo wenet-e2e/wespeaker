@@ -1,0 +1,7 @@
+wespeaker.models.pooling\_layers module
+=======================================
+
+.. automodule:: wespeaker.models.pooling_layers
+   :members:
+   :undoc-members:
+   :show-inheritance:

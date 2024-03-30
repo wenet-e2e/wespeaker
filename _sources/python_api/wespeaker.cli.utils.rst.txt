@@ -1,0 +1,7 @@
+wespeaker.cli.utils module
+==========================
+
+.. automodule:: wespeaker.cli.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:

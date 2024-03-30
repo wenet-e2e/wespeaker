@@ -1,0 +1,7 @@
+wespeaker.models.resnet module
+==============================
+
+.. automodule:: wespeaker.models.resnet
+   :members:
+   :undoc-members:
+   :show-inheritance:

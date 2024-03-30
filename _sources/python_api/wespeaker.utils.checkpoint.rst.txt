@@ -1,0 +1,7 @@
+wespeaker.utils.checkpoint module
+=================================
+
+.. automodule:: wespeaker.utils.checkpoint
+   :members:
+   :undoc-members:
+   :show-inheritance:
