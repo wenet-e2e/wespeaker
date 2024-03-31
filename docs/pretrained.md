@@ -11,7 +11,7 @@ modeling, such as
 For users who would like to verify the SV performance or extract speaker embeddings for the above tasks without
 troubling about training the speaker embedding learner, we provide two types of pretrained models.
 
-1. **Checkpoint Model**, with suffix **.pt**, the model trained and saved as checkpoint by WeNet python code, you can
+1. **Checkpoint Model**, with suffix **.pt**, the model trained and saved as checkpoint by WeSpeaker python code, you can
    reproduce our published result with it, or you can use it as checkpoint to continue.
 
 2. **Runtime Model**, with suffix **.onnx**, the `runtime model` is exported by `Onnxruntime` on the `checkpoint model`.
@@ -35,7 +35,7 @@ python wespeaker/bin/infer_onnx.py --onnx_path $onnx_path --wav_path $wav_path
 ```
 
 You can easily adapt `infer_onnx.py` to your application, a speaker diarization example can be found
-in [the voxconverse recipe](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxconverse)
+in [the voxconverse recipe](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxconverse).
 
 ## Model List
 
