@@ -7,3 +7,4 @@ How to train models?
 
    ./vox.md
    ./vox_ssl.md
+   ./voxconverse_diar.md
