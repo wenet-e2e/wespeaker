@@ -18,8 +18,8 @@
 
 stage=-1
 stop_stage=-1
-sad_type="system"
-partition="test"
+sad_type="oracle"
+partition="dev"
 
 # do cmn on the sub-segment or on the vad segment
 subseg_cmn=true
@@ -47,7 +47,7 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
 fi
 
 
-# Download VoxConverse dev audios and the corresponding annotations
+# Download VoxConverse dev/test audios and the corresponding annotations
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     mkdir -p data
 
