@@ -14,7 +14,7 @@ cd wespeaker
 pip install -e .
 ```
 
-## Command line Usage
+## Command Line Usage
 
 ``` sh
 $ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt

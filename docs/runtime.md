@@ -5,11 +5,11 @@
 The Wespeaker runtime supports the following platforms.
 
 - Server
-    - [GPU](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/server/x86_gpu)
+    - [TensorRT GPU](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/server/x86_gpu)
 
 - Device
     - [Horizon X3 PI](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/horizonbpu)
-    - [onnxruntime](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/onnxruntime)
+    - [Onnxruntime](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/onnxruntime)
         - linux_x86_cpu
         - linux_x86_gpu
         - macOS
@@ -17,7 +17,7 @@ The Wespeaker runtime supports the following platforms.
     - Android (coming)
     - ncnn (coming)
 
-## onnxruntime
+## Onnxruntime
 
 * Step 1. Export your experiment model to ONNX by https://github.com/wenet-e2e/wespeaker/blob/master/wespeaker/bin/export_onnx.py
 
@@ -85,7 +85,7 @@ onnx_dir=your_model_dir
     --embedding_size 256
 ```
 
-## horizonbpu
+## Horizonbpu
 
 * Step 1. Setup environment (install horizon packages and cross compile tools) in the PC.
 
@@ -188,7 +188,7 @@ embed_out=your_embedding_txt
 ```
 
 
-## server (tensorrt gpu)
+## Server (tensorrt gpu)
 
 ### Introduction
 In this project, we use models trained in [wespeaker](https://github.com/wenet-e2e/wespeaker) as an example to show how to convert speaker model to tensorrt and deploy them on [Triton Inference Server](https://github.com/triton-inference-server/server.git). If you only have CPUs, instead of using GPUs to deploy Tensorrt model, you may deploy the exported onnx model on Triton Inference Server as well.
