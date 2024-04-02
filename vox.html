@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tutorial on VoxCeleb v2 (Supervised-VoxCeleb34) &mdash; wespeaker 1.2.0 documentation</title>
+  <title>SV Tutorial on VoxCeleb v2 (Supervised) &mdash; wespeaker 1.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -22,7 +22,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Tutorial on VoxCeleb v3 (Self-Supervised on VoxCeleb)" href="vox_ssl.html" />
+    <link rel="next" title="SV Tutorial on VoxCeleb v3 (Self-Supervised)" href="vox_ssl.html" />
     <link rel="prev" title="How to train models?" href="train.html" /> 
 </head>
 
@@ -47,11 +47,12 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="python_package.html">Python Package</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="train.html">How to train models?</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Tutorial on VoxCeleb v2 (Supervised-VoxCeleb34)</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">SV Tutorial on VoxCeleb v2 (Supervised)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#first-experiment">First Experiment</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#stage-1-download-data">Stage 1: Download Data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#stage-1-reformat-the-data">Stage 1: Reformat the Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stage-2-reformat-the-data">Stage 2: Reformat the Data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#stage-3-neural-network-training">Stage 3: Neural Network training</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#stage-4-speaker-embedding-extraction">Stage 4: Speaker Embedding Extraction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#stage-5-scoring-the-evaluation-set">Stage 5: Scoring the Evaluation Set</a></li>
@@ -60,12 +61,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#stage-8-optional-large-margin-finetuning">Stage 8(Optional): Large Margin Finetuning</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="vox_ssl.html">Tutorial on VoxCeleb v3 (Self-Supervised on VoxCeleb)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vox_ssl.html">SV Tutorial on VoxCeleb v3 (Self-Supervised)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="voxconverse_diar.html">Diarization Tutorial on VoxConverse v2</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="runtime.html">Runtime for Wespeaker</a></li>
-<li class="toctree-l1"><a class="reference internal" href="python_package.html">Python Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pretrained.html">Pretrained Models in Wespeaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime.html">Runtime for Wespeaker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contribute.html">Contributing to Wespeaker</a></li>
 </ul>
@@ -85,7 +86,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="train.html">How to train models?</a></li>
-      <li class="breadcrumb-item active">Tutorial on VoxCeleb v2 (Supervised-VoxCeleb34)</li>
+      <li class="breadcrumb-item active">SV Tutorial on VoxCeleb v2 (Supervised)</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/vox.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -95,8 +96,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="tutorial-on-voxceleb-v2-supervised-voxceleb34">
-<h1>Tutorial on VoxCeleb v2 (Supervised-VoxCeleb34)<a class="headerlink" href="#tutorial-on-voxceleb-v2-supervised-voxceleb34" title="Permalink to this heading"></a></h1>
+  <section id="sv-tutorial-on-voxceleb-v2-supervised">
+<h1>SV Tutorial on VoxCeleb v2 (Supervised)<a class="headerlink" href="#sv-tutorial-on-voxceleb-v2-supervised" title="Permalink to this heading"></a></h1>
 <p>If you meet any problems when going through this tutorial, please feel free to ask in
 github <a class="reference external" href="https://github.com/wenet-e2e/wespeaker/issues">issues</a>. Thanks for any kind of feedback.</p>
 <section id="first-experiment">
@@ -182,8 +183,8 @@ put it under <code class="docutils literal notranslate"><span class="pre">data/d
 </pre></div>
 </div>
 </section>
-<section id="stage-1-reformat-the-data">
-<h2>Stage 1: Reformat the Data<a class="headerlink" href="#stage-1-reformat-the-data" title="Permalink to this heading"></a></h2>
+<section id="stage-2-reformat-the-data">
+<h2>Stage 2: Reformat the Data<a class="headerlink" href="#stage-2-reformat-the-data" title="Permalink to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [ ${stage} -le 2 ] &amp;&amp; [ ${stop_stage} -ge 2 ]; then
   echo &quot;Covert train and test data to ${data_type}...&quot;
   for dset in vox2_dev vox1; do
@@ -387,7 +388,7 @@ improve the performance for Voxceleb data. Users can run this stage for the bett
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="train.html" class="btn btn-neutral float-left" title="How to train models?" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="vox_ssl.html" class="btn btn-neutral float-right" title="Tutorial on VoxCeleb v3 (Self-Supervised on VoxCeleb)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="vox_ssl.html" class="btn btn-neutral float-right" title="SV Tutorial on VoxCeleb v3 (Self-Supervised)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

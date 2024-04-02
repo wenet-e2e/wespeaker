@@ -22,8 +22,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Pretrained Models in Wespeaker" href="pretrained.html" />
-    <link rel="prev" title="Runtime for Wespeaker" href="runtime.html" /> 
+    <link rel="next" title="How to train models?" href="train.html" />
+    <link rel="prev" title="Welcome to Wespeaker’s documentation!" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -47,18 +47,18 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="train.html">How to train models?</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime.html">Runtime for Wespeaker</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Python Package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#install">Install</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#command-line-usage">Command line Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#command-line-usage">Command Line Usage</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#pretrained-model-support">Pretrained model support</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#python-programming-usage">Python Programming Usage</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="train.html">How to train models?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pretrained.html">Pretrained Models in Wespeaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime.html">Runtime for Wespeaker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contribute.html">Contributing to Wespeaker</a></li>
 </ul>
@@ -102,7 +102,7 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 </div>
 </section>
 <section id="command-line-usage">
-<h2>Command line Usage<a class="headerlink" href="#command-line-usage" title="Permalink to this heading"></a></h2>
+<h2>Command Line Usage<a class="headerlink" href="#command-line-usage" title="Permalink to this heading"></a></h2>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>wespeaker<span class="w"> </span>--task<span class="w"> </span>embedding<span class="w"> </span>--audio_file<span class="w"> </span>audio.wav<span class="w"> </span>--output_file<span class="w"> </span>embedding.txt
 $<span class="w"> </span>wespeaker<span class="w"> </span>--task<span class="w"> </span>embedding_kaldi<span class="w"> </span>--wav_scp<span class="w"> </span>wav.scp<span class="w"> </span>--output_file<span class="w"> </span>/path/to/embedding
 $<span class="w"> </span>wespeaker<span class="w"> </span>--task<span class="w"> </span>similarity<span class="w"> </span>--audio_file<span class="w"> </span>audio.wav<span class="w"> </span>--audio_file2<span class="w"> </span>audio2.wav
@@ -138,15 +138,15 @@ and <code class="docutils literal notranslate"><span class="pre">output_file.scp
 <section id="pretrained-model-support">
 <h3>Pretrained model support<a class="headerlink" href="#pretrained-model-support" title="Permalink to this heading"></a></h3>
 <p>We provide different pretrained models, which can be found
-at <a class="reference external" href="https://github.com/wenet-e2e/wespeaker/blob/master/docs/pretrained.md">pretrained models</a></p>
+at <a class="reference external" href="https://github.com/wenet-e2e/wespeaker/blob/master/docs/pretrained.md">pretrained models</a>.</p>
 <p><strong>Warning</strong> If you want to use the models provided in the above link, be sure to rename the model and config file
-to <code class="docutils literal notranslate"><span class="pre">avg_model.pt</span></code> and <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code></p>
+to <code class="docutils literal notranslate"><span class="pre">avg_model.pt</span></code> and <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
 <p>By default, specifying the <code class="docutils literal notranslate"><span class="pre">language</span></code> option will download the pretrained models as</p>
 <ul class="simple">
 <li><p>english: <code class="docutils literal notranslate"><span class="pre">ResNet221_LM</span></code> pretrained on VoxCeleb</p></li>
 <li><p>chinese: <code class="docutils literal notranslate"><span class="pre">ResNet34_LM</span></code> pretrained on CnCeleb</p></li>
 </ul>
-<p>if you want to use other pretrained models, please use the <code class="docutils literal notranslate"><span class="pre">-p</span></code> or <code class="docutils literal notranslate"><span class="pre">--pretrain</span></code> to specify the directory
+<p>If you want to use other pretrained models, please use the <code class="docutils literal notranslate"><span class="pre">-p</span></code> or <code class="docutils literal notranslate"><span class="pre">--pretrain</span></code> to specify the directory
 containing <code class="docutils literal notranslate"><span class="pre">avg_model.pt</span></code> and <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>,
 which can either be the ones we provided and trained by yourself.</p>
 </section>
@@ -179,8 +179,8 @@ which can either be the ones we provided and trained by yourself.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="runtime.html" class="btn btn-neutral float-left" title="Runtime for Wespeaker" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="pretrained.html" class="btn btn-neutral float-right" title="Pretrained Models in Wespeaker" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Wespeaker’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="train.html" class="btn btn-neutral float-right" title="How to train models?" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

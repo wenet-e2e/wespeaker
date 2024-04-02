@@ -1,4 +1,4 @@
-# Speaker recognition papers
+# Speaker Recognition Papers
 
 - Dataset
     - VoxCeleb

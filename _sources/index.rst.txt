@@ -3,19 +3,19 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to wespeaker's documentation!
+Welcome to Wespeaker's documentation!
 =====================================
 
-wespeaker is an research and production oriented Speaker Verification, Recognition and Diarization Toolkit.
+Wespeaker is an Research and Production Oriented Speaker Verification, Recognition and Diarization Toolkit.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   ./train.rst
-   ./runtime.md
    ./python_package.md
+   ./train.rst
    ./pretrained.md
+   ./runtime.md
    ./reference.rst
    ./contribute.md
 

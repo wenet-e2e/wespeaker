@@ -22,8 +22,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Python Package" href="python_package.html" />
-    <link rel="prev" title="Tutorial on VoxCeleb v3 (Self-Supervised on VoxCeleb)" href="vox_ssl.html" /> 
+    <link rel="next" title="Reference" href="reference.html" />
+    <link rel="prev" title="Pretrained Models in Wespeaker" href="pretrained.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -47,12 +47,14 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="python_package.html">Python Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="train.html">How to train models?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pretrained.html">Pretrained Models in Wespeaker</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Runtime for Wespeaker</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#platforms-supported">Platforms Supported</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#onnxruntime">onnxruntime</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#horizonbpu">horizonbpu</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#server-tensorrt-gpu">server (tensorrt gpu)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#onnxruntime">Onnxruntime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#horizonbpu">Horizonbpu</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#server-tensorrt-gpu">Server (tensorrt gpu)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#step-0-train-a-model">Step 0. Train a model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#step-1-export-model">Step 1. Export model</a><ul>
@@ -71,8 +73,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="python_package.html">Python Package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="pretrained.html">Pretrained Models in Wespeaker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contribute.html">Contributing to Wespeaker</a></li>
 </ul>
@@ -109,13 +109,13 @@
 <ul class="simple">
 <li><p>Server</p>
 <ul>
-<li><p><a class="reference external" href="https://github.com/wenet-e2e/wespeaker/tree/master/runtime/server/x86_gpu">GPU</a></p></li>
+<li><p><a class="reference external" href="https://github.com/wenet-e2e/wespeaker/tree/master/runtime/server/x86_gpu">TensorRT GPU</a></p></li>
 </ul>
 </li>
 <li><p>Device</p>
 <ul>
 <li><p><a class="reference external" href="https://github.com/wenet-e2e/wespeaker/tree/master/runtime/horizonbpu">Horizon X3 PI</a></p></li>
-<li><p><a class="reference external" href="https://github.com/wenet-e2e/wespeaker/tree/master/runtime/onnxruntime">onnxruntime</a></p>
+<li><p><a class="reference external" href="https://github.com/wenet-e2e/wespeaker/tree/master/runtime/onnxruntime">Onnxruntime</a></p>
 <ul>
 <li><p>linux_x86_cpu</p></li>
 <li><p>linux_x86_gpu</p></li>
@@ -130,7 +130,7 @@
 </ul>
 </section>
 <section id="onnxruntime">
-<h2>onnxruntime<a class="headerlink" href="#onnxruntime" title="Permalink to this heading"></a></h2>
+<h2>Onnxruntime<a class="headerlink" href="#onnxruntime" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>Step 1. Export your experiment model to ONNX by https://github.com/wenet-e2e/wespeaker/blob/master/wespeaker/bin/export_onnx.py</p></li>
 </ul>
@@ -202,7 +202,7 @@ else compute embedding with chunk by chunk, and then average embeddings of chunk
 </div>
 </section>
 <section id="horizonbpu">
-<h2>horizonbpu<a class="headerlink" href="#horizonbpu" title="Permalink to this heading"></a></h2>
+<h2>Horizonbpu<a class="headerlink" href="#horizonbpu" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>Step 1. Setup environment (install horizon packages and cross compile tools) in the PC.</p></li>
 </ul>
@@ -304,7 +304,7 @@ scp<span class="w"> </span>./output/hb_makertbin_output_speaker/speaker.bin<span
 </div>
 </section>
 <section id="server-tensorrt-gpu">
-<h2>server (tensorrt gpu)<a class="headerlink" href="#server-tensorrt-gpu" title="Permalink to this heading"></a></h2>
+<h2>Server (tensorrt gpu)<a class="headerlink" href="#server-tensorrt-gpu" title="Permalink to this heading"></a></h2>
 <section id="introduction">
 <h3>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading"></a></h3>
 <p>In this project, we use models trained in <a class="reference external" href="https://github.com/wenet-e2e/wespeaker">wespeaker</a> as an example to show how to convert speaker model to tensorrt and deploy them on <a class="reference external" href="https://github.com/triton-inference-server/server.git">Triton Inference Server</a>. If you only have CPUs, instead of using GPUs to deploy Tensorrt model, you may deploy the exported onnx model on Triton Inference Server as well.</p>
@@ -515,8 +515,8 @@ python -u wespeaker/bin/score.py \
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="vox_ssl.html" class="btn btn-neutral float-left" title="Tutorial on VoxCeleb v3 (Self-Supervised on VoxCeleb)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="python_package.html" class="btn btn-neutral float-right" title="Python Package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="pretrained.html" class="btn btn-neutral float-left" title="Pretrained Models in Wespeaker" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="reference.html" class="btn btn-neutral float-right" title="Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

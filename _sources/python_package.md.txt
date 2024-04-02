@@ -14,7 +14,7 @@ cd wespeaker
 pip install -e .
 ```
 
-## Command line Usage
+## Command Line Usage
 
 ``` sh
 $ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt
@@ -44,22 +44,22 @@ You can specify the following parameters. (use `-h` for details)
 * `--resample_rate`: resample rate (default: 16000)
 * `--vad`: apply vad or not for the input audios (default: true)
 * `--output_file`: output file to save speaker embedding, if you use kaldi wav_scp, output will be `output_file.ark`
-  and `output_file.scp`
+                   and `output_file.scp`
 
 ### Pretrained model support
 
 We provide different pretrained models, which can be found
-at [pretrained models](https://github.com/wenet-e2e/wespeaker/blob/master/docs/pretrained.md)
+at [pretrained models](https://github.com/wenet-e2e/wespeaker/blob/master/docs/pretrained.md).
 
 **Warning** If you want to use the models provided in the above link, be sure to rename the model and config file
-to `avg_model.pt` and `config.yaml`
+to `avg_model.pt` and `config.yaml`.
 
 By default, specifying the `language` option will download the pretrained models as
 
 * english: `ResNet221_LM` pretrained on VoxCeleb
 * chinese: `ResNet34_LM` pretrained on CnCeleb
 
-if you want to use other pretrained models, please use the `-p` or `--pretrain` to specify the directory
+If you want to use other pretrained models, please use the `-p` or `--pretrain` to specify the directory
 containing `avg_model.pt` and `config.yaml`,
 which can either be the ones we provided and trained by yourself.
 

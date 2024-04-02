@@ -1,4 +1,4 @@
-## Tutorial on VoxCeleb v3 (Self-Supervised on VoxCeleb)
+## SV Tutorial on VoxCeleb v3 (Self-Supervised)
 
 If you meet any problems when going through this tutorial, please feel free to ask in
 github [issues](https://github.com/wenet-e2e/wespeaker/issues). Thanks for any kind of feedback.
@@ -102,7 +102,7 @@ id10001/Y8hIVOBuels/00001.wav id10999/G5R2-Hl7YX8/00008.wav nontarget
 In this step, we generated **utt2spk** and **spk2utt**, but we will not use any speaker labels during the training
 process.
 
-### Stage 1: Reformat the Data
+### Stage 2: Reformat the Data
 
 ```
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then

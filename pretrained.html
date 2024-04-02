@@ -22,8 +22,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Reference" href="reference.html" />
-    <link rel="prev" title="Python Package" href="python_package.html" /> 
+    <link rel="next" title="Runtime for Wespeaker" href="runtime.html" />
+    <link rel="prev" title="Diarization Tutorial on VoxConverse v2" href="voxconverse_diar.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -47,15 +47,15 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="train.html">How to train models?</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime.html">Runtime for Wespeaker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="python_package.html">Python Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="train.html">How to train models?</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Pretrained Models in Wespeaker</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#model-license">Model License</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#onnx-inference-demo">Onnx Inference Demo</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#model-list">Model List</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="runtime.html">Runtime for Wespeaker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contribute.html">Contributing to Wespeaker</a></li>
 </ul>
@@ -97,7 +97,7 @@ modeling, such as</p>
 <p>For users who would like to verify the SV performance or extract speaker embeddings for the above tasks without
 troubling about training the speaker embedding learner, we provide two types of pretrained models.</p>
 <ol class="simple">
-<li><p><strong>Checkpoint Model</strong>, with suffix <strong>.pt</strong>, the model trained and saved as checkpoint by WeNet python code, you can
+<li><p><strong>Checkpoint Model</strong>, with suffix <strong>.pt</strong>, the model trained and saved as checkpoint by WeSpeaker python code, you can
 reproduce our published result with it, or you can use it as checkpoint to continue.</p></li>
 <li><p><strong>Runtime Model</strong>, with suffix <strong>.onnx</strong>, the <code class="docutils literal notranslate"><span class="pre">runtime</span> <span class="pre">model</span></code> is exported by <code class="docutils literal notranslate"><span class="pre">Onnxruntime</span></code> on the <code class="docutils literal notranslate"><span class="pre">checkpoint</span> <span class="pre">model</span></code>.</p></li>
 </ol>
@@ -117,7 +117,7 @@ python<span class="w"> </span>wespeaker/bin/infer_onnx.py<span class="w"> </span
 </pre></div>
 </div>
 <p>You can easily adapt <code class="docutils literal notranslate"><span class="pre">infer_onnx.py</span></code> to your application, a speaker diarization example can be found
-in <a class="reference external" href="https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxconverse">the voxconverse recipe</a></p>
+in <a class="reference external" href="https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxconverse">the voxconverse recipe</a>.</p>
 </section>
 <section id="model-list">
 <h2>Model List<a class="headerlink" href="#model-list" title="Permalink to this heading"></a></h2>
@@ -187,8 +187,8 @@ in <a class="reference external" href="https://github.com/wenet-e2e/wespeaker/tr
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="python_package.html" class="btn btn-neutral float-left" title="Python Package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="reference.html" class="btn btn-neutral float-right" title="Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="voxconverse_diar.html" class="btn btn-neutral float-left" title="Diarization Tutorial on VoxConverse v2" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="runtime.html" class="btn btn-neutral float-right" title="Runtime for Wespeaker" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

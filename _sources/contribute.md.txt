@@ -31,7 +31,7 @@ and [Google C++ style guide](https://google.github.io/styleguide/cppguide.html).
 
 When submitting a pull request:
 
-1. Make sure your code has been rebased on top of the latest commit on the main branch.
+1. Make sure your code has been rebased on top of the latest commit on the master branch.
 2. Ensure code is properly formatted.
 3. Include a detailed description of the changes in the pull request.
    Explain why you made the changes you did.

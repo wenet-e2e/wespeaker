@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diarization Tutorial on VoxConverse v2 &mdash; wespeaker 1.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=4c8675c2"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Pretrained Models in Wespeaker" href="pretrained.html" />
+    <link rel="prev" title="SV Tutorial on VoxCeleb v3 (Self-Supervised)" href="vox_ssl.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            wespeaker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="python_package.html">Python Package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="train.html">How to train models?</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="vox.html">SV Tutorial on VoxCeleb v2 (Supervised)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vox_ssl.html">SV Tutorial on VoxCeleb v3 (Self-Supervised)</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Diarization Tutorial on VoxConverse v2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#first-experiment">First Experiment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stage-1-download-prerequisites">Stage 1: Download Prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stage-2-download-and-prepare-data">Stage 2: Download and Prepare Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stage-3-apply-sad-i-e-vad">Stage 3: Apply SAD (i.e., VAD)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stage-4-extract-fbank-features">Stage 4: Extract Fbank Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stage-5-extract-sliding-window-speaker-embeddings">Stage 5: Extract Sliding-window Speaker Embeddings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stage-6-apply-spectral-clustering">Stage 6: Apply Spectral Clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stage-7-reformat-clustering-labels-into-rttms">Stage 7: Reformat Clustering Labels into RTTMs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stage-8-evaluate-the-result-der">Stage 8: Evaluate the Result (DER)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pretrained.html">Pretrained Models in Wespeaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime.html">Runtime for Wespeaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribute.html">Contributing to Wespeaker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">wespeaker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="train.html">How to train models?</a></li>
+      <li class="breadcrumb-item active">Diarization Tutorial on VoxConverse v2</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/voxconverse_diar.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="diarization-tutorial-on-voxconverse-v2">
+<h1>Diarization Tutorial on VoxConverse v2<a class="headerlink" href="#diarization-tutorial-on-voxconverse-v2" title="Permalink to this heading"></a></h1>
+<p>If you meet any problems when going through this tutorial, please feel free to ask in github <a class="reference external" href="https://github.com/wenet-e2e/wespeaker/issues">issues</a>. Thanks for any kind of feedback.</p>
+<section id="first-experiment">
+<h2>First Experiment<a class="headerlink" href="#first-experiment" title="Permalink to this heading"></a></h2>
+<p>Speaker diarization is a typical downstream task of applying the well-learnt speaker embedding.
+Here we introduce our diarization recipe <code class="docutils literal notranslate"><span class="pre">examples/voxconverse/v2/run.sh</span></code> on the Voxconverse 2020 dataset.</p>
+<p>Note that we provide two recipes: <strong>v1</strong> and <strong>v2</strong>. Their only difference is that in <strong>v2</strong>, we split the Fbank extraction, embedding extraction and clustering modules to different stages.
+We recommend newcomers to follow the <strong>v2</strong> recipe and run it stage by stage and check the result to better understand the whole process.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">examples</span><span class="o">/</span><span class="n">voxconverse</span><span class="o">/</span><span class="n">v2</span><span class="o">/</span>
+<span class="n">bash</span> <span class="n">run</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">stage</span> <span class="mi">1</span> <span class="o">--</span><span class="n">stop_stage</span> <span class="mi">1</span>
+<span class="n">bash</span> <span class="n">run</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">stage</span> <span class="mi">2</span> <span class="o">--</span><span class="n">stop_stage</span> <span class="mi">2</span>
+<span class="n">bash</span> <span class="n">run</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">stage</span> <span class="mi">3</span> <span class="o">--</span><span class="n">stop_stage</span> <span class="mi">3</span>
+<span class="n">bash</span> <span class="n">run</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">stage</span> <span class="mi">4</span> <span class="o">--</span><span class="n">stop_stage</span> <span class="mi">4</span>
+<span class="n">bash</span> <span class="n">run</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">stage</span> <span class="mi">5</span> <span class="o">--</span><span class="n">stop_stage</span> <span class="mi">5</span>
+<span class="n">bash</span> <span class="n">run</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">stage</span> <span class="mi">6</span> <span class="o">--</span><span class="n">stop_stage</span> <span class="mi">6</span>
+<span class="n">bash</span> <span class="n">run</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">stage</span> <span class="mi">7</span> <span class="o">--</span><span class="n">stop_stage</span> <span class="mi">7</span>
+<span class="n">bash</span> <span class="n">run</span><span class="o">.</span><span class="n">sh</span> <span class="o">--</span><span class="n">stage</span> <span class="mi">8</span> <span class="o">--</span><span class="n">stop_stage</span> <span class="mi">8</span>
+</pre></div>
+</div>
+</section>
+<section id="stage-1-download-prerequisites">
+<h2>Stage 1: Download Prerequisites<a class="headerlink" href="#stage-1-download-prerequisites" title="Permalink to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [ ${stage} -le 1 ] &amp;&amp; [ ${stop_stage} -ge 1 ]; then
+    mkdir -p external_tools
+
+    # [1] Download evaluation toolkit
+    wget -c https://github.com/usnistgov/SCTK/archive/refs/tags/v2.4.12.zip -O external_tools/SCTK-v2.4.12.zip
+    unzip -o external_tools/SCTK-v2.4.12.zip -d external_tools
+
+    # [2] Download voice activity detection model pretrained by Silero Team
+    wget -c https://github.com/snakers4/silero-vad/archive/refs/tags/v3.1.zip -O external_tools/silero-vad-v3.1.zip
+    unzip -o external_tools/silero-vad-v3.1.zip -d external_tools
+
+    # [3] Download ResNet34 speaker model pretrained by WeSpeaker Team
+    mkdir -p pretrained_models
+
+    wget -c https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34_LM.onnx -O pretrained_models/voxceleb_resnet34_LM.onnx
+fi
+</pre></div>
+</div>
+<p>Download three Prerequisites:</p>
+<ul class="simple">
+<li><p>the evaluation toolkit <strong>SCTK</strong>: Compute the DER metric</p></li>
+<li><p>the open-source VAD model pre-trained by <a class="reference external" href="https://github.com/snakers4/silero-vad">silero-vad</a>: Remove the silence in audio</p></li>
+<li><p>the pre-trained ResNet34 model: Extract the speaker embeddings</p></li>
+</ul>
+<p>When finishing this stage, you will get two new dirs:</p>
+<ul class="simple">
+<li><p><strong>external_tools</strong></p>
+<ul>
+<li><p>SCTK-v2.4.12.zip</p></li>
+<li><p>SCTK-v2.4.12</p></li>
+<li><p>silero-vad-v3.1.zip</p></li>
+<li><p>silero-vad-v3.1</p></li>
+</ul>
+</li>
+<li><p><strong>pretrained_models</strong></p>
+<ul>
+<li><p>voxceleb_resnet34_LM.onnx</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="stage-2-download-and-prepare-data">
+<h2>Stage 2: Download and Prepare Data<a class="headerlink" href="#stage-2-download-and-prepare-data" title="Permalink to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [ ${stage} -le 2 ] &amp;&amp; [ ${stop_stage} -ge 2 ]; then
+    mkdir -p data
+
+    # Download annotations for dev and test sets (version 0.0.3)
+    wget -c https://github.com/joonson/voxconverse/archive/refs/heads/master.zip -O data/voxconverse_master.zip
+    unzip -o data/voxconverse_master.zip -d data
+
+    # Download annotations from VoxSRC-23 validation toolkit (looks like version 0.0.2)
+    # cd data &amp;&amp; git clone https://github.com/JaesungHuh/VoxSRC2023.git --recursive &amp;&amp; cd -
+
+    # Download dev audios
+    mkdir -p data/dev
+
+    wget --no-check-certificate -c https://www.robots.ox.ac.uk/~vgg/data/voxconverse/data/voxconverse_dev_wav.zip -O data/voxconverse_dev_wav.zip
+    unzip -o data/voxconverse_dev_wav.zip -d data/dev
+
+    # Create wav.scp for dev audios
+    ls `pwd`/data/dev/audio/*.wav | awk -F/ &#39;{print substr($NF, 1, length($NF)-4), $0}&#39; &gt; data/dev/wav.scp
+
+    # Test audios
+    mkdir -p data/test
+
+    wget  --no-check-certificate -c https://www.robots.ox.ac.uk/~vgg/data/voxconverse/data/voxconverse_test_wav.zip -O data/voxconverse_test_wav.zip
+    unzip -o data/voxconverse_test_wav.zip -d data/test
+
+    # Create wav.scp for test audios
+    ls `pwd`/data/test/voxconverse_test_wav/*.wav | awk -F/ &#39;{print substr($NF, 1, length($NF)-4), $0}&#39; &gt; data/test/wav.scp
+fi
+</pre></div>
+</div>
+<p>Download the Voxconverse 2020 dev and test sets as well as their annotations.
+Here we use the latest version 0.0.3 in default (recommended).
+You can also try the version 0.0.2 (seem to be used in the <a class="reference external" href="https://github.com/JaesungHuh/VoxSRC2023.git">VoxSRC-23 baseline repo</a>).</p>
+<p>When finishing this stage, you will get the new <strong>data</strong> dir:</p>
+<ul class="simple">
+<li><p><strong>data</strong></p>
+<ul>
+<li><p>voxconverse_master.zip</p></li>
+<li><p>voxconverse_dev_wav.zip</p></li>
+<li><p>voxconverse_test_wav.zip</p></li>
+<li><p>voxconverse_master</p>
+<ul>
+<li><p>dev: ground-truth rttms</p></li>
+<li><p>test: ground-truth rttms</p></li>
+</ul>
+</li>
+<li><p>dev</p>
+<ul>
+<li><p>audio: wav files</p></li>
+<li><p>wav.scp</p></li>
+</ul>
+</li>
+<li><p>test</p>
+<ul>
+<li><p>voxconverse_test_wav: wav files</p></li>
+<li><p>wav.scp</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>wav.scp</strong>: each line records two blank-separated columns : <code class="docutils literal notranslate"><span class="pre">wav_id</span></code> and <code class="docutils literal notranslate"><span class="pre">wav_path</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">abjxc</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">wespeaker</span><span class="o">/</span><span class="n">examples</span><span class="o">/</span><span class="n">voxconverse</span><span class="o">/</span><span class="n">v2</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">audio</span><span class="o">/</span><span class="n">abjxc</span><span class="o">.</span><span class="n">wav</span>
+<span class="n">afjiv</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">wespeaker</span><span class="o">/</span><span class="n">examples</span><span class="o">/</span><span class="n">voxconverse</span><span class="o">/</span><span class="n">v2</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">audio</span><span class="o">/</span><span class="n">afjiv</span><span class="o">.</span><span class="n">wav</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+</section>
+<section id="stage-3-apply-sad-i-e-vad">
+<h2>Stage 3: Apply SAD (i.e., VAD)<a class="headerlink" href="#stage-3-apply-sad-i-e-vad" title="Permalink to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [ ${stage} -le 3 ] &amp;&amp; [ ${stop_stage} -ge 3 ]; then
+    # Set VAD min duration
+    min_duration=0.255
+
+    if [[ &quot;x${sad_type}&quot; == &quot;xoracle&quot; ]]; then
+        # Oracle SAD: handling overlapping or too short regions in ground truth RTTM
+        while read -r utt wav_path; do
+            python3 wespeaker/diar/make_oracle_sad.py \
+                    --rttm data/voxconverse-master/${partition}/${utt}.rttm \
+                    --min-duration $min_duration
+        done &lt; data/${partition}/wav.scp &gt; data/${partition}/oracle_sad
+    fi
+
+    if [[ &quot;x${sad_type}&quot; == &quot;xsystem&quot; ]]; then
+       # System SAD: applying &#39;silero&#39; VAD
+       python3 wespeaker/diar/make_system_sad.py \
+               --repo-path external_tools/silero-vad-3.1 \
+               --scp data/${partition}/wav.scp \
+               --min-duration $min_duration &gt; data/${partition}/system_sad
+    fi
+fi
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">sad_type</span></code> could be oracle or system:</p>
+<ul class="simple">
+<li><p>oracle: get vad infos from the ground truth RTTMs, saved in <code class="docutils literal notranslate"><span class="pre">data/${partition}/oracle_sad</span></code></p></li>
+<li><p>system: compute vad results using the <a class="reference external" href="https://github.com/snakers4/silero-vad">silero-vad</a>, saved in <code class="docutils literal notranslate"><span class="pre">data/${partition}/system_sad</span></code></p></li>
+</ul>
+<p>where <code class="docutils literal notranslate"><span class="pre">partition</span></code> is dev or test.</p>
+<p>Note that too short VAD segments with less than <code class="docutils literal notranslate"><span class="pre">min_duration</span></code> seconds are ignored and simply regarded as silence.</p>
+</section>
+<section id="stage-4-extract-fbank-features">
+<h2>Stage 4: Extract Fbank Features<a class="headerlink" href="#stage-4-extract-fbank-features" title="Permalink to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [ ${stage} -le 4 ] &amp;&amp; [ ${stop_stage} -ge 4 ]; then
+
+    [ -d &quot;exp/${sad_type}_sad_fbank&quot; ] &amp;&amp; rm -r exp/${sad_type}_sad_fbank
+
+    echo &quot;Make Fbank features and store it under exp/${sad_type}_sad_fbank&quot;
+    echo &quot;...&quot;
+    bash local/make_fbank.sh \
+            --scp data/${partition}/wav.scp \
+            --segments data/${partition}/${sad_type}_sad \
+            --store_dir exp/${partition}_${sad_type}_sad_fbank \
+            --subseg_cmn ${subseg_cmn} \
+            --nj 24
+fi
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">subseg_cmn</span></code> suggests applying Cepstral Mean Normalization (CMN) to Fbanks:</p>
+<ul class="simple">
+<li><p>on the sliding-window sub-segment (<code class="docutils literal notranslate"><span class="pre">subseg_cmn=true</span></code>) or</p></li>
+<li><p>on the whole vad segment (<code class="docutils literal notranslate"><span class="pre">subseg_cmn=false</span></code>)</p></li>
+</ul>
+<p>You can specify <code class="docutils literal notranslate"><span class="pre">nj</span></code> jobs according to your cpu cores num.
+The final Fbank features are saved under dir <code class="docutils literal notranslate"><span class="pre">exp/${partition}_${sad_type}_sad_fbank</span></code>.</p>
+</section>
+<section id="stage-5-extract-sliding-window-speaker-embeddings">
+<h2>Stage 5: Extract Sliding-window Speaker Embeddings<a class="headerlink" href="#stage-5-extract-sliding-window-speaker-embeddings" title="Permalink to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [ ${stage} -le 5 ] &amp;&amp; [ ${stop_stage} -ge 5 ]; then
+
+    [ -d &quot;exp/${sad_type}_sad_embedding&quot; ] &amp;&amp; rm -r exp/${sad_type}_sad_embedding
+
+    echo &quot;Extract embeddings and store it under exp/${sad_type}_sad_embedding&quot;
+    echo &quot;...&quot;
+    bash local/extract_emb.sh \
+            --scp exp/${partition}_${sad_type}_sad_fbank/fbank.scp \
+            --pretrained_model pretrained_models/voxceleb_resnet34_LM.onnx \
+            --device cuda \
+            --store_dir exp/${partition}_${sad_type}_sad_embedding \
+            --batch_size 96 \
+            --frame_shift 10 \
+            --window_secs 1.5 \
+            --period_secs 0.75 \
+            --subseg_cmn ${subseg_cmn} \
+            --nj 1
+fi
+</pre></div>
+</div>
+<p>Extract speaker embeddings from the Fbank features in a sliding-window fashion: <code class="docutils literal notranslate"><span class="pre">step=0.75s,</span> <span class="pre">window=1.5s</span></code>,
+which means extracting embedding from each <code class="docutils literal notranslate"><span class="pre">1.5s</span></code> speech window after every <code class="docutils literal notranslate"><span class="pre">0.75s</span></code>.
+Thus the contiguous windows overlap by <code class="docutils literal notranslate"><span class="pre">1.5-0.75=0.75s</span></code> in duration.</p>
+<p>You can also specify <code class="docutils literal notranslate"><span class="pre">nj</span></code> jobs and decide to use the <code class="docutils literal notranslate"><span class="pre">gpu</span></code> or <code class="docutils literal notranslate"><span class="pre">cpu</span></code> devices.
+The extracted embeddings are saved under dir <code class="docutils literal notranslate"><span class="pre">exp/${partition}_${sad_type}_sad_embedding</span></code>.</p>
+</section>
+<section id="stage-6-apply-spectral-clustering">
+<h2>Stage 6: Apply Spectral Clustering<a class="headerlink" href="#stage-6-apply-spectral-clustering" title="Permalink to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [ ${stage} -le 6 ] &amp;&amp; [ ${stop_stage} -ge 6 ]; then
+
+    [ -f &quot;exp/spectral_cluster/${partition}_${sad_type}_sad_labels&quot; ] &amp;&amp; rm exp/spectral_cluster/${partition}_${sad_type}_sad_labels
+
+    echo &quot;Doing spectral clustering and store the result in exp/spectral_cluster/${partition}_${sad_type}_sad_labels&quot;
+    echo &quot;...&quot;
+    python3 wespeaker/diar/spectral_clusterer.py \
+            --scp exp/${partition}_${sad_type}_sad_embedding/emb.scp \
+            --output exp/spectral_cluster/${partition}_${sad_type}_sad_labels
+fi
+</pre></div>
+</div>
+<p>Apply spectral clustering using the extracted sliding-window speaker embeddings,
+and store the results in <code class="docutils literal notranslate"><span class="pre">exp/spectral_cluster/${partition}_${sad_type}_sad_labels</span></code>,
+where each line records two blank-separated columns : <code class="docutils literal notranslate"><span class="pre">subseg_id</span></code> and <code class="docutils literal notranslate"><span class="pre">spk_id</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">abjxc</span><span class="o">-</span><span class="mi">00000400</span><span class="o">-</span><span class="mi">00007040</span><span class="o">-</span><span class="mi">00000000</span><span class="o">-</span><span class="mi">00000150</span> <span class="mi">0</span>
+<span class="n">abjxc</span><span class="o">-</span><span class="mi">00000400</span><span class="o">-</span><span class="mi">00007040</span><span class="o">-</span><span class="mi">00000075</span><span class="o">-</span><span class="mi">00000225</span> <span class="mi">0</span>
+<span class="n">abjxc</span><span class="o">-</span><span class="mi">00000400</span><span class="o">-</span><span class="mi">00007040</span><span class="o">-</span><span class="mi">00000150</span><span class="o">-</span><span class="mi">00000300</span> <span class="mi">0</span>
+<span class="n">abjxc</span><span class="o">-</span><span class="mi">00000400</span><span class="o">-</span><span class="mi">00007040</span><span class="o">-</span><span class="mi">00000225</span><span class="o">-</span><span class="mi">00000375</span> <span class="mi">0</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+</section>
+<section id="stage-7-reformat-clustering-labels-into-rttms">
+<h2>Stage 7: Reformat Clustering Labels into RTTMs<a class="headerlink" href="#stage-7-reformat-clustering-labels-into-rttms" title="Permalink to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [ ${stage} -le 7 ] &amp;&amp; [ ${stop_stage} -ge 7 ]; then
+    python3 wespeaker/diar/make_rttm.py \
+            --labels exp/spectral_cluster/${partition}_${sad_type}_sad_labels \
+            --channel 1 &gt; exp/spectral_cluster/${partition}_${sad_type}_sad_rttm
+fi
+</pre></div>
+</div>
+<p>Convert the clustering labels into the Rich Transcription Time Marked (RTTM) format, saved in <code class="docutils literal notranslate"><span class="pre">exp/spectral_cluster/${partition}_${sad_type}_sad_rttm</span></code>.</p>
+<p>RTTM files are space-delimited text files containing one turn per line, each line containing ten fields:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Type</span></code> – segment type; should always by <code class="docutils literal notranslate"><span class="pre">SPEAKER</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">File</span> <span class="pre">ID</span></code> – file name; basename of the recording minus extension (e.g., <code class="docutils literal notranslate"><span class="pre">abjxc</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Channel</span> <span class="pre">ID</span></code> – channel (1-indexed) that turn is on; should always be <code class="docutils literal notranslate"><span class="pre">1</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Turn</span> <span class="pre">Onset</span></code> – onset of turn in seconds from beginning of recording</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Turn</span> <span class="pre">Duration</span></code> – duration of turn in seconds</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Orthography</span> <span class="pre">Field</span></code> – should always by <code class="docutils literal notranslate"><span class="pre">&lt;NA&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Speaker</span> <span class="pre">Type</span></code> – should always be <code class="docutils literal notranslate"><span class="pre">&lt;NA&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Speaker</span> <span class="pre">Name</span></code> – name of speaker of turn; should be unique within scope of each file</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Confidence</span> <span class="pre">Score</span></code> – system confidence (probability) that information is correct; should always be <code class="docutils literal notranslate"><span class="pre">&lt;NA&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Signal</span> <span class="pre">Lookahead</span> <span class="pre">Time</span></code> – should always be <code class="docutils literal notranslate"><span class="pre">&lt;NA&gt;</span></code></p></li>
+</ul>
+<p>For instance,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SPEAKER</span> <span class="n">abjxc</span> <span class="mi">1</span> <span class="mf">0.400</span> <span class="mf">6.640</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>
+<span class="n">SPEAKER</span> <span class="n">abjxc</span> <span class="mi">1</span> <span class="mf">8.680</span> <span class="mf">55.960</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">NA</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="stage-8-evaluate-the-result-der">
+<h2>Stage 8: Evaluate the Result (DER)<a class="headerlink" href="#stage-8-evaluate-the-result-der" title="Permalink to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [ ${stage} -le 8 ] &amp;&amp; [ ${stop_stage} -ge 8 ]; then
+    ref_dir=data/voxconverse-master/
+    #ref_dir=data/VoxSRC2023/voxconverse/
+    echo -e &quot;Get the DER results\n...&quot;
+    perl external_tools/SCTK-2.4.12/src/md-eval/md-eval.pl \
+         -c 0.25 \
+         -r &lt;(cat ${ref_dir}/${partition}/*.rttm) \
+         -s exp/spectral_cluster/${partition}_${sad_type}_sad_rttm 2&gt;&amp;1 | tee exp/spectral_cluster/${partition}_${sad_type}_sad_res
+
+    if [ ${get_each_file_res} -eq 1 ];then
+        single_file_res_dir=exp/spectral_cluster/${partition}_${sad_type}_single_file_res
+        mkdir -p $single_file_res_dir
+        echo -e &quot;\nGet the DER results for each file and the results will be stored underd ${single_file_res_dir}\n...&quot;
+
+        awk &#39;{print $2}&#39; exp/spectral_cluster/${partition}_${sad_type}_sad_rttm | sort -u  | while read file_name; do
+            perl external_tools/SCTK-2.4.12/src/md-eval/md-eval.pl \
+                 -c 0.25 \
+                 -r &lt;(cat ${ref_dir}/${partition}/${file_name}.rttm) \
+                 -s &lt;(grep &quot;${file_name}&quot; exp/spectral_cluster/${partition}_${sad_type}_sad_rttm) &gt; ${single_file_res_dir}/${partition}_${file_name}_res
+        done
+        echo &quot;Done!&quot;
+    fi
+fi
+</pre></div>
+</div>
+<p>Use the <strong>SCTK</strong> toolkit to compute the Diarization Error Rate (DER) metric, which is the sum of</p>
+<ul class="simple">
+<li><p>speaker error – percentage of scored time for which the wrong speaker id is assigned within a speech region</p></li>
+<li><p>false alarm speech – percentage of scored time for which a nonspeech region is incorrectly marked as containing speech</p></li>
+<li><p>missed speech – percentage of scored time for which a speech region is incorrectly marked as not containing speech</p></li>
+</ul>
+<p>For more details about DER, consult Section 6.1 of the <a class="reference external" href="https://web.archive.org/web/20100606092041if_/http://www.itl.nist.gov/iad/mig/tests/rt/2009/docs/rt09-meeting-eval-plan-v2.pdf">NIST RT-09 evaluation plan</a>.</p>
+<p>The overall DER result would be saved in <code class="docutils literal notranslate"><span class="pre">exp/spectral_cluster/${partition}_${sad_type}_sad_res</span></code>.
+Optionally, set <code class="docutils literal notranslate"><span class="pre">get_each_file_res</span></code> as <code class="docutils literal notranslate"><span class="pre">1</span></code> if you also want to get the DER result for each single file, which will be saved under dir <code class="docutils literal notranslate"><span class="pre">exp/spectral_cluster/${partition}_${sad_type}_single_file_res</span></code>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="vox_ssl.html" class="btn btn-neutral float-left" title="SV Tutorial on VoxCeleb v3 (Self-Supervised)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pretrained.html" class="btn btn-neutral float-right" title="Pretrained Models in Wespeaker" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, wespeaker-team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
