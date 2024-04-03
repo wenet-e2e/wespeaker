@@ -20,8 +20,6 @@
 
 #ifdef USE_ONNX
 #include "speaker/onnx_speaker_model.h"
-#elif USE_BPU
-#include "speaker/bpu_speaker_model.h"
 #endif
 
 namespace wespeaker {
