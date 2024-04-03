@@ -8,7 +8,7 @@
 #$ -pe smp 16
 #$ -l gpu=0.125,ram_free=1.25G,mem_free=1.25G,matylda6=0.625,gpu_ram=16G
 #$ -q long.q@@gpu
-cd /mnt/matylda6/rohdin/expts/wespeaker/wespeaker_private_test1/examples/sre/v3/ # Need to change your training directory.
+cd /mnt/matylda6/rohdin/expts/wespeaker/wespeaker_private_test2/examples/sre/v3/ # Need to change your training directory.
 
 unset PYTHONPATH
 unset PYTHONHOME

@@ -16,14 +16,17 @@ data_type="shard"  # shard/raw
 aug_plda_data=1
 
 config=conf/resnet.yaml
-exp_dir=exp/ResNet34-TSTP-emb256-fbank40-num_frms200-aug0.6-spFalse-saFalse-Softmax-SGD-epoch10
+exp_dir=exp/ResNet34-TSTP-emb256-fbank64-num_frms200-aug0.6-spFalse-saFalse-Softmax-SGD-epoch10
 
 # gpus="[0,1]" # For slurm, just specify this according to the number of GPUs you have. 
-num_gpus=2     # If this variable is defined, safe_gpu will be used to select the free GPUs. 
-               # If so, it will override whatever may have been specified in gpus="[x,x]
-               # Typically, you would want to use this option for SGE.  
-               # If this variable is not set, or set to '', the script will assume that 
-               # the GPUs to use are specified in the variable "gpus" as above.
+num_gpus_train=2  # If this variable is defined, safe_gpu will be used to select the free GPUs. 
+                  # If so, it will override whatever may have been specified in gpus="[x,x]
+                  # Typically, you would want to use this option for SGE.  
+                  # If this variable is not set, or set to '', the script will assume that 
+                  # the GPUs to use are specified in the variable "gpus" as above.
+
+num_gpus_extract=4 # We may want to use a different value for extraction.
+
 num_avg=10
 checkpoint=
 
@@ -158,14 +161,14 @@ fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   echo "Start training ..."
-  if [ ! -z $num_gpus ];then
-      gpus=$(python -c "from sys import argv; from safe_gpu import safe_gpu; safe_gpu.claim_gpus(int(argv[1])); print( safe_gpu.gpu_owner.devices_taken )" $num_gpus | sed "s: ::g")
+  if [ ! -z $num_gpus_train ];then
+      gpus=$(python -c "from sys import argv; from safe_gpu import safe_gpu; safe_gpu.claim_gpus(int(argv[1])); print( safe_gpu.gpu_owner.devices_taken )" $num_gpus_train | sed "s: ::g")
   else
       num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
   fi
-  echo "Using $num_gpus GPUs: $gpus"
-  #torchrun --standalone --nnodes=1 --nproc_per_node=$num_gpus \  # The below is to prevent problems if many jobs run on the same machine 
-  torchrun --rdzv_backend=c10d --rdzv_endpoint=$(hostname):$((RANDOM)) --nnodes=1 --nproc_per_node=$num_gpus \
+  echo "Using $num_gpus_train GPUs: $gpus"
+  #torchrun --standalone --nnodes=1 --nproc_per_node=$num_gpus_train \  # The below is to prevent problems if many jobs run on the same machine 
+  torchrun --rdzv_backend=c10d --rdzv_endpoint=$(hostname):$((RANDOM)) --nnodes=1 --nproc_per_node=$num_gpus_train \
       wespeaker/bin/train.py --config $config \
       --exp_dir ${exp_dir} \
       --gpus $gpus \
@@ -206,12 +209,11 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   echo "Extract embeddings ..."
   avg_model=$exp_dir/models/avg_model.pt
   model_path=$avg_model
-  num_gpus=4 #1
-  gpus=$(python -c "from sys import argv; from safe_gpu import safe_gpu; safe_gpu.claim_gpus(int(argv[1])); print( safe_gpu.gpu_owner.devices_taken )" $num_gpus | sed "s: ::g" )
+  gpus=$(python -c "from sys import argv; from safe_gpu import safe_gpu; safe_gpu.claim_gpus(int(argv[1])); print( safe_gpu.gpu_owner.devices_taken )" $num_gpus_extract | sed "s: ::g" )
   echo $gpus
   local/extract_sre.sh \
     --exp_dir $exp_dir --model_path $model_path \
-    --nj $num_gpus --gpus $gpus --data_type raw --data ${data} \
+    --nj $num_gpus_extract --gpus $gpus --data_type raw --data ${data} \
     --reverb_data ${data}/rirs/lmdb \
     --noise_data ${data}/musan/lmdb \
     --aug_plda_data ${aug_plda_data}

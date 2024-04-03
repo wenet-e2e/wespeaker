@@ -31,7 +31,7 @@ set -e
 
 
 ####
-false && {
+true && {
 data_name_array=(
     "cts_aug"
     "sre16/major"
