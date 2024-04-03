@@ -53,7 +53,6 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Runtime for Wespeaker</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#platforms-supported">Platforms Supported</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#onnxruntime">Onnxruntime</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#horizonbpu">Horizonbpu</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#server-tensorrt-gpu">Server (tensorrt gpu)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#step-0-train-a-model">Step 0. Train a model</a></li>
@@ -114,7 +113,6 @@
 </li>
 <li><p>Device</p>
 <ul>
-<li><p><a class="reference external" href="https://github.com/wenet-e2e/wespeaker/tree/master/runtime/horizonbpu">Horizon X3 PI</a></p></li>
 <li><p><a class="reference external" href="https://github.com/wenet-e2e/wespeaker/tree/master/runtime/onnxruntime">Onnxruntime</a></p>
 <ul>
 <li><p>linux_x86_cpu</p></li>
@@ -198,108 +196,6 @@ else compute embedding with chunk by chunk, and then average embeddings of chunk
 <span class="w">    </span>--threshold<span class="w"> </span><span class="m">0</span>.5<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--speaker_model_path<span class="w"> </span><span class="nv">$onnx_dir</span>/final.onnx<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--embedding_size<span class="w"> </span><span class="m">256</span>
-</pre></div>
-</div>
-</section>
-<section id="horizonbpu">
-<h2>Horizonbpu<a class="headerlink" href="#horizonbpu" title="Permalink to this heading"></a></h2>
-<ul class="simple">
-<li><p>Step 1. Setup environment (install horizon packages and cross compile tools) in the PC.</p></li>
-</ul>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="c1"># Conda env (This conda env is only used for converting bpu models, not for training torch models,</span>
-<span class="c1">#   It&#39;s OK to install cpu-version pytorch)</span>
-conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>horizonbpu<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8
-conda<span class="w"> </span>activate<span class="w"> </span>horizonbpu
-git<span class="w"> </span>clone<span class="w"> </span>https://github.com/wenet-e2e/wespeaker.git
-<span class="nb">cd</span><span class="w"> </span>wespeaker/runtime/horizonbpu
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>../../requirements.txt<span class="w"> </span>-i<span class="w"> </span>https://mirrors.aliyun.com/pypi/simple
-pip<span class="w"> </span>install<span class="w"> </span><span class="nv">torch</span><span class="o">==</span><span class="m">1</span>.13.0<span class="w"> </span><span class="nv">torchaudio</span><span class="o">==</span><span class="m">0</span>.13.0<span class="w"> </span><span class="nv">torchvision</span><span class="o">==</span><span class="m">0</span>.14.0<span class="w"> </span>onnx<span class="w"> </span>onnxruntime<span class="w"> </span>-i<span class="w"> </span>https://mirrors.aliyun.com/pypi/simple
-
-<span class="c1"># Horizon packages</span>
-wget<span class="w"> </span>https://gitee.com/xcsong-thu/toolchain_pkg/releases/download/resource/wheels.tar.gz
-tar<span class="w"> </span>-xzf<span class="w"> </span>wheels.tar.gz
-pip<span class="w"> </span>install<span class="w"> </span>wheels/*<span class="w"> </span>-i<span class="w"> </span>https://mirrors.aliyun.com/pypi/simple
-
-<span class="c1"># Cross compile tools</span>
-sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>gcc-aarch64-linux-gnu<span class="w"> </span>g++-aarch64-linux-gnu
-</pre></div>
-</div>
-<ul class="simple">
-<li><p>Step 2. Build extract_emb_main. It requires cmake 3.14 or above. and Send the binary/libraries to Horizon X3PI.</p></li>
-</ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Assume current dir is `wespeaker/runtime/horizonbpu`</span>
-cmake<span class="w"> </span>-B<span class="w"> </span>build<span class="w"> </span>-DBPU<span class="o">=</span>ON<span class="w"> </span>-DONNX<span class="o">=</span>OFF<span class="w"> </span>-DCMAKE_TOOLCHAIN_FILE<span class="o">=</span>toolchains/aarch64-linux-gnu.toolchain.cmake
-cmake<span class="w"> </span>--build<span class="w"> </span>build
-
-<span class="c1"># Send binary and libraries</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">BPUIP</span><span class="o">=</span>xxx.xxx.xxx.xxx
-<span class="nb">export</span><span class="w"> </span><span class="nv">DEMO_PATH_ON_BOARD</span><span class="o">=</span>/path/to/demo
-scp<span class="w"> </span>-r<span class="w"> </span>build/bin/<span class="w"> </span>root@<span class="nv">$BPUIP</span>:<span class="nv">$DEMO_PATH_ON_BOARD</span>
-scp<span class="w"> </span>fc_base/easy_dnn-src/dnn/*j3*/*/*/lib/libdnn.so<span class="w"> </span>root@<span class="nv">$BPUIP</span>:<span class="nv">$DEMO_PATH_ON_BOARD</span>
-scp<span class="w"> </span>fc_base/easy_dnn-src/easy_dnn/*j3*/*/*/lib/libeasy_dnn.so<span class="w"> </span>root@<span class="nv">$BPUIP</span>:<span class="nv">$DEMO_PATH_ON_BOARD</span>
-scp<span class="w"> </span>fc_base/easy_dnn-src/hlog/*j3*/*/*/lib/libhlog.so<span class="w"> </span>root@<span class="nv">$BPUIP</span>:<span class="nv">$DEMO_PATH_ON_BOARD</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p>Step 3. Export model to ONNX and convert ONNX to Horizon .bin and Send the model/test_wav to Horizon X3PI.</p></li>
-</ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># stage 1: export onnx</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">WESPEAKER_DIR</span><span class="o">=</span><span class="nv">$PWD</span>/../../
-<span class="nb">export</span><span class="w"> </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="nv">$WESPEAKER_DIR</span>:<span class="nv">$PYTHONPATH</span>
-mkdir<span class="w"> </span>-p<span class="w"> </span>output
-python<span class="w"> </span><span class="nv">$WESPEAKER_DIR</span>/wespeaker/bin/export_onnx_bpu.py<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--config<span class="w"> </span>the_path_train_yaml<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--checkpoint<span class="w"> </span>the_path_pt_model<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--output_model<span class="w"> </span>the_path_onnx_model<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--num_frames<span class="w"> </span>num_frames
-<span class="c1"># egs:</span>
-<span class="c1"># python $WESPEAKER_DIR/wespeaker/bin/export_onnx_bpu.py \</span>
-<span class="c1">#   --config resnet_34/train.yaml \</span>
-<span class="c1">#   --checkpoint resnet_34/avg_model.pt \</span>
-<span class="c1">#   --output_model resnet_34/resnet34.onnx \</span>
-<span class="c1">#   --num_frames 198</span>
-
-<span class="c1"># stage 2: export bin model</span>
-python<span class="w"> </span><span class="nv">$WESPEAKER_DIR</span>/tools/onnx2horizonbin.py<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--config<span class="w"> </span>the_path_train_yaml<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--output_dir<span class="w"> </span>output_dir<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--cali_datalist<span class="w"> </span>data_list<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--onnx_path<span class="w"> </span>fp_onnx_path<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--cali_data_type<span class="w"> </span><span class="s2">&quot;shard/raw&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--input_name<span class="w"> </span>input_name<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--input_shape<span class="w"> </span>input_shape
-
-<span class="c1"># egs:</span>
-<span class="c1"># python $WESPEAKER_DIR/tools/onnx2horizonbin.py \</span>
-<span class="c1">#   --config resnet_34/config.yaml \</span>
-<span class="c1">#   --output_dir output/ \</span>
-<span class="c1">#   --cali_datalist cali_data/raw.list \</span>
-<span class="c1">#   --onnx_path resnet_34/resnet34.onnx \</span>
-<span class="c1">#   --cali_data_type &quot;raw&quot; \</span>
-<span class="c1">#   --input_name &quot;feats&quot; \</span>
-<span class="c1">#   --input_shape &quot;1x1x198x80&quot;</span>
-
-<span class="c1"># scp test wav file</span>
-scp<span class="w"> </span>test_wav.wav<span class="w"> </span>root@<span class="nv">$BPUIP</span>:<span class="nv">$DEMO_PATH_ON_BOARD</span>
-<span class="c1"># scp bpu models</span>
-scp<span class="w"> </span>./output/hb_makertbin_output_speaker/speaker.bin<span class="w"> </span>root@<span class="nv">$BPUIP</span>:<span class="nv">$DEMO_PATH_ON_BOARD</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p>Step 4. Testing on X3PI, the RTF(real time factor) is shown in Horizon X3PI’s console.</p></li>
-</ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/path/to/demo
-<span class="nb">export</span><span class="w"> </span><span class="nv">LD_LIBRARY_PATH</span><span class="o">=</span>.:<span class="nv">$LD_LIBRARY_PATH</span><span class="w"> </span><span class="se">\</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">GLOG_logtostderr</span><span class="o">=</span><span class="m">1</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">GLOG_v</span><span class="o">=</span><span class="m">2</span>
-<span class="nv">wav_scp</span><span class="o">=</span>your_test_wav_scp
-<span class="nv">embed_out</span><span class="o">=</span>your_embedding_txt
-./build/bin/extract_emb_main<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--wav_scp<span class="w"> </span><span class="nv">$wav_scp</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--result<span class="w"> </span><span class="nv">$embed_out</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--speaker_model_path<span class="w"> </span>speaker.bin<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--embedding_size<span class="w"> </span><span class="m">256</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--SamplesPerChunk<span class="w">  </span><span class="m">32000</span><span class="w">  </span><span class="c1"># 2s</span>
 </pre></div>
 </div>
 </section>
