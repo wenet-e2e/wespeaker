@@ -17,7 +17,7 @@ import os
 import sys
 
 import numpy as np
-from silero_vad import vad
+from silero_vad import SileroVAD
 import torch
 import torchaudio
 import torchaudio.compliance.kaldi as kaldi
@@ -47,7 +47,7 @@ class Speaker:
         self.model = get_speaker_model(
             configs['model'])(**configs['model_args'])
         load_checkpoint(self.model, model_path)
-        self.vad_model = vad.OnnxWrapper()
+        self.vad = SileroVAD()
         self.table = {}
         self.resample_rate = 16000
         self.apply_vad = False
@@ -141,9 +141,8 @@ class Speaker:
         if self.apply_vad:
             # TODO(Binbin Zhang): Refine the segments logic, here we just
             # suppose there is only silence at the start/end of the speech
-            segments = vad.get_speech_timestamps(self.vad_model,
-                                                 audio_path,
-                                                 return_seconds=True)
+            segments = self.vad.get_speech_timestamps(audio_path,
+                                                      return_seconds=True)
             pcmTotal = torch.Tensor()
             if len(segments) > 0:  # remove all the silence
                 for segment in segments:
@@ -218,9 +217,8 @@ class Speaker:
 
         pcm, sample_rate = torchaudio.load(audio_path, normalize=False)
         # 1. vad
-        vad_segments = vad.get_speech_timestamps(self.vad_model,
-                                                 audio_path,
-                                                 return_seconds=True)
+        vad_segments = self.vad.get_speech_timestamps(audio_path,
+                                                      return_seconds=True)
 
         # 2. extact fbanks
         subsegs, subseg_fbanks = [], []
