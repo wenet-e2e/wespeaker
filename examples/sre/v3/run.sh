@@ -7,8 +7,8 @@
 
 . ./path.sh || exit 1
 
-stage=1
-stop_stage=1
+stage=9
+stop_stage=9
 
 data=data
 data_type="shard"  # shard/raw
@@ -382,6 +382,7 @@ if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
       --stage 1 --stop-stage 4 \
       --data ${data} \
       --exp_dir $exp_dir \
+      --preprocessing_path ${exp_dir}/embd_proc_sre16_major.pkl \
       --aug_plda_data ${aug_plda_data}
   }
 
@@ -415,7 +416,7 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
     echo "----------------------------------------------------"
     # Make the header
     eval_data='system'
-    for dset in sre16_eval sre18_eval sre18_dev sre21_eval sre21_dev;do
+    for dset in sre16_eval sre18_dev sre18_eval sre21_dev sre21_eval;do
 	for x in $(echo ${trials[$dset]} | tr "," " "); do
 	    xx=$(basename  $x) 
 	    eval_data="$eval_data, $xx  "
@@ -425,7 +426,7 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
     # Collect the results
     for sys in mean_cts_aug_cos mean_sre16_major_cos mean_sre18_dev_unlabeled_cos proc_embd_proc_cts_aug_plda proc_embd_proc_sre16_major_plda proc_embd_proc_sre16_major_plda_adapt proc_embd_proc_sre18_dev_unlabeled_plda proc_embd_proc_sre18_dev_unlabeled_plda_adapt;do 	
 	res="$sys,"
-	for dset in sre16_eval sre18_eval sre18_dev sre21_eval sre21_dev;do
+	for dset in sre16_eval sre18_dev sre18_eval sre21_dev sre21_eval;do
 	    for x in $(echo ${trials[$dset]} | tr "," " "); do
 		xx=$(basename  $x) 
 		eval_data="$eval_data $xx  "

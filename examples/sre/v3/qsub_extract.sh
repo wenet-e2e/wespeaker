@@ -7,10 +7,10 @@
 #$ -e extract_embd.err
 #$ -l gpu=4,ram_free=10G,mem_free=10G,core=2,matylda6=2,scratch=0.5,gpu_ram=16G
 #$ -q long.q@@gpu
-#export PATH="/mnt/matylda5/iplchot/python_public/anaconda3/bin:$PATH"
-cd /mnt/matylda6/rohdin/expts/wespeaker/wespeaker_private/examples/sre/v3/
+
+cd /mnt/matylda6/rohdin/expts/wespeaker/wespeaker_private_test2/examples/sre/v3
 unset PYTHONPATH
-unset PYTHOHOME
+unset PYTHONHOME
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
@@ -31,8 +31,6 @@ conda activate /mnt/matylda6/rohdin/conda/wespeaker_20240220/
 which python
 export PATH=$PATH:/mnt/matylda6/rohdin/software/kaldi_20210625/tools/sph2pipe/
 
-#./run.sh > logs/run.sh.log.extract.1 2>&1 
-#./run.sh > logs/run.sh.log.extract.2 2>&1 
-#./run.sh > logs/run.sh.log.extract.3 2>&1 
-./run.sh > logs/run.sh.log.extract.4 2>&1 
+./run.sh > logs/run.sh.stage4.log.1 2>&1 
+
 
