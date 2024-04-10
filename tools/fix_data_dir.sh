@@ -16,8 +16,8 @@ spk_extra_files=
 . tools/parse_options.sh
 
 if [ $# != 1 ]; then
-  echo "Usage: local/data/fix_data_dir.sh <data-dir>"
-  echo "e.g.: local/data/fix_data_dir.sh data/train"
+  echo "Usage: tools/fix_data_dir.sh <data-dir>"
+  echo "e.g.: tools/fix_data_dir.sh data/train"
   echo "This script helps ensure that the various files in a data directory"
   echo "are correctly sorted and filtered, for example removing utterances"
   echo "that have no features (if feats.scp is present)"
@@ -68,7 +68,7 @@ function filter_file {
   filter=$1
   file_to_filter=$2
   cp $file_to_filter ${file_to_filter}.tmp
-  local/filter_scp.pl $filter ${file_to_filter}.tmp > $file_to_filter
+  tools/filter_scp.pl $filter ${file_to_filter}.tmp > $file_to_filter
   if ! cmp ${file_to_filter}.tmp  $file_to_filter >&/dev/null; then
     length1=$(cat ${file_to_filter}.tmp | wc -l)
     length2=$(cat ${file_to_filter} | wc -l)
@@ -96,7 +96,7 @@ function filter_recordings {
     n1=$(cat $tmpdir/recordings | wc -l)
     [ ! -s $tmpdir/recordings ] && \
       echo "Empty list of recordings (bad file $data/segments)?" && exit 1;
-    local/filter_scp.pl $data/wav.scp $tmpdir/recordings > $tmpdir/recordings.tmp
+    tools/filter_scp.pl $data/wav.scp $tmpdir/recordings > $tmpdir/recordings.tmp
     mv $tmpdir/recordings.tmp $tmpdir/recordings
 
 
@@ -114,7 +114,7 @@ function filter_recordings {
 
 function filter_speakers {
   # throughout this program, we regard utt2spk as primary and spk2utt as derived, so...
-  local/utt2spk_to_spk2utt.pl $data/utt2spk > $data/spk2utt
+  tools/utt2spk_to_spk2utt.pl $data/utt2spk > $data/spk2utt
 
   cat $data/spk2utt | awk '{print $1}' > $tmpdir/speakers
   for s in cmvn.scp spk2gender; do
@@ -125,7 +125,7 @@ function filter_speakers {
   done
 
   filter_file $tmpdir/speakers $data/spk2utt
-  local/spk2utt_to_utt2spk.pl $data/spk2utt > $data/utt2spk
+  tools/spk2utt_to_utt2spk.pl $data/spk2utt > $data/utt2spk
 
   for s in cmvn.scp spk2gender $spk_extra_files; do
     f=$data/$s
@@ -174,7 +174,7 @@ function filter_utts {
 
   for x in feats.scp text segments utt2lang $maybe_wav $maybe_utt2dur $maybe_utt2num_frames; do
     if [ -f $data/$x ]; then
-      local/filter_scp.pl $data/$x $tmpdir/utts > $tmpdir/utts.tmp
+      tools/filter_scp.pl $data/$x $tmpdir/utts > $tmpdir/utts.tmp
       mv $tmpdir/utts.tmp $tmpdir/utts
     fi
   done
@@ -198,8 +198,8 @@ function filter_utts {
   for x in utt2spk utt2uniq feats.scp vad.scp text segments utt2lang utt2dur utt2num_frames $maybe_wav $maybe_reco2dur $utt_extra_files; do
     if [ -f $data/$x ]; then
       cp $data/$x $data/.backup/$x
-      if ! cmp -s $data/$x <( local/filter_scp.pl $tmpdir/utts $data/$x ) ; then
-        local/filter_scp.pl $tmpdir/utts $data/.backup/$x > $data/$x
+      if ! cmp -s $data/$x <( tools/filter_scp.pl $tmpdir/utts $data/$x ) ; then
+        tools/filter_scp.pl $tmpdir/utts $data/.backup/$x > $data/$x
       fi
     fi
   done
@@ -212,6 +212,6 @@ filter_utts
 filter_speakers
 filter_recordings
 
-local/utt2spk_to_spk2utt.pl $data/utt2spk > $data/spk2utt
+tools/utt2spk_to_spk2utt.pl $data/utt2spk > $data/spk2utt
 
 echo "fix_data_dir.sh: old files are kept in $data/.backup"
