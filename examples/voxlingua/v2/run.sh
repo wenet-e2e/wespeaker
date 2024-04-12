@@ -15,17 +15,42 @@ stop_stage=4
 # data="/mnt/proj3/open-27-67/xodehn09/data/16kHz/NAKI/SPLIT"
 data="/mnt/proj3/open-27-67/xodehn09/voxlingua/data/"
 
-# export LOGLEVEL=DEBUG
+
+# # Function to check if the port is in use
+# is_port_in_use() {
+#     ss -tulpn | grep ":$1 " > /dev/null
+# }
+# 
+# # Loop until a free port is found
+# BASE_PORT=29401
+# while is_port_in_use $BASE_PORT; do
+#     echo "Port $BASE_PORT is in use. Trying next port..."
+#     ((BASE_PORT++))
+# done
+# 
+# echo "Found available port: $BASE_PORT"
+
+base_port=29401
+max_port=40000
+current_time=$(date +%s)
+PORT=$((current_time % (max_port - base_port) + base_port))
+
+export HOST_NODE_ADDR=0.0.0.0:$PORT
 export OMP_NUM_THREADS=16
-export HOST_NODE_ADDR=0.0.0.0:29401
+# export LOGLEVEL=DEBUG
 
 data_type="shard"  # shard/raw
 
-config=conf/resnet.yaml
-exp_dir=exp/ResNet18-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
-gpus="[0,1]"
+# ResNet-18
+# config=conf/resnet.yaml
+# exp_dir=exp/ResNet18-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
+# checkpoint=exp/ResNet18-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150/models/model_148.pt
+
+# WavLM pre-trained
+exp_dir=exp/WavLM-BasePlus-FullFineTuning-MHFA-emb256-3s-LRS10-Epoch50
+
+gpus="[0,1, 2, 3]"
 num_avg=4
-checkpoint=exp/ResNet18-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150/models/model_148.pt
 checkpoint=
 
 trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
