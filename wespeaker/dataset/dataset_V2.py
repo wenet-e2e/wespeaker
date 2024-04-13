@@ -23,7 +23,7 @@ from torch.utils.data import IterableDataset
 
 from wespeaker.utils.file_utils import read_lists
 from wespeaker.dataset.lmdb_data import LmdbData
-import wespeaker.dataset.processor as processor
+import wespeaker.dataset.processor_V2 as processor
 
 
 class Processor(IterableDataset):
