@@ -25,7 +25,7 @@ import yaml
 from torch.utils.data import DataLoader
 import torch.nn as nn
 import wespeaker.utils.schedulers as schedulers
-from wespeaker.dataset.dataset import Dataset
+from wespeaker.dataset.dataset_V2 import Dataset
 from wespeaker.models.projections import get_projection
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
