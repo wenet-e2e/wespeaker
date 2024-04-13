@@ -50,7 +50,7 @@ dataset_args:
 model: WavLM_Base_MHFA
 model_init: null
 model_args:
-  model_path: '/home/jpeng/ntt/work/Data/pretrained_model/WavLM-Base+.pt'
+  model_path: 'data/models/pretrained/WavLM-Base+.pt'
   head_nb: 64
   embed_dim: 256
   pooling: "MHFA" #Group 

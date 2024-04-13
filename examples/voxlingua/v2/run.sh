@@ -12,9 +12,7 @@ stop_stage=4
 
 # data=data
 # data="/scratch/project/open-28-58/xodehn09/data"
-# data="/mnt/proj3/open-27-67/xodehn09/data/16kHz/NAKI/SPLIT"
-data="/mnt/proj3/open-27-67/xodehn09/voxlingua/data/"
-
+data="${DATA_DIR}"
 
 # # Function to check if the port is in use
 # is_port_in_use() {

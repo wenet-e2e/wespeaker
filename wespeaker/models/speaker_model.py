@@ -18,6 +18,8 @@ import wespeaker.models.resnet as resnet
 import wespeaker.models.repvgg as repvgg
 import wespeaker.models.campplus as campplus
 
+import wespeaker.models.Transformer_WavLM as Transformer_WavLM
+
 def get_speaker_model(model_name: str):
     if model_name.startswith("XVEC"):
         return getattr(tdnn, model_name)
@@ -29,6 +31,9 @@ def get_speaker_model(model_name: str):
         return getattr(repvgg, model_name)
     elif model_name.startswith("CAMPPlus"):
         return getattr(campplus, model_name)
+    elif model_name.startswith("WavLM_Base_MHFA"):
+        return getattr(Transformer_WavLM, model_name)
     else:  # model_name error !!!
         print(model_name + " not found !!!")
         exit(1)
+
