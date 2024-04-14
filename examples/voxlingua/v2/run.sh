@@ -28,6 +28,13 @@ data="${DATA_DIR}"
 # 
 # echo "Found available port: $BASE_PORT"
 
+# FROM: https://github.com/pytorch/pytorch/issues/60477#issuecomment-1574453494
+export MIOPEN_USER_DB_PATH="/tmp/$(whoami)-miopen-cache"
+export MIOPEN_CUSTOM_CACHE_DIR=${MIOPEN_USER_DB_PATH}
+rm -rf ${MIOPEN_USER_DB_PATH}
+mkdir -p ${MIOPEN_USER_DB_PATH}
+
+
 base_port=29401
 max_port=40000
 current_time=$(date +%s)

@@ -35,7 +35,7 @@ current_time=$(date +%s)
 PORT=$((current_time % (max_port - base_port) + base_port))
 
 export HOST_NODE_ADDR=0.0.0.0:$PORT
-export OMP_NUM_THREADS=16
+export OMP_NUM_THREADS=32
 # export LOGLEVEL=DEBUG
 
 data_type="shard"  # shard/raw
@@ -44,7 +44,7 @@ data_type="shard"  # shard/raw
 config=conf/wavlm_base_MHFA_LR.yaml
 exp_dir=exp/WavLM-BasePlus-FullFineTuning-MHFA-emb256-3s-LRS10-Epoch50
 
-gpus="[0,1]"
+gpus="[0,1,2,3]"
 num_avg=4
 checkpoint=
 
