@@ -39,18 +39,16 @@ def get_args():
     return args
 
 
-def main():
-    args = get_args()
-
-    with open(args.config, 'r') as fin:
+def export_onnx(checkpoint_path, config_path, output_model, mean_vec=None):
+    with open(config_path, 'r') as fin:
         configs = yaml.load(fin, Loader=yaml.FullLoader)
 
     model = get_speaker_model(configs['model'])(**configs['model_args'])
-    load_checkpoint(model, args.checkpoint)
+    load_checkpoint(model, checkpoint_path)
     model.eval()
 
-    if args.mean_vec:
-        mean_vec = torch.tensor(np.load(args.mean_vec), dtype=torch.float32)
+    if mean_vec:
+        mean_vec = torch.tensor(np.load(mean_vec), dtype=torch.float32)
     else:
         embed_dim = configs["model_args"]["embed_dim"]
         mean_vec = torch.zeros(embed_dim, dtype=torch.float32)
@@ -80,7 +78,7 @@ def main():
     dummy_input = torch.ones(1, num_frms, feat_dim)
     torch.onnx.export(model,
                       dummy_input,
-                      args.output_model,
+                      output_model,
                       do_constant_folding=True,
                       verbose=False,
                       opset_version=14,
@@ -108,4 +106,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    args = get_args()
+    export_onnx(args.checkpoint, args.config, args.output_model, args.mean_vec)
