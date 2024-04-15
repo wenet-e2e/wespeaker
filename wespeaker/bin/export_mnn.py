@@ -20,7 +20,6 @@ import logging
 
 import numpy as np
 import torch
-import torch.nn as nn
 import MNN
 import onnxruntime as ort
 
@@ -49,8 +48,7 @@ def test_onnx_inference(in0, model_path):
     so.intra_op_num_threads = 1
     session = ort.InferenceSession(model_path, sess_options=so)
 
-    output = session.run(output_names=['embs'],
-                         input_feed={'feats': in0})
+    output = session.run(output_names=['embs'], input_feed={'feats': in0})
 
     return output[0]
 
@@ -61,7 +59,7 @@ def test_mnn_inference(in0, model_path):
     config["backend"] = 0
     config["numThread"] = 1
 
-    rt = MNN.nn.create_runtime_manager((config,))
+    rt = MNN.nn.create_runtime_manager((config, ))
     net = MNN.nn.load_module_from_file(model_path, ["feats"], ["embs"],
                                        runtime_manager=rt)
 
@@ -80,7 +78,9 @@ def export_mnn(checkpoint_path, config_path, output_model, mean_vec):
     # 1. export onnx
     export_onnx(checkpoint_path, config_path, output_model + ".onnx", mean_vec)
     # 2. convert onnx to mnn
-    os.system("MNNConvert -f ONNX --modelFile {} --MNNModel {} --bizCode MNN".format(output_model + ".onnx", output_model))
+    os.system(
+        "MNNConvert -f ONNX --modelFile {} --MNNModel {} --bizCode MNN".format(
+            output_model + ".onnx", output_model))
     logger.info("Exported MNN model to %s", output_model)
     # 3. print model info
     os.system("MNNConvert -f MNN --modelFile {} --info".format(output_model))
@@ -89,11 +89,9 @@ def export_mnn(checkpoint_path, config_path, output_model, mean_vec):
     in0 = torch.rand(1, 200, 80, dtype=torch.float)
     mnn_out = test_mnn_inference(in0.numpy(), output_model)
     onnx_out = test_onnx_inference(in0.numpy(), output_model + ".onnx")
-    np.testing.assert_allclose(onnx_out,
-                               mnn_out,
-                               rtol=1e-02,
-                               atol=1e-03)
-    logger.info("The output results of the mnn model and onnx model are consistent")
+    np.testing.assert_allclose(onnx_out, mnn_out, rtol=1e-02, atol=1e-03)
+    logger.info(
+        "The output results of the mnn model and onnx model are consistent")
 
 
 if __name__ == "__main__":
