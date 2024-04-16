@@ -89,7 +89,7 @@ def export_mnn(checkpoint_path, config_path, output_model, mean_vec):
     in0 = torch.rand(1, 200, 80, dtype=torch.float)
     mnn_out = test_mnn_inference(in0.numpy(), output_model)
     onnx_out = test_onnx_inference(in0.numpy(), output_model + ".onnx")
-    np.testing.assert_allclose(onnx_out, mnn_out, rtol=1e-02, atol=1e-03)
+    np.testing.assert_allclose(onnx_out, mnn_out, rtol=1e-05, atol=1e-02)
     logger.info(
         "The output results of the mnn model and onnx model are consistent")
 
