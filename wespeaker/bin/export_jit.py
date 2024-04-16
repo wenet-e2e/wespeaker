@@ -47,6 +47,7 @@ def main():
     print(model)
 
     load_checkpoint(model, args.checkpoint)
+    model.eval()
     # Export jit torch script model
 
     script_model = torch.jit.script(model)
