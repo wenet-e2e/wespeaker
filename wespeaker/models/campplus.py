@@ -297,7 +297,7 @@ class FCM(nn.Module):
                                        stride=2)
         self.layer2 = self._make_layer(block,
                                        m_channels,
-                                       num_blocks[0],
+                                       num_blocks[1],
                                        stride=2)
 
         self.conv2 = nn.Conv2d(m_channels,
