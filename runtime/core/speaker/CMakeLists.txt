@@ -18,6 +18,6 @@ if(ONNX)
   target_link_libraries(speaker PUBLIC onnxruntime)
 endif()
 if(MNN)
-  target_link_libraries(speaker PUBLIC mnn)
+  target_link_libraries(speaker PUBLIC MNN)
 endif()
 

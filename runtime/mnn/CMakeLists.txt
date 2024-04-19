@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 project(wespeaker VERSION 0.1)
 
-option(MNN "whether to build with MNN" ON)
+set(MNN ON CACHE BOOL "whether to build with MNN")
+option(MINI_LIBS "whether to build minimum libraies with MNN" OFF)
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
