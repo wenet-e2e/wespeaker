@@ -1,0 +1,60 @@
+# MNN backend on WeSpeaker
+
+* Step 1. Export your experiment model to MNN by [export_mnn.py](../../wespeaker/bin/export_mnn.py)
+
+``` sh
+exp=exp  # Change it to your experiment dir
+onnx_dir=mnn
+python wespeaker/bin/export_mnn.py \
+  --config $exp/config.yaml \
+  --checkpoint $exp/avg_model.pt \
+  --output_model $onnx_dir/final.mnn
+
+# When it finishes, you can find `final.mnn`.
+```
+
+* Step 2. Build. The build requires cmake 3.14 or above, and gcc/g++ 5.4 or above.
+
+``` sh
+mkdir build && cd build
+# 1. normal
+cmake  ..
+# 2. minimum libs
+# cmake -DMINI_LIBS=ON ..
+cmake --build .
+```
+
+* Step 3. Testing.
+
+1. the RTF(real time factor) is shown in the console, and embedding will be written to the txt file.
+``` sh
+export GLOG_logtostderr=1
+export GLOG_v=2
+wav_scp=your_test_wav_scp
+mnn_dir=your_model_dir
+embed_out=your_embedding_txt
+./build/bin/extract_emb_main \
+  --wav_scp $wav_scp \
+  --result $embed_out \
+  --speaker_model_path $mnn_dir/final.mnn \
+  --embedding_size 256 \
+  --samples_per_chunk  80000  # 5s
+```
+
+> NOTE: samples_per_chunk: samples of one chunk. samples_per_chunk = sample_rate * duration
+>
+> If samples_per_chunk = -1, compute the embedding of whole sentence;
+> else compute embedding with chunk by chunk, and then average embeddings of chunk.
+
+2. Calculate the similarity of two speech.
+```sh
+export GLOG_logtostderr=1
+export GLOG_v=2
+mnn_dir=your_model_dir
+./build/bin/asv_main \
+    --enroll_wav wav1_path \
+    --test_wav wav2_path \
+    --threshold 0.5 \
+    --speaker_model_path $onnx_dir/final.onnx \
+    --embedding_size 256
+```
