@@ -85,16 +85,17 @@ def run_epoch(dataloader,
                        width=10,
                        style='grid'))
 
+            if rank == 0:
             # Log metrics to WanDB
-            wandb.log({
-                "epoch": epoch,
-                "step": i,  # global step across all epochs
-                "global_step": cur_iter,  # global step across all epochs
-                "rank": rank,
-                "margin": margin_scheduler.get_margin() + (loss_meter.value()[0]),
-                "loss": loss_meter.value()[0],
-                "accuracy": acc_meter.value()[0],
-            })
+                wandb.log({
+                    "epoch": epoch,
+                    "step": i,  # global step across all epochs
+                    "global_step": cur_iter,  # global step across all epochs
+                    # "rank": rank,
+                    "margin": margin_scheduler.get_margin() + (loss_meter.value()[0]),
+                    "loss": loss_meter.value()[0],
+                    "accuracy": acc_meter.value()[0],
+                })
 
         if (i + 1) == epoch_iter:
             break

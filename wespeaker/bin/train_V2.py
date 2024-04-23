@@ -234,13 +234,14 @@ def train(config='conf/config.yaml', **kwargs):
             fout.write(data)
 
 
-    # WanDB setup
-    wandb.init(
-        project='naki-waspeaker',
-        config=configs,
-        group=configs['exp_dir'],
-        resume=True,
-    )
+    if rank == 0:
+        # WanDB setup
+        wandb.init(
+            project='naki-waspeaker',
+            config=configs,
+            name=configs['exp_dir'],
+            resume=True,
+        )
 
     # training
     dist.barrier(device_ids=[gpu])  # synchronize here
