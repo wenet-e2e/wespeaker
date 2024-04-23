@@ -31,6 +31,10 @@ def get_args():
     parser.add_argument('--config', required=True, help='config file')
     parser.add_argument('--checkpoint', required=True, help='checkpoint model')
     parser.add_argument('--output_model', required=True, help='output file')
+    parser.add_argument('--num_frames',
+                        default=-1,
+                        type=int,
+                        help='fix number of frames')
     parser.add_argument('--mean_vec',
                         required=False,
                         default=None,
@@ -39,16 +43,18 @@ def get_args():
     return args
 
 
-def export_onnx(checkpoint_path, config_path, output_model, mean_vec=None):
-    with open(config_path, 'r') as fin:
+def main():
+    args = get_args()
+
+    with open(args.config, 'r') as fin:
         configs = yaml.load(fin, Loader=yaml.FullLoader)
 
     model = get_speaker_model(configs['model'])(**configs['model_args'])
-    load_checkpoint(model, checkpoint_path)
+    load_checkpoint(model, args.checkpoint)
     model.eval()
 
-    if mean_vec:
-        mean_vec = torch.tensor(np.load(mean_vec), dtype=torch.float32)
+    if args.mean_vec:
+        mean_vec = torch.tensor(np.load(args.mean_vec), dtype=torch.float32)
     else:
         embed_dim = configs["model_args"]["embed_dim"]
         mean_vec = torch.zeros(embed_dim, dtype=torch.float32)
@@ -75,24 +81,22 @@ def export_onnx(checkpoint_path, config_path, output_model, mean_vec=None):
     else:  # UIO
         num_frms = configs['dataset_args'].get('num_frms', 200)
 
+    if args.num_frames > 0:
+        num_frms = args.num_frames
+        dynamic_axes = None
+    else:
+        dynamic_axes = {'feats': {0: 'B', 1: 'T'}, 'embs': {0: 'B'}}
+
     dummy_input = torch.ones(1, num_frms, feat_dim)
     torch.onnx.export(model,
                       dummy_input,
-                      output_model,
+                      args.output_model,
                       do_constant_folding=True,
                       verbose=False,
                       opset_version=14,
                       input_names=['feats'],
                       output_names=['embs'],
-                      dynamic_axes={
-                          'feats': {
-                              0: 'B',
-                              1: 'T'
-                          },
-                          'embs': {
-                              0: 'B'
-                          }
-                      })
+                      dynamic_axes=dynamic_axes)
 
     # You may further generate tensorrt engine:
     # trtexec --onnx=avg_model.onnx --minShapes=feats:1x200x80 \
@@ -106,5 +110,4 @@ def export_onnx(checkpoint_path, config_path, output_model, mean_vec=None):
 
 
 if __name__ == '__main__':
-    args = get_args()
-    export_onnx(args.checkpoint, args.config, args.output_model, args.mean_vec)
+    main()

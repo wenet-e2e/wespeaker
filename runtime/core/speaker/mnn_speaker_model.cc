@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Chengdong Liang (liangchengdongd@qq.com)
+// Copyright (c) 2024 Chengdong Liang (liangchengdongd@qq.com)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,16 +22,15 @@
 
 namespace wespeaker {
 
-MnnSpeakerModel::MnnSpeakerModel(const std::string& model_path) {
+MnnSpeakerModel::MnnSpeakerModel(const std::string& model_path,
+                                 int num_threads) {
   // 1. Load sessions
   speaker_interpreter_ = std::shared_ptr<MNN::Interpreter>(
       MNN::Interpreter::createFromFile(model_path.c_str()));
-  speaker_interpreter_->setCacheFile(".cachefile");
-  speaker_interpreter_->setSessionHint(MNN::Interpreter::MAX_TUNING_NUMBER, 5);
 
   MNN::ScheduleConfig config;
   config.type = MNN_FORWARD_CPU;
-  config.numThread = thread_num_;
+  config.numThread = num_threads;
   MNN::BackendConfig backend_config;
   backend_config.precision = MNN::BackendConfig::Precision_Low;
   backend_config.power = MNN::BackendConfig::Power_High;
@@ -39,7 +38,7 @@ MnnSpeakerModel::MnnSpeakerModel(const std::string& model_path) {
 
   speaker_session_ = speaker_interpreter_->createSession(config);
   if (!speaker_session_) {
-    LOG(ERROR) << "Create session failed!";
+    LOG(ERROR) << "[MNN] Create session failed!";
     return;
   }
 }
@@ -56,37 +55,46 @@ void MnnSpeakerModel::ExtractEmbedding(
   unsigned int num_frames = feats.size();
   unsigned int feat_dim = feats[0].size();
 
-  std::vector<int> input_dims = {1, static_cast<int>(num_frames),
-                                 static_cast<int>(feat_dim)};
-
   // 1. input tensor
-  auto inputTensor =
+  auto input_tensor =
       speaker_interpreter_->getSessionInput(speaker_session_, nullptr);
-  speaker_interpreter_->resizeTensor(inputTensor, input_dims);
-  speaker_interpreter_->resizeSession(speaker_session_);
 
-  std::shared_ptr<MNN::Tensor> nchwTensor(
-      new MNN::Tensor(inputTensor, MNN::Tensor::CAFFE));
-  for (size_t i = 0; i < num_frames; ++i) {
-    for (size_t j = 0; j < feat_dim; ++j) {
-      nchwTensor->host<float>()[i * feat_dim + j] = feats[i][j];
+  auto shape = input_tensor->shape();
+  CHECK_EQ(shape.size(), 3);
+  if (shape[0] == -1 || shape[1] == -1 || shape[2] == -1) {
+    VLOG(2) << "dynamic shape.";
+    std::vector<int> input_dims = {1, static_cast<int>(num_frames),
+                                   static_cast<int>(feat_dim)};
+    speaker_interpreter_->resizeTensor(input_tensor, input_dims);
+    speaker_interpreter_->resizeSession(speaker_session_);
+  } else {
+    if (shape[0] != 1 || shape[1] != num_frames || shape[2] != feat_dim) {
+      LOG(ERROR) << "shape error!";
+      return;
     }
   }
-  // nchwTensor->host<float>() = feats.data();
-  inputTensor->copyFromHostTensor(nchwTensor.get());
+
+  std::shared_ptr<MNN::Tensor> nchw_tensor(
+      new MNN::Tensor(input_tensor, MNN::Tensor::CAFFE));  // NCHW
+  for (size_t i = 0; i < num_frames; ++i) {
+    for (size_t j = 0; j < feat_dim; ++j) {
+      nchw_tensor->host<float>()[i * feat_dim + j] = feats[i][j];
+    }
+  }
+  input_tensor->copyFromHostTensor(nchw_tensor.get());
 
   // 2. run session
   speaker_interpreter_->runSession(speaker_session_);
 
   // 3. output
   auto output = speaker_interpreter_->getSessionOutput(speaker_session_, NULL);
-  std::shared_ptr<MNN::Tensor> outputTensor(
+  LOG(INFO) << output->getDimensionType();
+  std::shared_ptr<MNN::Tensor> output_tensor(
       new MNN::Tensor(output, MNN::Tensor::CAFFE));
-  output->copyToHostTensor(outputTensor.get());
-  LOG(INFO) << "outputTensor->elementSize(): " << outputTensor->elementSize();
-  embed->reserve(outputTensor->elementSize());
-  for (int i = 0; i < outputTensor->elementSize(); ++i) {
-    embed->push_back(outputTensor->host<float>()[i]);
+  output->copyToHostTensor(output_tensor.get());
+  embed->reserve(output_tensor->elementSize());
+  for (int i = 0; i < output_tensor->elementSize(); ++i) {
+    embed->push_back(output->host<float>()[i]);
   }
 }
 

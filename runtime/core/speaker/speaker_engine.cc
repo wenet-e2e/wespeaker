@@ -52,7 +52,7 @@ SpeakerEngine::SpeakerEngine(const std::string& model_path, const int feat_dim,
 #endif
   model_ = std::make_shared<OnnxSpeakerModel>(model_path);
 #elif USE_MNN
-  model_ = std::make_shared<MnnSpeakerModel>(model_path);
+  model_ = std::make_shared<MnnSpeakerModel>(model_path, kNumGemmThreads);
 #elif USE_BPU
   model_ = std::make_shared<BpuSpeakerModel>(model_path);
 #endif

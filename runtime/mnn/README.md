@@ -1,16 +1,37 @@
 # MNN backend on WeSpeaker
 
-* Step 1. Export your experiment model to MNN by [export_mnn.py](../../wespeaker/bin/export_mnn.py)
+* Step 1. Export your experiment model to MNN
+
+First, export your experiment model to ONNX by [export_onnx.py](../../wespeaker/bin/export_onnx.py).
 
 ``` sh
-exp=exp  # Change it to your experiment dir
-onnx_dir=mnn
-python wespeaker/bin/export_mnn.py \
-  --config $exp/config.yaml \
-  --checkpoint $exp/avg_model.pt \
-  --output_model $onnx_dir/final.mnn
+# 1. dynamic shape
+python wespeaker/bin/export_onnx.py \
+  --config config.yaml \
+  --checkpoint model.pt \
+  --output_model model.onnx
+  # When it finishes, you can find `model.mnn`.
+# 2. static shape
+# python wespeaker/bin/export_onnx.py \
+#   --config config.yaml \
+#   --checkpoint model.pt \
+#   --output_model model.onnx \
+#   --num_frames 198
+```
 
-# When it finishes, you can find `final.mnn`.
+Second, export ONNX to MNN by [export_mnn.py](../../wespeaker/bin/export_mnn.py).
+
+``` sh
+# 1. dynamic shape
+python wespeaker/bin/export_mnn.py \
+  --onnx_model model.onnx \
+  --output_model model.mnn
+# When it finishes, you can find `model.mnn`.
+# 2. static shape
+# python wespeaker/bin/export_mnn.py \
+#   --onnx_model model.onnx \
+#   --output_model model.mnn \
+#   --num_frames 198
 ```
 
 * Step 2. Build. The build requires cmake 3.14 or above, and gcc/g++ 5.4 or above.

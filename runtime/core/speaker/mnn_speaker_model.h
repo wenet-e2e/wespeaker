@@ -31,7 +31,7 @@ namespace wespeaker {
 
 class MnnSpeakerModel : public SpeakerModel {
  public:
-  explicit MnnSpeakerModel(const std::string& model_path);
+  explicit MnnSpeakerModel(const std::string& model_path, int num_threads);
 
   void ExtractEmbedding(const std::vector<std::vector<float>>& feats,
                         std::vector<float>* embed) override;
@@ -41,8 +41,6 @@ class MnnSpeakerModel : public SpeakerModel {
   // session
   std::shared_ptr<MNN::Interpreter> speaker_interpreter_;
   MNN::Session* speaker_session_ = nullptr;
-  // node names
-  int thread_num_ = 1;
 };
 
 }  // namespace wespeaker
