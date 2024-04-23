@@ -85,7 +85,7 @@ mnn_dir=your_model_dir
 1. RTF
 > num_threads = 1
 >
-> samples_per_chunk = 3200
+> samples_per_chunk = 32000
 >
 > Intel(R) Xeon(R) CPU E5-2630 v4 @ 2.20GHz
 
