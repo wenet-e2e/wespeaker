@@ -17,6 +17,7 @@ import os
 import re
 from pprint import pformat
 
+import wandb
 import fire
 import tableprint as tp
 import torch
@@ -239,6 +240,15 @@ def train(config='conf/config.yaml', **kwargs):
         header = ['Epoch', 'Batch', 'Lr', 'Margin', 'Loss', "Acc"]
         for line in tp.header(header, width=10, style='grid').split('\n'):
             logger.info(line)
+        # WanDB setup
+        wandb.init(
+            project='naki-waspeaker',
+            config=configs,
+            name=configs['exp_dir']
+        )
+        # Optional: track gradients
+        wandb.watch(model)
+
     dist.barrier(device_ids=[gpu])  # synchronize here
 
     scaler = torch.cuda.amp.GradScaler(enabled=configs['enable_amp'])

@@ -15,6 +15,8 @@
 
 import tableprint as tp
 
+import os
+import wandb
 import torch
 import torchnet as tnt
 
@@ -33,6 +35,9 @@ def run_epoch(dataloader,
               log_batch_interval=100,
               device=torch.device('cuda')):
     model.train()
+    # Get rank for WanDB logging
+    rank = int(os.environ['RANK'])
+
     # By default use average pooling
     loss_meter = tnt.meter.AverageValueMeter()
     acc_meter = tnt.meter.ClassErrorMeter(accuracy=True)
@@ -79,6 +84,17 @@ def run_epoch(dataloader,
                        (loss_meter.value()[0], acc_meter.value()[0]),
                        width=10,
                        style='grid'))
+
+            # Log metrics to WanDB
+            wandb.log({
+                "epoch": epoch,
+                "step": i,  # global step across all epochs
+                "global_step": epoch * len(dataloader) + i,  # global step across all epochs
+                "rank": rank,
+                "margin": margin_scheduler.get_margin() + (loss_meter.value()[0]),
+                "loss": loss_meter.value()[0],
+                "accuracy": acc_meter.value()[0],
+            })
 
         if (i + 1) == epoch_iter:
             break
