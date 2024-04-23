@@ -233,6 +233,15 @@ def train(config='conf/config.yaml', **kwargs):
             data = yaml.dump(configs)
             fout.write(data)
 
+
+    # WanDB setup
+    wandb.init(
+        project='naki-waspeaker',
+        config=configs,
+        group=configs['exp_dir'],
+        resume=True,
+    )
+
     # training
     dist.barrier(device_ids=[gpu])  # synchronize here
     if rank == 0:
@@ -240,13 +249,6 @@ def train(config='conf/config.yaml', **kwargs):
         header = ['Epoch', 'Batch', 'Lr', 'Margin', 'Loss', "Acc"]
         for line in tp.header(header, width=10, style='grid').split('\n'):
             logger.info(line)
-        # WanDB setup
-        wandb.init(
-            project='naki-waspeaker',
-            config=configs,
-            name=configs['exp_dir'],
-            resume=True,
-        )
         # Optional: track gradients
         wandb.watch(model)
 
