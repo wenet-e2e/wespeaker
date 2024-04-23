@@ -88,7 +88,6 @@ void MnnSpeakerModel::ExtractEmbedding(
 
   // 3. output
   auto output = speaker_interpreter_->getSessionOutput(speaker_session_, NULL);
-  LOG(INFO) << output->getDimensionType();
   std::shared_ptr<MNN::Tensor> output_tensor(
       new MNN::Tensor(output, MNN::Tensor::CAFFE));
   output->copyToHostTensor(output_tensor.get());

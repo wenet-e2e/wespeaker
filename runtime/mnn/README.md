@@ -79,3 +79,18 @@ mnn_dir=your_model_dir
     --speaker_model_path $onnx_dir/final.onnx \
     --embedding_size 256
 ```
+
+## Benchmark
+
+1. RTF
+> num_threads = 1
+>
+> samples_per_chunk = 3200
+>
+> Intel(R) Xeon(R) CPU E5-2630 v4 @ 2.20GHz
+
+| Model               | Params  | FLOPs    | engine        | RTF      |
+| :------------------ | :------ | :------- | :------------ | :------- |
+| ResNet-34           | 6.63 M  | 4.55 G   | onnxruntime   | 0.1377   |
+| ResNet-34           | 6.63 M  | 4.55 G   | mnn           | 0.1333   |
+| ResNet-34           | 6.63 M  | 4.55 G   | mnn mini_libs | 0.05262  |
