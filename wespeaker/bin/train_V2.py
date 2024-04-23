@@ -244,7 +244,8 @@ def train(config='conf/config.yaml', **kwargs):
         wandb.init(
             project='naki-waspeaker',
             config=configs,
-            name=configs['exp_dir']
+            name=configs['exp_dir'],
+            resume=True,
         )
         # Optional: track gradients
         wandb.watch(model)
