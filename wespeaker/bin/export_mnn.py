@@ -70,8 +70,8 @@ def main():
     # 1. convert onnx to mnn
     if args.num_frames > 0:
         os.system(
-            "MNNConvert -f ONNX --modelFile {} --MNNModel {} --bizCode MNN --saveStaticModel"
-            .format(args.onnx_model, args.output_model))
+            "MNNConvert -f ONNX --modelFile {} --MNNModel {} --bizCode MNN \
+            --saveStaticModel".format(args.onnx_model, args.output_model))
     else:
         os.system(
             "MNNConvert -f ONNX --modelFile {} --MNNModel {} --bizCode MNN".
