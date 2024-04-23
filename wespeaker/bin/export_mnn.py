@@ -77,10 +77,10 @@ def main():
             "MNNConvert -f ONNX --modelFile {} --MNNModel {} --bizCode MNN".
             format(args.onnx_model, args.output_model))
     logger.info("Exported MNN model to %s", args.output_model)
-    # 3. print model info
+    # 2. print model info
     os.system("MNNConvert -f MNN --modelFile {} --info".format(
         args.output_model))
-    # 4. check precision
+    # 3. check precision
     torch.manual_seed(0)
     if args.num_frames > 0:
         in0 = torch.rand(1, args.num_frames, 80, dtype=torch.float)
