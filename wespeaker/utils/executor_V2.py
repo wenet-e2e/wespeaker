@@ -89,7 +89,7 @@ def run_epoch(dataloader,
             wandb.log({
                 "epoch": epoch,
                 "step": i,  # global step across all epochs
-                "global_step": epoch * len(dataloader) + i,  # global step across all epochs
+                "global_step": cur_iter,  # global step across all epochs
                 "rank": rank,
                 "margin": margin_scheduler.get_margin() + (loss_meter.value()[0]),
                 "loss": loss_meter.value()[0],
