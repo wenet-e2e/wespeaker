@@ -10,7 +10,7 @@ python wespeaker/bin/export_onnx.py \
   --config config.yaml \
   --checkpoint model.pt \
   --output_model model.onnx
-  # When it finishes, you can find `model.mnn`.
+  # When it finishes, you can find `model.onnx`.
 # 2. static shape
 # python wespeaker/bin/export_onnx.py \
 #   --config config.yaml \
@@ -51,13 +51,10 @@ cmake --build .
 ``` sh
 export GLOG_logtostderr=1
 export GLOG_v=2
-wav_scp=your_test_wav_scp
-mnn_dir=your_model_dir
-embed_out=your_embedding_txt
 ./build/bin/extract_emb_main \
-  --wav_scp $wav_scp \
-  --result $embed_out \
-  --speaker_model_path $mnn_dir/final.mnn \
+  --wav_scp wav.scp \
+  --result embedding.txt \
+  --speaker_model_path model.mnn \
   --embedding_size 256 \
   --samples_per_chunk  80000  # 5s
 ```
@@ -71,12 +68,11 @@ embed_out=your_embedding_txt
 ```sh
 export GLOG_logtostderr=1
 export GLOG_v=2
-mnn_dir=your_model_dir
 ./build/bin/asv_main \
     --enroll_wav wav1_path \
     --test_wav wav2_path \
     --threshold 0.5 \
-    --speaker_model_path $onnx_dir/final.onnx \
+    --speaker_model_path model.mnn \
     --embedding_size 256
 ```
 
