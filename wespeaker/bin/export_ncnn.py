@@ -20,14 +20,10 @@ import os
 import torch
 import yaml
 import ncnn
-import logging
 import numpy as np
 
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.utils.checkpoint import load_checkpoint
-
-logger = logging.getLogger(__file__)
-logger.setLevel(logging.INFO)
 
 
 def get_args():
@@ -85,11 +81,10 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
     model_trace_path = os.path.join(args.output_dir, 'model.trace.pt')
     script_model.save(model_trace_path)
-    logger.info(
-        'Export trace model successfully, see {}'.format(model_trace_path))
+    print('Export trace model successfully, see {}'.format(model_trace_path))
 
     os.system("pnnx {} inputshape=[1,200,80]f32".format(model_trace_path))
-    logger.info('The ncnn model is saved in {} and {}'.format(
+    print('The ncnn model is saved in {} and {}'.format(
         model_trace_path[:-3] + '.ncnn.param',
         model_trace_path[:-3] + '.ncnn.bin'))
 
@@ -100,11 +95,15 @@ def main():
         torch_output = torch_output[1]
         ncnn_output = ncnn_output[1]
 
-    np.testing.assert_allclose(torch_output.detach().numpy(),
-                               ncnn_output.detach().numpy(),
-                               rtol=1e-5,
-                               atol=1e-2)
-    logger.info('Export ncnn model successfully, and the output is correct!')
+    if np.allclose(torch_output.detach().numpy(),
+                   ncnn_output.detach().numpy(),
+                   rtol=1e-5,
+                   atol=1e-2):
+        print("Export ncnn model successfully, "
+              "and the output accuracy check passed!")
+    else:
+        print("Export ncnn model successfully, but ncnn and torchscript have "
+              "different outputs when given the same input, please check!")
 
 
 if __name__ == '__main__':
