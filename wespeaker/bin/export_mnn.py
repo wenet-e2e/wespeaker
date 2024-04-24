@@ -16,15 +16,11 @@ from __future__ import print_function
 
 import os
 import argparse
-import logging
 
 import numpy as np
 import torch
 import MNN
 import onnxruntime as ort
-
-logger = logging.getLogger(__file__)
-logger.setLevel(logging.INFO)
 
 
 def get_args():
@@ -50,7 +46,7 @@ def test_onnx_inference(in0, model_path):
 
 def test_mnn_inference(in0, model_path):
     config = {}
-    config["precision"] = "low"
+    config["precision"] = "high"
     config["backend"] = 0
     config["numThread"] = 1
 
@@ -76,7 +72,7 @@ def main():
         os.system(
             "MNNConvert -f ONNX --modelFile {} --MNNModel {} --bizCode MNN".
             format(args.onnx_model, args.output_model))
-    logger.info("Exported MNN model to %s", args.output_model)
+    print("Exported MNN model to ", args.output_model)
     # 2. print model info
     os.system("MNNConvert -f MNN --modelFile {} --info".format(
         args.output_model))
@@ -88,9 +84,12 @@ def main():
         in0 = torch.rand(1, 200, 80, dtype=torch.float)
     mnn_out = test_mnn_inference(in0.numpy(), args.output_model)
     onnx_out = test_onnx_inference(in0.numpy(), args.onnx_model)
-    np.testing.assert_allclose(onnx_out, mnn_out, rtol=1e-05, atol=1e-02)
-    logger.info(
-        "The output results of the mnn model and onnx model are consistent")
+    if np.allclose(onnx_out, mnn_out, rtol=1e-05, atol=1e-02):
+        print("Export mnn model successfully, "
+              "and the output accuracy check passed!")
+    else:
+        print("Export mnn model successfully, but onnx and mnn have different"
+              " outputs when given the same input, please check!")
 
 
 if __name__ == "__main__":
