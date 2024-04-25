@@ -165,7 +165,7 @@ def Gemini_DF_ResNet237(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=
 
 if __name__ == '__main__':
     x = torch.zeros(1, 200, 80)
-    model = Gemini_DF_ResNet183(80, 256, 'TSTP')
+    model = Gemini_DF_ResNet114(80, 256, 'TSTP')
     model.eval()
     out = model(x)
     print(out[-1].size())
