@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 project(wespeaker VERSION 0.1)
 
-option(ONNX "whether to build with ONNX" OFF)
-option(GPU "whether to build with GPU" OFF)
-option(BPU "whether to build with BPU" ON)
+set(MNN ON CACHE BOOL "whether to build with MNN")
+option(MINI_LIBS "whether to build minimum libraies with MNN" OFF)
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
@@ -17,11 +16,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -pthread -fPIC")
 
 # Include all dependency
-if(ONNX)
-  include(onnx)
-endif()
-if(BPU)
-  include(bpu)
+if(MNN)
+  include(mnn)
 endif()
 include(glog)
 include(gflags)
