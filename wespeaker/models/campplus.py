@@ -92,7 +92,8 @@ class CAMLayer(nn.Module):
                  padding,
                  dilation,
                  bias,
-                 reduction=2):
+                 reduction=2,
+                 ncnn_mode=False):
         super(CAMLayer, self).__init__()
         self.linear_local = nn.Conv1d(bn_channels,
                                       out_channels,
@@ -105,6 +106,7 @@ class CAMLayer(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.linear2 = nn.Conv1d(bn_channels // reduction, out_channels, 1)
         self.sigmoid = nn.Sigmoid()
+        self.ncnn_mode = ncnn_mode
 
     def forward(self, x):
         y = self.linear_local(x)
@@ -127,9 +129,14 @@ class CAMLayer(nn.Module):
         else:
             raise ValueError('Wrong segment pooling type.')
         shape = seg.shape
-        seg = seg.unsqueeze(-1).expand(shape[0], shape[1], shape[2],
-                                       seg_len).reshape(
-                                           shape[0], shape[1], -1)
+        if not self.ncnn_mode:
+            seg = seg.unsqueeze(-1).expand(shape[0], shape[1], shape[2],
+                                           seg_len).reshape(
+                                               shape[0], shape[1], -1)
+        else:
+            seg = (seg.unsqueeze(-1) +
+                   torch.zeros(shape[0], shape[1], shape[2], seg_len)).reshape(
+                       shape[0], shape[1], -1).to(seg.device)
         seg = seg[..., :x.shape[-1]]
         return seg
 
@@ -144,7 +151,8 @@ class CAMDenseTDNNLayer(nn.Module):
                  stride=1,
                  dilation=1,
                  bias=False,
-                 config_str='batchnorm-relu'):
+                 config_str='batchnorm-relu',
+                 ncnn_mode=False):
         super(CAMDenseTDNNLayer, self).__init__()
         assert kernel_size % 2 == 1, 'Expect equal paddings, \
                 but got even kernel size ({})'.format(kernel_size)
@@ -158,7 +166,8 @@ class CAMDenseTDNNLayer(nn.Module):
                                   stride=stride,
                                   padding=padding,
                                   dilation=dilation,
-                                  bias=bias)
+                                  bias=bias,
+                                  ncnn_mode=ncnn_mode)
 
     def bn_function(self, x):
         return self.linear1(self.nonlinear1(x))
@@ -180,7 +189,8 @@ class CAMDenseTDNNBlock(nn.ModuleList):
                  stride=1,
                  dilation=1,
                  bias=False,
-                 config_str='batchnorm-relu'):
+                 config_str='batchnorm-relu',
+                 ncnn_mode=False):
         super(CAMDenseTDNNBlock, self).__init__()
         for i in range(num_layers):
             layer = CAMDenseTDNNLayer(in_channels=in_channels +
@@ -191,7 +201,8 @@ class CAMDenseTDNNBlock(nn.ModuleList):
                                       stride=stride,
                                       dilation=dilation,
                                       bias=bias,
-                                      config_str=config_str)
+                                      config_str=config_str,
+                                      ncnn_mode=ncnn_mode)
             self.add_module('tdnnd%d' % (i + 1), layer)
 
     def forward(self, x):
@@ -338,7 +349,8 @@ class CAMPPlus(nn.Module):
                  growth_rate=32,
                  bn_size=4,
                  init_channels=128,
-                 config_str='batchnorm-relu'):
+                 config_str='batchnorm-relu',
+                 ncnn_mode=False):
         super(CAMPPlus, self).__init__()
 
         self.head = FCM(block=BasicResBlock,
@@ -367,7 +379,8 @@ class CAMPPlus(nn.Module):
                                       bn_channels=bn_size * growth_rate,
                                       kernel_size=kernel_size,
                                       dilation=dilation,
-                                      config_str=config_str)
+                                      config_str=config_str,
+                                      ncnn_mode=ncnn_mode)
             self.xvector.add_module('block%d' % (i + 1), block)
             channels = channels + num_layers * growth_rate
             self.xvector.add_module(
@@ -381,7 +394,8 @@ class CAMPPlus(nn.Module):
         self.xvector.add_module('out_nonlinear',
                                 get_nonlinear(config_str, channels))
 
-        self.pool = getattr(pooling_layers, pooling_func)(in_dim=channels)
+        self.pool = getattr(pooling_layers, pooling_func)(in_dim=channels,
+                                                          ncnn_mode=ncnn_mode)
         self.pool_out_dim = self.pool.get_out_dim()
         self.xvector.add_module('stats', self.pool)
         self.xvector.add_module(
@@ -410,6 +424,20 @@ if __name__ == '__main__':
 
     num_params = sum(param.numel() for param in model.parameters())
     print("{} M".format(num_params / 1e6))
+
+    state_dict = model.state_dict()
+    model_ncnn = CAMPPlus(feat_dim=80,
+                          embed_dim=512,
+                          pooling_func='TSTP',
+                          ncnn_mode=True)
+    model_ncnn.eval()
+    model_ncnn.load_state_dict(state_dict)
+    out_ncnn = model_ncnn(x)
+
+    torch.testing.assert_allclose(out.detach().numpy(),
+                                  out_ncnn.detach().numpy(),
+                                  rtol=1e-5,
+                                  atol=1e-3)
 
     # from thop import profile
     # x_np = torch.randn(1, 200, 80)

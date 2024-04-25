@@ -137,13 +137,18 @@ class ASTP(nn.Module):
         assert len(x.shape) == 3
 
         if self.global_context_att:
-            context_mean = torch.mean(x, dim=-1, keepdim=True).expand_as(x)
             if not self.ncnn_mode:
+                context_mean = torch.mean(x, dim=-1, keepdim=True).expand_as(x)
                 context_std = torch.sqrt(
                     torch.var(x, dim=-1, keepdim=True) + 1e-7).expand_as(x)
             else:
-                context_std = torch.sqrt(
-                    var_wrapper(x, dim=-1, keepdim=True) + 1e-7).expand_as(x)
+                context_mean_tmp = torch.mean(x, dim=-1, keepdim=True)
+                context_mean = context_mean_tmp + torch.zeros_like(
+                    x, dtype=x.dtype).to(x.device)
+                context_std_tmp = torch.sqrt(
+                    var_wrapper(x, dim=-1, keepdim=True) + 1e-7)
+                context_std = context_std_tmp + torch.zeros_like(
+                    x, dtype=x.dtype).to(x.device)
             x_in = torch.cat((x, context_mean, context_std), dim=1)
         else:
             x_in = x
@@ -331,5 +336,19 @@ if __name__ == '__main__':
 
     torch.testing.assert_close(torch.var(data, dim=-1),
                                var_wrapper(data, dim=-1),
-                               rtol=1e-2,
-                               atol=1e-2)
+                               rtol=1e-5,
+                               atol=1e-3)
+    # check the ASTP
+    astp = ASTP(512 * 10)
+    state_dict = {}
+    for name, param in astp.named_parameters():
+        state_dict[name] = param
+    out_astp = astp(data)
+    astp_ncnn = ASTP(512 * 10, ncnn_mode=True)
+    astp_ncnn.load_state_dict(state_dict)
+    out_astp_ncnn = astp_ncnn(data)
+
+    torch.testing.assert_close(out_astp.detach().numpy(),
+                               out_astp_ncnn.detach().numpy(),
+                               rtol=1e-5,
+                               atol=1e-3)

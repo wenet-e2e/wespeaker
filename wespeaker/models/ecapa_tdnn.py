@@ -164,7 +164,8 @@ class ECAPA_TDNN(nn.Module):
                  embed_dim=192,
                  pooling_func='ASTP',
                  global_context_att=False,
-                 emb_bn=False):
+                 emb_bn=False,
+                 ncnn_mode=False):
         super().__init__()
 
         self.layer1 = Conv1dReluBn(feat_dim,
@@ -194,7 +195,9 @@ class ECAPA_TDNN(nn.Module):
         out_channels = 512 * 3
         self.conv = nn.Conv1d(cat_channels, out_channels, kernel_size=1)
         self.pool = getattr(pooling_layers, pooling_func)(
-            in_dim=out_channels, global_context_att=global_context_att)
+            in_dim=out_channels,
+            global_context_att=global_context_att,
+            ncnn_mode=ncnn_mode)
         self.pool_out_dim = self.pool.get_out_dim()
         self.bn = nn.BatchNorm1d(self.pool_out_dim)
         self.linear = nn.Linear(self.pool_out_dim, embed_dim)
@@ -221,44 +224,58 @@ class ECAPA_TDNN(nn.Module):
         return out
 
 
-def ECAPA_TDNN_c1024(feat_dim, embed_dim, pooling_func='ASTP', emb_bn=False):
+def ECAPA_TDNN_c1024(feat_dim,
+                     embed_dim,
+                     pooling_func='ASTP',
+                     emb_bn=False,
+                     ncnn_mode=False):
     return ECAPA_TDNN(channels=1024,
                       feat_dim=feat_dim,
                       embed_dim=embed_dim,
                       pooling_func=pooling_func,
-                      emb_bn=emb_bn)
+                      emb_bn=emb_bn,
+                      ncnn_mode=ncnn_mode)
 
 
 def ECAPA_TDNN_GLOB_c1024(feat_dim,
                           embed_dim,
                           pooling_func='ASTP',
-                          emb_bn=False):
+                          emb_bn=False,
+                          ncnn_mode=False):
     return ECAPA_TDNN(channels=1024,
                       feat_dim=feat_dim,
                       embed_dim=embed_dim,
                       pooling_func=pooling_func,
                       global_context_att=True,
-                      emb_bn=emb_bn)
+                      emb_bn=emb_bn,
+                      ncnn_mode=ncnn_mode)
 
 
-def ECAPA_TDNN_c512(feat_dim, embed_dim, pooling_func='ASTP', emb_bn=False):
+def ECAPA_TDNN_c512(feat_dim,
+                    embed_dim,
+                    pooling_func='ASTP',
+                    emb_bn=False,
+                    ncnn_mode=False):
     return ECAPA_TDNN(channels=512,
                       feat_dim=feat_dim,
                       embed_dim=embed_dim,
                       pooling_func=pooling_func,
-                      emb_bn=emb_bn)
+                      emb_bn=emb_bn,
+                      ncnn_mode=ncnn_mode)
 
 
 def ECAPA_TDNN_GLOB_c512(feat_dim,
                          embed_dim,
                          pooling_func='ASTP',
-                         emb_bn=False):
+                         emb_bn=False,
+                         ncnn_mode=False):
     return ECAPA_TDNN(channels=512,
                       feat_dim=feat_dim,
                       embed_dim=embed_dim,
                       pooling_func=pooling_func,
                       global_context_att=True,
-                      emb_bn=emb_bn)
+                      emb_bn=emb_bn,
+                      ncnn_mode=ncnn_mode)
 
 
 if __name__ == '__main__':
@@ -272,6 +289,14 @@ if __name__ == '__main__':
 
     num_params = sum(param.numel() for param in model.parameters())
     print("{} M".format(num_params / 1e6))
+
+    model_ncnn_mode = ECAPA_TDNN_GLOB_c512(feat_dim=80,
+                                           embed_dim=256,
+                                           pooling_func='ASTP',
+                                           ncnn_mode=True)
+    model_ncnn_mode.eval()
+    out_ncnn_mode = model_ncnn_mode(x)
+    torch.testing.assert_allclose(out, out_ncnn_mode, rtol=1e-5, atol=1e-3)
 
     # from thop import profile
     # x_np = torch.randn(1, 200, 80)
