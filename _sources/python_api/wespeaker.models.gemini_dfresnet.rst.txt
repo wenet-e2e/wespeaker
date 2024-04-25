@@ -1,0 +1,7 @@
+wespeaker.models.gemini\_dfresnet module
+========================================
+
+.. automodule:: wespeaker.models.gemini_dfresnet
+   :members:
+   :undoc-members:
+   :show-inheritance:

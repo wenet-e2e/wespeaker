@@ -16,6 +16,7 @@ Submodules
    wespeaker.models.convert_repvgg
    wespeaker.models.ecapa_tdnn
    wespeaker.models.eres2net
+   wespeaker.models.gemini_dfresnet
    wespeaker.models.pooling_layers
    wespeaker.models.projections
    wespeaker.models.repvgg
