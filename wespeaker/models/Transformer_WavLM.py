@@ -53,12 +53,17 @@ class WavLM_Base_MHFA(nn.Module):
         x = wav_and_flag
         # with torch.no_grad():
         rep, layer_results = self.model.extract_features(x[:,:16000*20], output_layer=13)
-        layer_reps = [x.transpose(0, 1) for x, _ in layer_results]
+
+        # T x B x C -> B x T x C 
+        layer_reps = [x.transpose(0, 1) for x, _ in layer_results] 
+        # L x B x T x C  -> C x B x T x L -> B x C x T x L
+        # Stacked layer representations: 
         x = torch.stack(layer_reps).transpose(0,-1).transpose(0,1)
         
         x = GradMultiply.apply(x, self.feature_grad_mult)
         
-        spk_embedding = self.back_end(x)
+        # Input x has shape: [Batch, Dim, Frame_len, Nb_Layer]
+        spk_embedding = self.back_end(x) # x: B x C x T x L
         
         return spk_embedding
 

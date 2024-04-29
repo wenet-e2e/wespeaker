@@ -32,7 +32,8 @@ class MHFA(nn.Module):
         # Input x has shape: [Batch, Dim, Frame_len, Nb_Layer]
 
         # Compute the key by taking a weighted sum of input across layers
-        k = torch.sum(x.mul(nn.functional.softmax(self.weights_k, dim=-1)), dim=-1).transpose(1, 2)
+        # B x C x T x L -> B x C x T -> B x T x C
+        k = torch.sum(x.mul(nn.functional.softmax(self.weights_k, dim=-1)), dim=-1).transpose(1, 2) 
 
         # Compute the value in a similar fashion
         v = torch.sum(x.mul(nn.functional.softmax(self.weights_v, dim=-1)), dim=-1).transpose(1, 2)
@@ -42,17 +43,18 @@ class MHFA(nn.Module):
         v = self.cmp_linear_v(v)
 
         # Compute attention weights using compressed keys
-        att_k = self.att_head(k) # B, T, H
+        att_k = self.att_head(k) # B x T x C -> B x T x H
 
         # Adjust dimensions for computing attention output
         v = v.unsqueeze(-2) # B, T, 1
 
         # Compute attention output by taking weighted sum of values using softmaxed attention weights
+        # pooling_outs dim: B x H x C
         pooling_outs = torch.sum(v.mul(nn.functional.softmax(att_k, dim=1).unsqueeze(-1)), dim=1)
 
         # Reshape the tensor before passing through the fully connected layer
         b, h, f = pooling_outs.shape
-        pooling_outs = pooling_outs.reshape(b, -1)
+        pooling_outs = pooling_outs.reshape(b, -1) # B x H x C -> B x (H x C)
 
         # Pass through fully connected layer to get the final output
         outs = self.pooling_fc(pooling_outs)
