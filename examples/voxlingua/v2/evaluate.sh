@@ -36,7 +36,7 @@ lm_config=conf/wavlm_base_MHFA_LR_lm.yaml
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "Prepare dataset ..."
-  ./local/prepare_data.sh --stage 2 --stop_stage 4 --data ${data}
+  ./local/prepare_voxlingua107_dev.sh --stage 2 --stop_stage 4 --data ${data}
 fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
