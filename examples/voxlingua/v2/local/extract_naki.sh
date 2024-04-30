@@ -17,10 +17,10 @@
 exp_dir=''
 model_path=''
 nj=4
-gpus="[0,1]"
+gpus="[0,1,2,3]"
 data_type="raw"  # shard/raw/feat
 data=data
-proj=naki_split
+proj=NAKI_SPLIT
 
 . tools/parse_options.sh
 set -e
@@ -35,7 +35,7 @@ count=${#data_name_array[@]}
 
 for i in $(seq 0 $(($count - 1))); do
   wavs_num=$(wc -l ${data_scp_path_array[$i]} | awk '{print $1}')
-  bash tools/extract_embedding.sh --exp_dir ${exp_dir} \
+  bash tools/extract_embedding_V2.sh --exp_dir ${exp_dir} \
     --model_path $model_path \
     --data_type ${data_type} \
     --data_list ${data_list_path_array[$i]} \

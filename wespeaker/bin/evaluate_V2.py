@@ -33,6 +33,13 @@ from wespeaker.utils.utils import spk2id
 from wespeaker.bin.train_V2 import SpeakerNet
 from wespeaker.models.projections import get_projection
 
+# TODO: Move LANG labels somewhere else 
+
+LANG="""ab af am ar as az ba be bg bn bo br bs ca ceb cs cy da de el en eo es et eu fa
+fi fo fr gl gn gu gv haw ha hi hr ht hu hy ia id is it iw ja jw ka kk km kn ko
+la lb ln lo lt lv mg mi mk ml mn mr ms mt my ne nl nn no oc pa pl ps pt ro ru
+sa sco sd si sk sl sn so sq sr su sv sw ta te tg th tk tl tr tt uk ur uz vi war
+yi yo zh""".split()
 
 def evaluate(config="conf/config.yaml", **kwargs):
     # parse configs first
@@ -46,6 +53,23 @@ def evaluate(config="conf/config.yaml", **kwargs):
     # Since the input length is not fixed, we set the built-in cudnn
     # auto-tuner to False
     torch.backends.cudnn.benchmark = False
+
+    # Get spk2id_dict with labels
+    data_label = configs["data_label"]
+    data_utt_spk_list = read_table(data_label)
+
+    
+    # TODO: Refactor this
+    # Add missing language labels so it the model's matches projection layer
+    current_lang = [ item[1] for item in data_utt_spk_list ]
+    for lng in LANG:
+        if lng not in current_lang:
+            data_utt_spk_list.append(["x", lng])
+
+    print(current_lang)
+    print(len(data_utt_spk_list))
+    spk2id_dict = spk2id(data_utt_spk_list)
+
 
     # projection layer
     configs["projection_args"]["embed_dim"] = configs["model_args"]["embed_dim"]
@@ -78,9 +102,6 @@ def evaluate(config="conf/config.yaml", **kwargs):
     test_conf["aug_prob"] = configs.get("aug_prob", 0.0)
     test_conf["filter"] = False
 
-    data_label = configs["data_label"]
-    data_utt_spk_list = read_table(data_label)
-    spk2id_dict = spk2id(data_utt_spk_list)
 
     dataset = Dataset(
         configs["data_type"],
@@ -104,32 +125,36 @@ def evaluate(config="conf/config.yaml", **kwargs):
     embed_ark = os.path.abspath(embed_ark)
     embed_scp = embed_ark[:-3] + "scp"
 
-    # TODO: Extract only the "embeddings" for eval but also input the accuracy.
-    # For short recordings do some "partitioning"
-
+    correct = 0
+    total = 0
     with torch.no_grad():
         with kaldiio.WriteHelper('ark,scp:' + embed_ark + "," +
                                  embed_scp) as writer:
-            for _, batch in tqdm(enumerate(dataloader)):
+            for _, batch in (enumerate(dataloader)):
                 utts = batch["key"]
                 targets = batch["label"]
                 features = batch["feat"]
                 features = features.float().to(device)  # (B,T,F)
-
+                
                 # Forward through model
-                outputs = model(features)  # embed or (embed_a, embed_b)
+                outputs = model(features, targets.float().to(device))  # embed or (embed_a, embed_b)
                 embeds = outputs[-1] if isinstance(outputs, tuple) else outputs
+                embeds = embeds.cpu() # (B,F)
+
+                print(utts[0])
+                print(torch.argmax(embeds))
+                print(targets[0])
+
+                correct += (torch.argmax(embeds) == targets)
+
                 embeds = embeds.cpu().detach().numpy()  # (B,F)
 
-                correct += (torch.argmax(embeds, axis=0) == targets).sum()
                 total += len(targets)
 
                 for i, utt in enumerate(utts):
                     embed = embeds[i]
                     writer(utt, embed)
 
-        correct = correct.item()
-        total = total.item()
         print("Correct:  ", correct)
         print("Total:    ", total)
         print("Accuracy: ", correct / total)

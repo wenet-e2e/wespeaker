@@ -7,24 +7,24 @@
 
 . ./path.sh || exit 1
 
-stage=1
-stop_stage=1
+stage=3
+stop_stage=3
 
 # data=data
 # data="/scratch/project/open-28-58/xodehn09/data"
 # data="/mnt/proj3/open-27-67/xodehn09/data/16kHz/NAKI/SPLIT"
 data="${DATA_DIR}"
 
-export OMP_NUM_THREADS=32
+export OMP_NUM_THREADS=8
 # export LOGLEVEL=DEBUG
 
 data_type="raw"  # shard/raw
 
 # WavLM pre-trained
 config=conf/wavlm_base_MHFA_LR.yaml
-exp_dir=exp/WavLM-BasePlus-FullFineTuning-MHFA-emb256-3s-LRS10-Epoch40
+exp_dir=exp/WavLM-BasePlus-FullFineTuning-MHFA-emb256-3s-LRS10-Epoch40-no-margin
 
-gpus="[0]"
+gpus="[0,1]"
 checkpoint=
 
 score_norm_method="asnorm"  # asnorm/snorm
@@ -40,7 +40,7 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
 fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
-  echo "Covert eval data to ${data_type}..."
+  echo "Convert eval data to ${data_type}..."
 
   for dset in voxlingua107_dev; do
     if [ $data_type == "shard" ]; then
@@ -70,6 +70,10 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   model_path=$exp_dir/models/avg_model.pt
   tools/evaluate_V2.sh \
     --exp_dir $exp_dir --model_path $model_path \
-    --nj 1 --gpus $gpus --data_type ${data_type} --data ${data}
+    --nj 1 --gpus $gpus --data_type ${data_type} \
+    --data_list ${data}/voxlingua107_dev/raw.list \
+    --store_dir voxlingua107_dev \
+    --data_label ${data}/voxlingua107_dev/utt2spk
+
 
 fi

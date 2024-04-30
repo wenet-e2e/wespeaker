@@ -19,6 +19,7 @@ exp_dir='exp/XVEC'
 model_path='avg_model.pt'
 data_type='shard'  # shard/raw/feat
 data_list='shard.list'  # shard.list/raw.list/feat.list
+data_label='utt2spk'
 wavs_num=
 store_dir=
 batch_size=1
@@ -27,16 +28,16 @@ nj=4
 reverb_data=data/rirs/lmdb
 noise_data=data/musan/lmdb
 aug_prob=0.0
-gpus="[0,1]"
+gpus="[0]"
 
 . tools/parse_options.sh
 set -e
 
-embed_dir=${exp_dir}/embeddings/${store_dir}
+embed_dir=${exp_dir}/scores/${store_dir}
 log_dir=${embed_dir}/log
 [ ! -d ${log_dir} ] && mkdir -p ${log_dir}
 
-# split the data_list file into sub_file, then we can use multi-gpus to extract embeddings
+# split the data_list file into sub_file, then we can use multi-gpus to extract score
 data_num=$(wc -l ${data_list} | awk '{print $1}')
 subfile_num=$(($data_num / $nj + 1))
 split -l ${subfile_num} -d -a 3 ${data_list} ${log_dir}/split_
@@ -46,7 +47,7 @@ gpus=(`echo $gpus | cut -d '[' -f2 | cut -d ']' -f1 | tr ',' ' '`)
 echo "Evalute for ${store_dir} ..."
 
 for suffix in $(seq 0 $(($nj - 1))); do
-  echo "Evaluate embedding for split_${suffix} ..."
+  echo "Evaluate for split_${suffix} ..."
   idx=$[$suffix % $num_gpus]
   suffix=$(printf '%03d' $suffix)
   data_list_subfile=${log_dir}/split_${suffix}
@@ -56,6 +57,7 @@ for suffix in $(seq 0 $(($nj - 1))); do
     --model_path ${model_path} \
     --data_type ${data_type} \
     --data_list ${data_list_subfile} \
+    --data_label ${data_label} \
     --embed_ark ${embed_ark} \
     --batch-size ${batch_size} \
     --num-workers ${num_workers} \
@@ -69,8 +71,8 @@ wait
 
 cat ${embed_dir}/scores_*.scp >${embed_dir}/scores.scp
 embed_num=$(wc -l ${embed_dir}/scores.scp | awk '{print $1}')
-if [ $embed_num -eq $wavs_num ]; then
-  echo "Successfully extract embedding for ${store_dir}" | tee ${embed_dir}/extract.result
+if [ "$embed_num" -eq "$data_num" ]; then
+  echo "Successfully extract scores for ${store_dir}" | tee ${embed_dir}/extract.result
 else
-  echo "Failed to extract embedding for ${store_dir}" | tee ${embed_dir}/extract.result
+  echo "Failed to extract scores for ${store_dir}" | tee ${embed_dir}/extract.result
 fi

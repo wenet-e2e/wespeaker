@@ -22,9 +22,8 @@ data=data
 . tools/parse_options.sh || exit 1
 
 data=`realpath ${data}`
-download_dir=${data}/download_data
-rawdata_dir=${data}/raw_data
-dataset_dir=${data}/voxlingua107_dev
+dataset_dir=voxlingua107_dev
+rawdata_dir=${data}/${dataset_dir}/raw_data
 
 stage=1
 
@@ -42,7 +41,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   # find ${rawdata_dir}/RIRS_NOISES/simulated_rirs -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' >${data}/rirs/wav.scp
 
   # voxlingua107
-  find ${rawdata_dir}/${dataset_dir} -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' | sort >${data}/${dataset_dir}/wav.scp
+  find ${rawdata_dir} -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' | sort >${data}/${dataset_dir}/wav.scp
   awk '{print $1}' ${data}/${dataset_dir}/wav.scp | awk -F "/" '{print $0,$2}' >${data}/${dataset_dir}/utt2spk
   ./tools/utt2spk_to_spk2utt.pl ${data}/${dataset_dir}/utt2spk >${data}/${dataset_dir}/spk2utt
 
