@@ -120,11 +120,11 @@ void SpeakerEngine::ExtractFeature(
           }
           chunk_feat.insert(
               chunk_feat.end(), chunk_feat.begin(),
-              chunk_feat.begin() + num_chunk_frames_ - chunk_feat.size());
+              chunk_feat.begin() + (num_chunk_frames_ - chunk_feat.size()));
         } else {
           chunk_feat.insert(chunk_feat.end(), (*chunks_feat)[0].begin(),
-                            (*chunks_feat)[0].begin() + num_chunk_frames_ -
-                                chunk_feat.size());
+                            (*chunks_feat)[0].begin() + (num_chunk_frames_ -
+                                chunk_feat.size()));
         }
         CHECK_EQ(chunk_feat.size(), num_chunk_frames_);
         chunks_feat->emplace_back(chunk_feat);
