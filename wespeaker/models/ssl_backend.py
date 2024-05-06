@@ -608,6 +608,75 @@ class MHFA_Group_Conv2D_MeanStd(nn.Module):
 
         return outs
 
+class LWAP_Mean(nn.Module):
+    def __init__(self, inputs_dim=768, compression_dim=128, outputs_dim=256):
+        super(LWAP_Mean, self).__init__()
+
+        # Define learnable weights for computations across layers
+        self.weights_k = nn.Parameter(data=torch.ones(13), requires_grad=True)
+
+        # Initialize given parameters
+        self.ins_dim = inputs_dim
+        self.cmp_dim = compression_dim
+        self.ous_dim = outputs_dim
+
+        # Define compression linear layers for keys
+        self.cmp_linear_k = nn.Linear(self.ins_dim, self.cmp_dim)
+
+        self.pooling_fc = nn.Linear(self.cmp_dim, self.ous_dim)
+
+    def forward(self, x):
+        # Input x has shape: [Batch, Dim (Feature), Frame_len (Time), Nb_Layer]
+
+        # Compute the key by taking a weighted sum of input across layers
+        k = torch.sum(x.mul(nn.functional.softmax(self.weights_k, dim=-1)), dim=-1).transpose(1, 2)
+        x = self.cmp_linear_k(k)
+        x = x.transpose(1,2)
+
+        pooling_outs = torch.mean(x, dim=-1)
+
+        # Pass through fully connected layer to get the final output
+        outs = self.pooling_fc(pooling_outs)
+
+        return outs
+class LWAP_PoolDim(nn.Module):
+    def __init__(self, pool_dim=8, inputs_dim=768, compression_dim=128, outputs_dim=256):
+        super(LWAP_PoolDim, self).__init__()
+
+        # Define learnable weights for computations across layers
+        self.weights_k = nn.Parameter(data=torch.ones(13), requires_grad=True)
+
+        # Initialize given parameters
+        self.pol_dim = pool_dim
+        self.ins_dim = inputs_dim
+        self.cmp_dim = compression_dim
+        self.ous_dim = outputs_dim
+
+        # Define compression linear layers for keys
+        self.cmp_linear_k = nn.Linear(self.ins_dim, self.cmp_dim)
+
+        self.pooling_fc = nn.Linear(self.cmp_dim*self.pol_dim, self.ous_dim)
+
+    def forward(self, x):
+        # Input x has shape: [Batch, Dim (Feature), Frame_len (Time), Nb_Layer]
+        batch_size, _, frame_len, _ = x.shape
+
+        # Compute the key by taking a weighted sum of input across layers
+        k = torch.sum(x.mul(nn.functional.softmax(self.weights_k, dim=-1)), dim=-1).transpose(1, 2)
+        x = self.cmp_linear_k(k)
+        x = x.transpose(1,2)
+        
+        # Average pooling - frame_len must be divisible by pool_dim
+        avg_pooling = nn.AvgPool1d(frame_len//self.pol_dim, stride=None)
+        pooling_outs = avg_pooling(x)
+
+        pooling_outs = pooling_outs.reshape(batch_size, -1)
+
+        # Pass through fully connected layer to get the final output
+        outs = self.pooling_fc(pooling_outs)
+
+        return outs
+
 class TSTP(nn.Module):
     def __init__(self, head_nb=8, inputs_dim=768, compression_dim=128, outputs_dim=256):
         super(TSTP, self).__init__()

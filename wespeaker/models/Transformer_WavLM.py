@@ -36,6 +36,10 @@ class WavLM_Base_MHFA(nn.Module):
             self.back_end = MHFA_context(head_nb=head_nb,outputs_dim=embed_dim)
         elif pooling == 'G_MHFA_Conv2D_MeanStd':
             self.back_end = MHFA_Group_Conv2D_MeanStd(head_nb=head_nb, outputs_dim=embed_dim, group_nb=group)
+        elif pooling == 'LWAP_Mean':
+            self.back_end = LWAP_Mean(outputs_dim=embed_dim)
+        elif pooling == 'LWAP_PoolDim':
+            self.back_end = LWAP_PoolDim(pool_dim=8, outputs_dim=embed_dim)
         elif pooling == 'TSTP':
             self.back_end = TSTP(outputs_dim=embed_dim)
         elif pooling == 'ASTP':
