@@ -162,6 +162,16 @@ def train(config='conf/config.yaml', **kwargs):
         start_epoch = 1
     logger.info('start_epoch: {}'.format(start_epoch))
 
+
+    # logger.info("<== Compiling model ==>")
+    # import time
+    # start_time = time.time()
+    # model = torch.compile(model, mode="default")
+    # seconds = time.time() - start_time
+    # msg = f'Time taken to compile the model {time.strftime("%H:%M:%S",time.gmtime(seconds))}'
+    # logger.info(msg)
+
+
     # ddp_model
     model.cuda()
     # ddp_model = torch.nn.parallel.DistributedDataParallel(model)

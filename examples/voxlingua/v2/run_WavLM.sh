@@ -7,8 +7,8 @@
 
 . ./path.sh || exit 1
 
-stage=3
-stop_stage=3
+stage=4
+stop_stage=4
 
 # data=data
 # data="/scratch/project/open-28-58/xodehn09/data"
@@ -42,11 +42,11 @@ data_type="shard"  # shard/raw
 
 # WavLM pre-trained
 config=conf/wavlm_base_MHFA_LR.yaml
-exp_dir=exp/WavLM-BasePlus-FullFineTuning-MHFA-emb256-3s-LRS10-Epoch50
+exp_dir=exp/WavLM-BasePlus-FullFineTuning-MHFA-emb256-3s-LRS10-Epoch40
 
 gpus="[0,1,2,3]"
 num_avg=4
-checkpoint=
+checkpoint=exp/WavLM-BasePlus-FullFineTuning-MHFA-emb256-3s-LRS10-Epoch50/models_trained/model_23.pt
 
 trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
 score_norm_method="asnorm"  # asnorm/snorm

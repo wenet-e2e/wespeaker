@@ -20,14 +20,17 @@ nj=4
 gpus="[0,1,2,3]"
 data_type="raw"  # shard/raw/feat
 data=data
-proj=NAKI_SPLIT
+proj=NAKI_filtered/test
 
 . tools/parse_options.sh
 set -e
 
+
 data_name_array=("$proj")
-data_list_path_array=("${data}/$proj/${data_type}.list")
-data_scp_path_array=("${data}/$proj/wav.scp") # to count the number of wavs
+# data_list_path_array=("${data}/$proj/${data_type}.list")
+data_list_path_array=("${data}/NAKI_filtered/test/NAKI_split/raw.list")
+# data_scp_path_array=("${data}/$proj/wav.scp") # to count the number of wavs
+data_scp_path_array=("${data}/NAKI_filtered/test/NAKI_split/wav.scp")
 nj_array=($nj )
 batch_size_array=(1) # batch_size of test set must be 1 !!!
 num_workers_array=(1)

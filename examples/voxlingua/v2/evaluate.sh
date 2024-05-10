@@ -21,13 +21,12 @@ export OMP_NUM_THREADS=8
 data_type="raw"  # shard/raw
 
 # WavLM pre-trained
-config=conf/wavlm_base_MHFA_LR.yaml
-exp_dir=exp/WavLM-BasePlus-FullFineTuning-MHFA-emb256-3s-LRS10-Epoch40-no-margin
+exp_dir=exp/WavLM-BasePlus-FullFineTuning-MHFA-emb256-3s-LRS10-Epoch40-softmax
+config=$exp_dir/conf.yaml
 
-gpus="[0,1]"
+gpus="[0]"
 checkpoint=
-
-score_norm_method="asnorm"  # asnorm/snorm
+num_avg=2
 
 # setup for large margin fine-tuning
 lm_config=conf/wavlm_base_MHFA_LR_lm.yaml
@@ -64,6 +63,14 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
 fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
+
+  echo "Do model average ..."
+  avg_model=$exp_dir/models/avg_model.pt
+  python wespeaker/bin/average_model.py \
+    --dst_model $avg_model \
+    --src_path $exp_dir/models \
+    --num ${num_avg}
+
 
   # NOTE: Create scores and prints accuracy
   echo "Evalute model ..."

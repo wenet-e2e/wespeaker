@@ -1,7 +1,7 @@
 ### train configuraton
 PORT: 25182
 exp_dir: exp/WavLM-BasePlus-FullFineTuning-MHFA-emb512
-gpus: "[0,1]"
+gpus: "[0,1,2,3]"
 num_avg: 2
 enable_amp: False # whether enable automatic mixed precision training
 

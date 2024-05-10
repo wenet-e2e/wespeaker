@@ -32,7 +32,11 @@ gpus="[0,1]"
 . tools/parse_options.sh
 set -e
 
-embed_dir=${exp_dir}/embeddings/${store_dir}
+model_basename=$(basename $model_path)
+
+embed_dir=${exp_dir}/embeddings/${store_dir}/${model_basename%.*}
+echo "embed_dir '$embed_dir'"
+
 log_dir=${embed_dir}/log
 [ ! -d ${log_dir} ] && mkdir -p ${log_dir}
 
@@ -74,3 +78,8 @@ if [ $embed_num -eq $wavs_num ]; then
 else
   echo "Failed to extract embedding for ${store_dir}" | tee ${embed_dir}/extract.result
 fi
+
+echo "Running: scp2h5.py ${embed_dir}/scores.scp ${embed_dir}/scores.h5"
+scp2h5.py ${embed_dir}/xvector.scp ${embed_dir}/xvector.h5
+echo "Done."
+

@@ -33,9 +33,16 @@ gpus="[0]"
 . tools/parse_options.sh
 set -e
 
-embed_dir=${exp_dir}/scores/${store_dir}
+model_basename=$(basename $model_path)
+
+embed_dir=${exp_dir}/embeddings/${store_dir}/${model_basename%.*}
+
 log_dir=${embed_dir}/log
+
 [ ! -d ${log_dir} ] && mkdir -p ${log_dir}
+
+echo "model_path: $model_path"
+echo "embed_dir: $embed_dir"
 
 # split the data_list file into sub_file, then we can use multi-gpus to extract score
 data_num=$(wc -l ${data_list} | awk '{print $1}')
@@ -45,6 +52,7 @@ num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
 gpus=(`echo $gpus | cut -d '[' -f2 | cut -d ']' -f1 | tr ',' ' '`)
 
 echo "Evalute for ${store_dir} ..."
+echo "Batch size $batch_size"
 
 for suffix in $(seq 0 $(($nj - 1))); do
   echo "Evaluate for split_${suffix} ..."
@@ -67,6 +75,9 @@ for suffix in $(seq 0 $(($nj - 1))); do
     >${log_dir}/split_${suffix}.log 2>&1 &
 done
 
+
+    # --utt_chunk "40" \
+
 wait
 
 cat ${embed_dir}/scores_*.scp >${embed_dir}/scores.scp
@@ -76,3 +87,8 @@ if [ "$embed_num" -eq "$data_num" ]; then
 else
   echo "Failed to extract scores for ${store_dir}" | tee ${embed_dir}/extract.result
 fi
+
+echo "Running: scp2h5.py ${embed_dir}/scores.scp ${embed_dir}/scores.h5"
+scp2h5.py ${embed_dir}/scores.scp ${embed_dir}/scores.h5
+echo "Done."
+

@@ -1,13 +1,13 @@
 ### train configuraton
 
-exp_dir: exp/ResNet18-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
+exp_dir: exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-softmax-SGD-epoch100
 gpus: "[0,1]"
 num_avg: 10
 enable_amp: False # whether enable automatic mixed precision training
 
 seed: 42
-num_epochs: 150
-save_epoch_interval: 1 # save model every 1 epoch
+num_epochs: 100 
+save_epoch_interval: 5 # save model every 1 epoch
 log_batch_interval: 100 # log every 100 batchs
 
 dataloader_args:
@@ -53,7 +53,7 @@ model_args:
   pooling_func: "TSTP" # TSTP, ASTP, MQMHASTP
   two_emb_layer: False
 projection_args:
-  project_type: "arc_margin" # add_margin, arc_margin, sphere, sphereface2, softmax, arc_margin_intertopk_subcenter
+  project_type: "softmax" # add_margin, arc_margin, sphere, sphereface2, softmax, arc_margin_intertopk_subcenter
   scale: 32.0
   easy_margin: False
 
@@ -79,5 +79,5 @@ scheduler: ExponentialDecrease
 scheduler_args:
   initial_lr: 0.1
   final_lr: 0.00005
-  warm_up_epoch: 6
+  warm_up_epoch: 5
   warm_from_zero: True

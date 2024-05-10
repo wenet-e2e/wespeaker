@@ -563,6 +563,35 @@ def spec_aug(data, num_t_mask=1, num_f_mask=1, max_t=10, max_f=8, prob=0.6):
             sample['feat'] = y
         yield sample
 
+def utt_chunk(data, chunk_size=45):
+    """Chunk the data into smaller pieces
+
+    Args:
+        data: (torch.Tensor) (random len)
+        chunk_size (int, optional): _description_. Defaults to 45.
+
+    Yields:
+        _type_: _description_
+    """
+    for sample in data:
+        assert 'sample_rate' in sample
+        assert 'wav' in sample
+        assert 'key' in sample
+        assert 'label' in sample
+
+        sample_rate = sample['sample_rate']
+
+        waveform = sample['wav'].squeeze(0) # NOTE: Do we need to squeeze the data?
+        for n, i in enumerate(range(0, len(waveform), chunk_size*sample_rate)):
+            chunk = waveform[i:i + chunk_size*sample_rate]
+
+            chunked_sample = dict(key=sample['key'] + f'_{n:03}',
+                                  label=sample['label'],
+                                  sample_rate=sample_rate,
+                                  wav = chunk,
+                                )
+            yield chunked_sample
+
 def compute_raw(data):
     for sample in data:
         assert 'sample_rate' in sample
