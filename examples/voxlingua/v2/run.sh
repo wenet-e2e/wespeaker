@@ -3,20 +3,60 @@
 # Copyright 2022 Hongji Wang (jijijiang77@gmail.com)
 #           2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
 
+# Adapted by: 2024 Ondrej Odehnal OndrejOdehnal42@gmail.com
+
 . ./path.sh || exit 1
 
-stage=1
-stop_stage=1
+stage=4
+stop_stage=4
 
-data=data
+# data=data
+# data="/scratch/project/open-28-58/xodehn09/data"
+data="${DATA_DIR}"
+
+# # Function to check if the port is in use
+# is_port_in_use() {
+#     ss -tulpn | grep ":$1 " > /dev/null
+# }
+# 
+# # Loop until a free port is found
+# BASE_PORT=29401
+# while is_port_in_use $BASE_PORT; do
+#     echo "Port $BASE_PORT is in use. Trying next port..."
+#     ((BASE_PORT++))
+# done
+# 
+# echo "Found available port: $BASE_PORT"
+
+# FROM: https://github.com/pytorch/pytorch/issues/60477#issuecomment-1574453494
+export MIOPEN_USER_DB_PATH="/tmp/$(whoami)-miopen-cache"
+export MIOPEN_CUSTOM_CACHE_DIR=${MIOPEN_USER_DB_PATH}
+rm -rf ${MIOPEN_USER_DB_PATH}
+mkdir -p ${MIOPEN_USER_DB_PATH}
+
+
+base_port=29401
+max_port=40000
+current_time=$(date +%s)
+PORT=$((current_time % (max_port - base_port) + base_port))
+
+export HOST_NODE_ADDR=0.0.0.0:$PORT
+export OMP_NUM_THREADS=16
+# export LOGLEVEL=DEBUG
+
 data_type="shard"  # shard/raw
 
-config=conf/resnet.yaml
-exp_dir=exp/ResNet18-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
-gpus="[0]"
-num_avg=10
+# ResNet-18
+# config=conf/resnet.yaml
+# exp_dir=exp/ResNet18-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
+# checkpoint=exp/ResNet18-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150/models/model_148.pt
+
+# WavLM pre-trained
+exp_dir=exp/WavLM-BasePlus-FullFineTuning-MHFA-emb256-3s-LRS10-Epoch50
+
+gpus="[0,1, 2, 3]"
+num_avg=4
 checkpoint=
-# checkpoint=$exp_dir/models/checkpoint_model.pt
 
 trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
 score_norm_method="asnorm"  # asnorm/snorm
@@ -35,7 +75,7 @@ fi
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
   echo "Covert train and test data to ${data_type}..."
 
-  for dset in vox2_dev vox1; do
+  for dset in voxlingua107; do
     if [ $data_type == "shard" ]; then
       python tools/make_shard_list.py --num_utts_per_shard 1000 \
           --num_threads 16 \
@@ -49,51 +89,60 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     fi
   done
 
-  # Convert all musan data to LMDB
-  python tools/make_lmdb.py ${data}/musan/wav.scp ${data}/musan/lmdb
-  # Convert all rirs data to LMDB
-  python tools/make_lmdb.py ${data}/rirs/wav.scp ${data}/rirs/lmdb
+  # # Convert all musan data to LMDB
+  # python tools/make_lmdb.py ${data}/musan/wav.scp ${data}/musan/lmdb
+  # # Convert all rirs data to LMDB
+  # python tools/make_lmdb.py ${data}/rirs/wav.scp ${data}/rirs/lmdb
 
 fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   echo "Start training ..."
   num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
-  torchrun --standalone --nnodes=1 --nproc_per_node=$num_gpus \
+  # --standalone 
+  torchrun --nnodes=1  --nproc_per_node=$num_gpus --rdzv_endpoint=$HOST_NODE_ADDR \
     wespeaker/bin/train.py --config $config \
       --exp_dir ${exp_dir} \
       --gpus $gpus \
       --num_avg ${num_avg} \
       --data_type "${data_type}" \
-      --train_data ${data}/vox2_dev/${data_type}.list \
-      --train_label ${data}/vox2_dev/utt2spk \
+      --train_data ${data}/voxlingua107/${data_type}.list \
+      --train_label ${data}/voxlingua107/utt2spk \
       --reverb_data ${data}/rirs/lmdb \
       --noise_data ${data}/musan/lmdb \
       ${checkpoint:+--checkpoint $checkpoint}
 fi
 
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
-  echo "Do model average ..."
-  avg_model=$exp_dir/models/avg_model.pt
-  python wespeaker/bin/average_model.py \
-    --dst_model $avg_model \
-    --src_path $exp_dir/models \
-    --num ${num_avg}
+  # echo "Do model average ..."
+  # avg_model=$exp_dir/models/avg_model.pt
+  # python wespeaker/bin/average_model.py \
+  #   --dst_model $avg_model \
+  #   --src_path $exp_dir/models \
+  #   --num ${num_avg}
 
-  model_path=$avg_model
-  if [[ $config == *repvgg*.yaml ]]; then
-    echo "convert repvgg model ..."
-    python wespeaker/models/convert_repvgg.py \
-      --config $exp_dir/config.yaml \
-      --load $avg_model \
-      --save $exp_dir/models/convert_model.pt
-    model_path=$exp_dir/models/convert_model.pt
-  fi
+  # model_path=$avg_model
+  # if [[ $config == *repvgg*.yaml ]]; then
+  #   echo "convert repvgg model ..."
+  #   python wespeaker/models/convert_repvgg.py \
+  #     --config $exp_dir/config.yaml \
+  #     --load $avg_model \
+  #     --save $exp_dir/models/convert_model.pt
+  #   model_path=$exp_dir/models/convert_model.pt
+  # fi
+
+  # echo "Extract embeddings ..."
+  # local/extract_vox.sh \
+  #   --exp_dir $exp_dir --model_path $model_path \
+  #   --nj 4 --gpus $gpus --data_type $data_type --data ${data}
+
 
   echo "Extract embeddings ..."
-  local/extract_vox.sh \
+  model_path=$exp_dir/models/avg_model.pt
+  local/extract_naki.sh \
     --exp_dir $exp_dir --model_path $model_path \
-    --nj 4 --gpus $gpus --data_type $data_type --data ${data}
+    --nj 4 --gpus $gpus --data_type raw --data ${data}
+
 fi
 
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then

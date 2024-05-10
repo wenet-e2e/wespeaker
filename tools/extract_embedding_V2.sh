@@ -51,7 +51,7 @@ for suffix in $(seq 0 $(($nj - 1))); do
   suffix=$(printf '%03d' $suffix)
   data_list_subfile=${log_dir}/split_${suffix}
   embed_ark=${embed_dir}/xvector_${suffix}.ark
-  CUDA_VISIBLE_DEVICES=${gpus[$idx]} python wespeaker/bin/extract.py \
+  CUDA_VISIBLE_DEVICES=${gpus[$idx]} python wespeaker/bin/extract_V2.py \
     --config ${exp_dir}/config.yaml \
     --model_path ${model_path} \
     --data_type ${data_type} \

@@ -21,7 +21,7 @@ import kaldiio
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-
+import numpy
 from wespeaker.dataset.dataset import Dataset
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.utils.checkpoint import load_checkpoint
@@ -75,22 +75,31 @@ def extract(config='conf/config.yaml', **kwargs):
     validate_path(embed_ark)
     embed_ark = os.path.abspath(embed_ark)
     embed_scp = embed_ark[:-3] + "scp"
-
+    seg_shortU = 400 * 160
+    num_eval=5
     with torch.no_grad():
         with kaldiio.WriteHelper('ark,scp:' + embed_ark + "," +
                                  embed_scp) as writer:
             for _, batch in tqdm(enumerate(dataloader)):
+                feat = []
                 utts = batch['key']
                 features = batch['feat']
-                features = features.float().to(device)  # (B,T,F)
-                # Forward through model
-                outputs = model(features)  # embed or (embed_a, embed_b)
-                embeds = outputs[-1] if isinstance(outputs, tuple) else outputs
+                features = features.float().to(device)  # (1,T) for test condition
+                batch_sz, length = features.shape
+                if length <= seg_shortU + num_eval:
+                    shortage    = seg_shortU + num_eval - length + 1 
+                    features    = torch.nn.functional.pad(features, (0, shortage), 'constant',0)
+                    length = features.shape[-1]
+                startframe = numpy.linspace(0,length-seg_shortU,num=num_eval)
+                for asf in startframe:
+                    feat.append(features[:,int(asf):int(asf)+seg_shortU])
+                model_inputs = torch.stack(feat).reshape(-1,seg_shortU)
+                outputs = model(model_inputs)  # embed or (embed_a, embed_b)
+                embeds = outputs[-1] if isinstance(outputs, tuple) else outputs.reshape(batch_sz,num_eval,-1)
                 embeds = embeds.cpu().detach().numpy()  # (B,F)
 
                 for i, utt in enumerate(utts):
                     embed = embeds[i]
-
                     writer(utt, embed)
 
 

@@ -22,7 +22,7 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from wespeaker.dataset.dataset import Dataset
+from wespeaker.dataset.dataset_V2 import Dataset
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.utils.checkpoint import load_checkpoint
 from wespeaker.utils.utils import parse_config_or_kwargs, validate_path
