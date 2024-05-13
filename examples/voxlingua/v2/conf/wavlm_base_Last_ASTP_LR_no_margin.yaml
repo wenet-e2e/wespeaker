@@ -1,7 +1,7 @@
 ### train configuraton
 PORT: 25182
-exp_dir: exp/WavLM-BasePlus-FullFineTuning-MHFA-emb512-no-margin
-gpus: "[0,1,2,3]"
+exp_dir: exp/WavLM-BasePlus-Last-ASTP-emb512-no-margin
+gpus: "[0,1,2,3,4,5,6,7]"
 num_avg: 2
 enable_amp: False # whether enable automatic mixed precision training
 
@@ -50,9 +50,9 @@ model: WavLM_Base_MHFA
 model_init: null
 model_args:
   model_path: 'data/models/pretrained/WavLM-Base+.pt'
-  head_nb: 64
+  head_nb: 1 # NOT USED
   embed_dim: 256
-  pooling: "MHFA" #Group 
+  pooling: "Last_ASTP" #Group 
   group: 1
 
 projection_args:

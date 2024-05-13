@@ -52,7 +52,7 @@ data_type="shard"  # shard/raw
 # checkpoint=exp/ResNet18-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150/models/model_148.pt
 
 # WavLM pre-trained
-exp_dir=exp/WavLM-BasePlus-FullFineTuning-MHFA-emb256-3s-LRS10-Epoch50
+exp_dir=exp/WavLM-BasePlus-FullFineTuning-MHFA-emb256-3s-LRS10-Epoch40
 
 gpus="[0,1, 2, 3]"
 num_avg=4

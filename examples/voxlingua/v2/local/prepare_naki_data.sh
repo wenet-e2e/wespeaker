@@ -3,13 +3,15 @@
 stage=1
 stop_stage=4
 data=data
-proj=naki_split
-
+proj=NAKI_SPLIT
 
 . tools/parse_options.sh || exit 1
 
-# rawdata_dir=/mnt/proj3/open-27-67/data/16kHz/NAKI/01_AZZNP/RESTRUCT/
-rawdata_dir="/mnt/proj3/open-27-67/xodehn09/data/16kHz/NAKI/SPLIT"
+# rawdata_dir="/mnt/proj3/open-27-67/xodehn09/data/16kHz/NAKI/SPLIT"
+# rawdata_dir="/pfs/lustrep1/scratch/project_465000792/xodehn09/data/NAKI_SPLIT/"
+data="/pfs/lustrep1/scratch/project_465000792/xodehn09/data"
+proj="NAKI_filtered/test/NAKI_split"
+rawdata_dir="$data/$proj"
 
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   echo "Prepare wav.scp for each dataset ..."
@@ -17,6 +19,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
 
   mkdir -p ${data}/$proj
 
+  # NOTE: Already processed
   # # musan
   # find ${rawdata_dir}/musan -name "*.wav" | awk -F"/" '{print $(NF-2)"/"$(NF-1)"/"$NF,$0}' >${data}/musan/wav.scp
   # # rirs
@@ -31,3 +34,4 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
 fi
 
 python tools/make_raw_list.py ${data}/$proj/wav.scp ${data}/$proj/utt2spk ${data}/$proj/raw.list
+

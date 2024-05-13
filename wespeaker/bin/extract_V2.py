@@ -36,6 +36,7 @@ def extract(config='conf/config.yaml', **kwargs):
     embed_ark = configs['embed_ark']
     batch_size = configs.get('batch_size', 1)
     num_workers = configs.get('num_workers', 1)
+    utt_chunk = configs.get("utt_chunk") # NOTE: This will be used to chunk the utterance into 40 seconds segments
 
     # Since the input length is not fixed, we set the built-in cudnn
     # auto-tuner to False
@@ -58,6 +59,10 @@ def extract(config='conf/config.yaml', **kwargs):
     test_conf['aug_prob'] = configs.get('aug_prob', 0.0)
     test_conf['filter'] = False
 
+    # Utt chunk 
+    test_conf["utt_chunk"] = utt_chunk
+    print("WARN: Setting utt_chunk =", utt_chunk)
+
     dataset = Dataset(configs['data_type'],
                       configs['data_list'],
                       test_conf,
@@ -79,8 +84,10 @@ def extract(config='conf/config.yaml', **kwargs):
     with torch.no_grad():
         with kaldiio.WriteHelper('ark,scp:' + embed_ark + "," +
                                  embed_scp) as writer:
-            for _, batch in tqdm(enumerate(dataloader)):
+            for i, batch in enumerate(dataloader):
                 utts = batch['key']
+                print(f"[{i}] Proccesing utts: {utts}", flush=True)
+
                 features = batch['feat']
                 features = features.float().to(device)  # (B,T,F)
                 # Forward through model

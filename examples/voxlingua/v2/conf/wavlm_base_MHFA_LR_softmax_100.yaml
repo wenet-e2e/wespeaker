@@ -1,13 +1,13 @@
 ### train configuraton
 PORT: 25182
-exp_dir: exp/WavLM-BasePlus-FullFineTuning-MHFA-emb512-no-margin
-gpus: "[0,1,2,3]"
+exp_dir: exp/WavLM-BasePlus-FullFineTuning-MHFA-emb512-softmax-100
+gpus: "[0,1,2,3,4,5,6,7]"
 num_avg: 2
 enable_amp: False # whether enable automatic mixed precision training
 
 seed: 42
-num_epochs: 20
-save_epoch_interval: 1 # save model every 5 epochs
+num_epochs: 100
+save_epoch_interval: 5 # save model every 5 epochs
 log_batch_interval: 100 # log every 100 batchs
 
 dataloader_args:
@@ -56,9 +56,7 @@ model_args:
   group: 1
 
 projection_args:
-  project_type: "arc_margin_intertopk_subcenter" # add_margin, arc_margin, sphere, softmax
-  scale: 32.0
-  easy_margin: False
+  project_type: "softmax" # add_margin, arc_margin, sphere, softmax
 
 margin_scheduler: MarginScheduler
 margin_update:
@@ -82,5 +80,5 @@ scheduler: ExponentialDecrease
 scheduler_args:
   initial_lr: 1.0e-2 # 8.0e-3
   final_lr: 4.4e-3 #4.4e-3 
-  warm_up_epoch: 3
+  warm_up_epoch: 5
   warm_from_zero: True

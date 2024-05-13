@@ -6,7 +6,7 @@ num_avg: 2
 enable_amp: False # whether enable automatic mixed precision training
 
 seed: 42
-num_epochs: 20
+num_epochs: 40
 save_epoch_interval: 1 # save model every 5 epochs
 log_batch_interval: 100 # log every 100 batchs
 
@@ -50,9 +50,9 @@ model: WavLM_Base_MHFA
 model_init: null
 model_args:
   model_path: 'data/models/pretrained/WavLM-Base+.pt'
-  head_nb: 64
+  head_nb: 1 # NOT USED
   embed_dim: 256
-  pooling: "MHFA" #Group 
+  pooling: "LWAP_Mean" #Group 
   group: 1
 
 projection_args:

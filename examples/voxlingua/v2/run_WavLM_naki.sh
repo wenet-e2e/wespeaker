@@ -7,13 +7,14 @@
 
 . ./path.sh || exit 1
 
-stage=4
-stop_stage=4
+stage=3
+stop_stage=3
 
 # data=data
 # data="/scratch/project/open-28-58/xodehn09/data"
 # data="/mnt/proj3/open-27-67/xodehn09/data/16kHz/NAKI/SPLIT"
 data="${DATA_DIR}"
+dataset_path=
 
 # # Function to check if the port is in use
 # is_port_in_use() {
@@ -38,24 +39,35 @@ export HOST_NODE_ADDR=0.0.0.0:$PORT
 export OMP_NUM_THREADS=32
 # export LOGLEVEL=DEBUG
 
+
+# data_type="shard"  # shard/raw
 data_type="shard"  # shard/raw
 
 # WavLM pre-trained
-config=conf/wavlm_base_MHFA_LR.yaml
-exp_dir=exp/WavLM-BasePlus-FullFineTuning-MHFA-emb256-3s-LRS10-Epoch40
+# config=
+# exp_dir=
 
-gpus="[0,1,2,3]"
-num_avg=4
-checkpoint=exp/WavLM-BasePlus-FullFineTuning-MHFA-emb256-3s-LRS10-Epoch50/models_trained/model_23.pt
+# gpus=
+num_avg=2
+# checkpoint=
 
-trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
-score_norm_method="asnorm"  # asnorm/snorm
-top_n=300
+
+# trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
+# score_norm_method="asnorm"  # asnorm/snorm
+# top_n=300
 
 # setup for large margin fine-tuning
-lm_config=conf/wavlm_base_MHFA_LR_lm.yaml
+# lm_config=conf/wavlm_base_MHFA_LR_lm.yaml
 
 . tools/parse_options.sh || exit 1
+
+export dataset_path="NAKI_with_voxlingua107/train"
+
+echo "GPUs: $gpus"
+echo "exp_dir: $exp_dir"
+echo "config: $config"
+echo "checkpoint: $checkpoint"
+echo "dataset_path: $dataset_path"
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "Prepare datasets ..."
@@ -65,7 +77,8 @@ fi
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
   echo "Covert train and test data to ${data_type}..."
 
-  for dset in voxlingua107; do
+  # for dset in voxlingua107; do
+  for dset in $dataset_path ; do
     if [ $data_type == "shard" ]; then
       python tools/make_shard_list.py --num_utts_per_shard 1000 \
           --num_threads 16 \
@@ -90,18 +103,34 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   echo "Start training ..."
   num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
   # --standalone 
+  
+
   torchrun --nnodes=1  --nproc_per_node=$num_gpus --rdzv_endpoint=$HOST_NODE_ADDR \
     wespeaker/bin/train_V2.py --config $config \
       --exp_dir ${exp_dir} \
       --gpus $gpus \
       --num_avg ${num_avg} \
       --data_type "${data_type}" \
-      --train_data ${data}/voxlingua107/${data_type}.list \
-      --train_label ${data}/voxlingua107/utt2spk \
+      --train_data ${data}/$dataset_path/${data_type}.list \
+      --train_label ${data}/$dataset_path/utt2spk \
       --reverb_data ${data}/rirs/lmdb \
       --noise_data ${data}/musan/lmdb \
       --PORT ${PORT} \
       ${checkpoint:+--checkpoint $checkpoint}
+
+  # torchrun --nnodes=1  --nproc_per_node=$num_gpus --rdzv_endpoint=$HOST_NODE_ADDR \
+  #   wespeaker/bin/train_V2.py --config $config \
+  #     --exp_dir ${exp_dir} \
+  #     --gpus $gpus \
+  #     --num_avg ${num_avg} \
+  #     --data_type "${data_type}" \
+  #     --train_data ${data}/voxlingua107/${data_type}.list \
+  #     --train_label ${data}/voxlingua107/utt2spk \
+  #     --reverb_data ${data}/rirs/lmdb \
+  #     --noise_data ${data}/musan/lmdb \
+  #     --PORT ${PORT} \
+  #     ${checkpoint:+--checkpoint $checkpoint}
+
 fi
 
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
@@ -111,8 +140,8 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   #   --dst_model $avg_model \
   #   --src_path $exp_dir/models \
   #   --num ${num_avg}
-
   # model_path=$avg_model
+
   # if [[ $config == *repvgg*.yaml ]]; then
   #   echo "convert repvgg model ..."
   #   python wespeaker/models/convert_repvgg.py \
@@ -132,7 +161,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   model_path=$exp_dir/models/avg_model.pt
   local/extract_naki.sh \
     --exp_dir $exp_dir --model_path $model_path \
-    --nj 4 --gpus $gpus --data_type raw --data ${data}
+    --nj 4 --gpus $gpus --data_type raw --data ${data} --proj ${dataset_path}
 
 fi
 

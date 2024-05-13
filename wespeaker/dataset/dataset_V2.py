@@ -177,6 +177,7 @@ def Dataset(data_type,
                             **filter_conf
                             )
 
+
     # Local shuffle
     if shuffle:
         dataset = Processor(dataset, processor.shuffle, **configs['shuffle_args'])
@@ -219,6 +220,9 @@ def Dataset(data_type,
         if not raw_wav:
         # compute fbank
             dataset = Processor(dataset, processor.compute_fbank, **configs['fbank_args'])
+
+    if configs.get('utt_chunk', False):
+        dataset = Processor(dataset, processor.utt_chunk, chunk_size=configs['utt_chunk'])
 
     if raw_wav:
         dataset = Processor(dataset, processor.compute_raw)

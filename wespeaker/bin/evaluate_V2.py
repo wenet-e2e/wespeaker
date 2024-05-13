@@ -35,7 +35,7 @@ from wespeaker.models.projections import get_projection
 
 # TODO: Move LANG labels somewhere else 
 
-LANG="""ab af am ar as az ba be bg bn bo br bs ca ceb cs cy da de el en eo es et eu fa
+VOXLINGUA107_LANG="""ab af am ar as az ba be bg bn bo br bs ca ceb cs cy da de el en eo es et eu fa
 fi fo fr gl gn gu gv haw ha hi hr ht hu hy ia id is it iw ja jw ka kk km kn ko
 la lb ln lo lt lv mg mi mk ml mn mr ms mt my ne nl nn no oc pa pl ps pt ro ru
 sa sco sd si sk sl sn so sq sr su sv sw ta te tg th tk tl tr tt uk ur uz vi war
@@ -49,6 +49,8 @@ def evaluate(config="conf/config.yaml", **kwargs):
     embed_ark = configs["embed_ark"]
     batch_size = configs.get("batch_size", 1)
     num_workers = configs.get("num_workers", 1)
+    utt_chunk = configs.get("utt_chunk") # NOTE: This will be used to chunk the utterance into 40 seconds segments
+    eval_dataset = configs.get("eval_dataset") # NOTE: This will be used to chunk the utterance into 40 seconds segments
 
     # Since the input length is not fixed, we set the built-in cudnn
     # auto-tuner to False
@@ -60,15 +62,15 @@ def evaluate(config="conf/config.yaml", **kwargs):
 
     
     # TODO: Refactor this
-    # Add missing language labels so it the model's matches projection layer
-    current_lang = [ item[1] for item in data_utt_spk_list ]
-    for lng in LANG:
-        if lng not in current_lang:
-            data_utt_spk_list.append(["x", lng])
+    # Add missing language labels so the model's matches projection layer
+    if isinstance(eval_dataset, str) and "voxlingua_dev" in eval_dataset.lower():
+        current_lang = [ item[1] for item in data_utt_spk_list ]
+        for lng in VOXLINGUA107_LANG:
+            if lng not in current_lang:
+                data_utt_spk_list.append(["-", lng])
 
-    print(current_lang)
-    print(len(data_utt_spk_list))
     spk2id_dict = spk2id(data_utt_spk_list)
+
 
 
     # projection layer
@@ -102,6 +104,9 @@ def evaluate(config="conf/config.yaml", **kwargs):
     test_conf["aug_prob"] = configs.get("aug_prob", 0.0)
     test_conf["filter"] = False
 
+    # Utt chunk 
+    test_conf["utt_chunk"] = utt_chunk
+    print("WARN: Setting utt_chunk =", utt_chunk)
 
     dataset = Dataset(
         configs["data_type"],
@@ -127,6 +132,7 @@ def evaluate(config="conf/config.yaml", **kwargs):
 
     correct = 0
     total = 0
+    result = []
     with torch.no_grad():
         with kaldiio.WriteHelper('ark,scp:' + embed_ark + "," +
                                  embed_scp) as writer:
@@ -141,23 +147,27 @@ def evaluate(config="conf/config.yaml", **kwargs):
                 embeds = outputs[-1] if isinstance(outputs, tuple) else outputs
                 embeds = embeds.cpu() # (B,F)
 
-                print(utts[0])
-                print(torch.argmax(embeds))
-                print(targets[0])
-
-                correct += (torch.argmax(embeds) == targets)
+                correct += torch.sum(torch.argmax(embeds, -1) == targets)
 
                 embeds = embeds.cpu().detach().numpy()  # (B,F)
 
-                total += len(targets)
+                total += len(targets.ravel())
 
                 for i, utt in enumerate(utts):
                     embed = embeds[i]
                     writer(utt, embed)
+                    
+                    
 
-        print("Correct:  ", correct)
-        print("Total:    ", total)
-        print("Accuracy: ", correct / total)
+    embed_path = os.path.dirname(embed_ark)
+    with open("{}/result.txt".format(embed_path), "w") as f:
+        f.write("Correct:  {}\n".format(correct.item()))
+        f.write("Total:    {}\n".format(total))
+        f.write("Accuracy: {}\n".format((correct / total).item()))
+
+    print("Correct:  ", correct.item())
+    print("Total:    ", total)
+    print("Accuracy: ", (correct / total).item())
 
 
 if __name__ == "__main__":
