@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Copyright (c) 2023 Zhengyang Chen (chenzhengyang117@gmail.com)
+#               2024 Johan Rohdin (rohdin@fit.vutbr.cz) 
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +34,11 @@ cts_superset_dir=""
 voxceleb_dir=""
 
 compute_total_utterance_duration=true # Whether to compute the total utterance duration, i.e., including no speech parts
-                                      # Can be used as an addition filtering requirement.
+                                      # Can be used as an addition filtering requirement. Currently only supported for 
+                                      # VoxCeleb. 
+compute_vad_for_voxceleb=true         
+include_voxceleb_vad_in_train_data=false # If false, only CTS vad will be inluded which means that VAD will not be applied for VoxCeleb during training. 
+
 . tools/parse_options.sh || exit 1
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
@@ -188,7 +193,7 @@ if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
     false && {
     for dset in cts vox_gsmfr; do
 	echo $dset
-        if [ -f ${data}/${dset}/vad ] && ( [ $dset != "vox_gsmfr" ] || $use_vad_to_filter_voxceleb ) ;then
+        if [ -f ${data}/${dset}/vad ] && ( [ $dset != "vox_gsmfr" ] || $compute_vad_for_voxceleb ) ;then
             echo "Using VAD info"
             python3 local/utt2voice_duration.py \
                  --vad_file ${data}/${dset}/vad \
@@ -288,11 +293,15 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
         cp ${data}/${dset}/spk2utt ${data}/${dset}/spk2utt.bak
         awk -v thr=${uttPerSpk_threshold[$dset]} '{if(NF>$thr){print $0}}' ${data}/${dset}/spk2utt.bak > ${data}/${dset}/spk2utt
         tools/spk2utt_to_utt2spk.pl ${data}/${dset}/spk2utt > ${data}/${dset}/utt2spk
-        #tools/fix_data_dir.sh ${data}/${dset}
+        tools/fix_data_dir.sh ${data}/${dset}
     done
 
-    #./tools/combine_data.sh data/cts_vox data/cts/ data/vox_gsmfr 
-    #cat data/cts/vad data/vox_gsmfr/vad > data/cts_vox/vad              # Not combined byt the obove script 
+    ./tools/combine_data.sh data/cts_vox data/cts/ data/vox_gsmfr 
+    if $include_voxceleb_vad_in_train_data;then 
+	cat data/cts/vad data/vox_gsmfr/vad > data/cts_vox/vad            
+    else
+	cat data/cts/vad > data/cts_vox/vad            
+    fi
 fi
 
 
