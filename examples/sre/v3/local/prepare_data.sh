@@ -291,7 +291,7 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
     for dset in cts vox_gsmfr; do
         #tools/fix_data_dir.sh ${data}/${dset}
         cp ${data}/${dset}/spk2utt ${data}/${dset}/spk2utt.bak
-        awk -v thr=${uttPerSpk_threshold[$dset]} '{if(NF>$thr){print $0}}' ${data}/${dset}/spk2utt.bak > ${data}/${dset}/spk2utt
+        awk -v thr=${uttPerSpk_threshold[$dset]} '{if(NF>thr){print $0}}' ${data}/${dset}/spk2utt.bak > ${data}/${dset}/spk2utt
         tools/spk2utt_to_utt2spk.pl ${data}/${dset}/spk2utt > ${data}/${dset}/utt2spk
         tools/fix_data_dir.sh ${data}/${dset}
     done
