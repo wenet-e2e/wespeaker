@@ -234,7 +234,7 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
 
     declare -A uttPerSpk_threshold=( ["cts"]=2 ["vox_gsmfr"]=2 )     # Kept if more than this threshold. (I.e. equality not sufficient.)
 
-    false && {
+    true && {
     # Following the Kaldi recipe: https://github.com/kaldi-asr/kaldi/blob/71f38e62cad01c3078555bfe78d0f3a527422d75/egs/sre16/v2/run.sh#L189
     # We filter out the utterances with duration less than 5s
     echo "Stage 9, block 1"
@@ -257,7 +257,7 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
 	n_spk_after=$( wc -l ${data}/${dset}/spk2utt | cut -f1 -d " " )
 	echo " #utt / #spk after: $n_utt_after / $n_spk_after " 
     done
-
+    }
     echo "Stage 9, block 2"
     echo "Applying filtering based on the whole utterance duration (including non-speech parts) "
     #for dset in cts vox_gsmfr; do
@@ -266,7 +266,7 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
 	n_spk_before=$( wc -l ${data}/${dset}/spk2utt | cut -f1 -d " " )
         python3 local/filter_utt_accd_dur.py \
             --wav_scp ${data}/${dset}/wav.scp \
-            --utt2voice_dur ${data}/${dset}/utt2voice_dur \
+            --utt2voice_dur ${data}/${dset}/utt2dur \
             --filter_wav_scp ${data}/${dset}/filter_wav.scp \
             --dur_thres ${dur_threshold[$dset]}
 	mv ${data}/${dset}/wav.scp ${data}/${dset}/wav.scp.bak
@@ -278,7 +278,7 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
 	n_spk_after=$( wc -l ${data}/${dset}/spk2utt | cut -f1 -d " " )
 	echo " #utt / #spk after: $n_utt_after / $n_spk_after " 
     done
-    }
+    
 
     # Similarly, following the Kaldi recipe,
     # we throw out speakers with fewer than 3 utterances.
@@ -286,9 +286,9 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
     for dset in cts vox_gsmfr; do
         #tools/fix_data_dir.sh ${data}/${dset}
         cp ${data}/${dset}/spk2utt ${data}/${dset}/spk2utt.bak
-        awk -v thr=${uttPerSpk_threshold[$dset]} '{if(NF>2){print $thr}}' ${data}/${dset}/spk2utt.bak > ${data}/${dset}/spk2utt
+        awk -v thr=${uttPerSpk_threshold[$dset]} '{if(NF>$thr){print $0}}' ${data}/${dset}/spk2utt.bak > ${data}/${dset}/spk2utt
         tools/spk2utt_to_utt2spk.pl ${data}/${dset}/spk2utt > ${data}/${dset}/utt2spk
-        tools/fix_data_dir.sh ${data}/${dset}
+        #tools/fix_data_dir.sh ${data}/${dset}
     done
 
     #./tools/combine_data.sh data/cts_vox data/cts/ data/vox_gsmfr 
