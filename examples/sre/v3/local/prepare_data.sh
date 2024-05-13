@@ -32,6 +32,8 @@ cts_superset_dir=""
 ###
 voxceleb_dir=""
 
+compute_total_utterance_duration=true # Whether to compute the total utterance duration, i.e., including no speech parts
+                                      # Can be used as an addition filtering requirement.
 . tools/parse_options.sh || exit 1
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
@@ -183,52 +185,114 @@ fi
 
 if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
 
+    false && {
     for dset in cts vox_gsmfr; do
-        if [ -f ${data}/${dset}/vad ];then
+	echo $dset
+        if [ -f ${data}/${dset}/vad ] && ( [ $dset != "vox_gsmfr" ] || $use_vad_to_filter_voxceleb ) ;then
             echo "Using VAD info"
             python3 local/utt2voice_duration.py \
-                --vad_file ${data}/${dset}/vad \
-                --utt2voice_dur ${data}/${dset}/utt2voice_dur
-        else
+                 --vad_file ${data}/${dset}/vad \
+                 --utt2voice_dur ${data}/${dset}/utt2voice_dur
+	    cp ${data}/${dset}/utt2voice_dur ${data}/${dset}-bk/             # Good to have backup also of this 
+	fi
+    done
+    }    
+
+    # The below need to be improved to work for a general wav.scp. It only works for the specif format of voxceleb wav.scp 
+    # at the moment.
+    for dset in vox_gsmfr; do
+        if $compute_total_utterance_duration; then 
 	    # We may, for example, avoid applying VAD on VoxCeleb in which case we need this.
+	    # Note that the durations are estimated on the original wave file, before sox 
+	    # downsampling and GSM codec is applied.
             echo "Using soxi"
-            for w in $(cut -f2 -d" " ${data}/${dset}/wav.scp); do
-                dur=$(soxi -D $w)
-                echo "$w $dur"
-            done > ${data}/${dset}/wav2dur
-            awk 'NR==FNR{w2d[$1]=$2;next}  $2 in w2d {print $1 " " w2d[$2]}' ${data}/${dset}/wav2dur ${data}/${dset}/wav.scp > ${data}/${dset}/utt2voice_dur
+  
+	    cut -f3 -d" " ${data}/${dset}/wav.scp | awk '{ print "soxi -D " $0 }' > ${data}/${dset}/soxi_cmd.sh
+	    split -a 4 -d -n l/12 ${data}/${dset}/soxi_cmd.sh ${data}/${dset}/soxi_cmd.split.
+	    for i in {0000..11}; do 
+	    	bash ${data}/${dset}/soxi_cmd.split.$i > ${data}/${dset}/soxi_cmd.split.$i.out &
+	    done
+	    wait
+
+	    for i in {0000..11}; do cat ${data}/${dset}/soxi_cmd.split.$i.out; done > ${data}/${dset}/dur_tmp
+	    cut -f1 -d" " ${data}/${dset}/wav.scp > ${data}/${dset}/utt_tmp
+	    paste -d " " ${data}/${dset}/utt_tmp ${data}/${dset}/dur_tmp > ${data}/${dset}/utt2dur
+	    
+	    rm ${data}/${dset}/soxi_cmd.* ${data}/${dset}/vox_gsmfr/dur_tmp ${data}/${dset}/utt_tmp
+	    	    
+	    cp ${data}/${dset}/utt2dur ${data}/${dset}-bk/             # Good to have backup also of this 
         fi
     done
 fi
 
 if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
+   
+    declare -A voice_dur_threshold=( ["cts"]=5.0 ["vox_gsmfr"]=0.0 ) # Note that a threshold of 0.0 still means that utterances with no speech 
+                                                                     # according to VAD will be discarded at this stage. So if we want to keep 
+                                                                     # them, we should skip block 1 for the set instead.
+    declare -A dur_threshold=( ["cts"]=0.0 ["vox_gsmfr"]=5.0 )
 
+    declare -A uttPerSpk_threshold=( ["cts"]=2 ["vox_gsmfr"]=2 )     # Kept if more than this threshold. (I.e. equality not sufficient.)
+
+    false && {
     # Following the Kaldi recipe: https://github.com/kaldi-asr/kaldi/blob/71f38e62cad01c3078555bfe78d0f3a527422d75/egs/sre16/v2/run.sh#L189
     # We filter out the utterances with duration less than 5s
     echo "Stage 9, block 1"
-    for dset in cts vox_gsmfr; do
+    echo "Applying filtering based on voice duration "
+    #for dset in cts vox_gsmfr; do
+    for dset in cts; do
+	n_utt_before=$( wc -l ${data}/${dset}/utt2spk | cut -f1 -d " " )
+	n_spk_before=$( wc -l ${data}/${dset}/spk2utt | cut -f1 -d " " )
         python3 local/filter_utt_accd_dur.py \
             --wav_scp ${data}/${dset}/wav.scp \
             --utt2voice_dur ${data}/${dset}/utt2voice_dur \
             --filter_wav_scp ${data}/${dset}/filter_wav.scp \
-            --dur_thres 5.0
-        mv ${data}/${dset}/wav.scp ${data}/${dset}/wav.scp.bak
+            --dur_thres ${voice_dur_threshold[$dset]}
+	mv ${data}/${dset}/wav.scp ${data}/${dset}/wav.scp.bak
         mv ${data}/${dset}/filter_wav.scp ${data}/${dset}/wav.scp
+	tools/fix_data_dir.sh ${data}/${dset}
+	echo " $dset "
+	echo " #utt / #spk before: $n_utt_before / $n_spk_before " 
+	n_utt_after=$( wc -l ${data}/${dset}/utt2spk | cut -f1 -d " " )
+	n_spk_after=$( wc -l ${data}/${dset}/spk2utt | cut -f1 -d " " )
+	echo " #utt / #spk after: $n_utt_after / $n_spk_after " 
     done
+
+    echo "Stage 9, block 2"
+    echo "Applying filtering based on the whole utterance duration (including non-speech parts) "
+    #for dset in cts vox_gsmfr; do
+    for dset in vox_gsmfr; do
+	n_utt_before=$( wc -l ${data}/${dset}/utt2spk | cut -f1 -d " " )
+	n_spk_before=$( wc -l ${data}/${dset}/spk2utt | cut -f1 -d " " )
+        python3 local/filter_utt_accd_dur.py \
+            --wav_scp ${data}/${dset}/wav.scp \
+            --utt2voice_dur ${data}/${dset}/utt2voice_dur \
+            --filter_wav_scp ${data}/${dset}/filter_wav.scp \
+            --dur_thres ${dur_threshold[$dset]}
+	mv ${data}/${dset}/wav.scp ${data}/${dset}/wav.scp.bak
+        mv ${data}/${dset}/filter_wav.scp ${data}/${dset}/wav.scp
+	tools/fix_data_dir.sh ${data}/${dset}
+	echo " $dset "
+	echo " #utt / #spk before: $n_utt_before / $n_spk_before " 
+	n_utt_after=$( wc -l ${data}/${dset}/utt2spk | cut -f1 -d " " )
+	n_spk_after=$( wc -l ${data}/${dset}/spk2utt | cut -f1 -d " " )
+	echo " #utt / #spk after: $n_utt_after / $n_spk_after " 
+    done
+    }
 
     # Similarly, following the Kaldi recipe,
     # we throw out speakers with fewer than 3 utterances.
-    echo "Stage 9, block 2"
+    echo "Stage 9, block 3"
     for dset in cts vox_gsmfr; do
-        tools/fix_data_dir.sh ${data}/${dset}
+        #tools/fix_data_dir.sh ${data}/${dset}
         cp ${data}/${dset}/spk2utt ${data}/${dset}/spk2utt.bak
-        awk '{if(NF>2){print $0}}' ${data}/${dset}/spk2utt.bak > ${data}/${dset}/spk2utt
+        awk -v thr=${uttPerSpk_threshold[$dset]} '{if(NF>2){print $thr}}' ${data}/${dset}/spk2utt.bak > ${data}/${dset}/spk2utt
         tools/spk2utt_to_utt2spk.pl ${data}/${dset}/spk2utt > ${data}/${dset}/utt2spk
         tools/fix_data_dir.sh ${data}/${dset}
     done
 
-    ./tools/combine_data.sh data/cts_vox data/cts/ data/vox_gsmfr 
-    cat data/cts/vad data/vox_gsmfr/vad > data/cts_vox/vad              # Not combined byt the obove script 
+    #./tools/combine_data.sh data/cts_vox data/cts/ data/vox_gsmfr 
+    #cat data/cts/vad data/vox_gsmfr/vad > data/cts_vox/vad              # Not combined byt the obove script 
 fi
 
 
