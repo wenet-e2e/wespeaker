@@ -20,7 +20,7 @@ score_norm_method="asnorm"  # asnorm/snorm
 cohort_set=vox2_dev
 calibration_trial="vox2_cali.kaldi"
 top_n=100
-exp_dir=
+exp_dir=''
 trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
 data=data
 
@@ -46,14 +46,14 @@ if [ $stage -le 1 ] && [ $stop_stage -ge 1 ]; then
   if [ ! -e ${trials_dir}/${calibration_trial} ]; then
     python tools/generate_calibration_trial.py --utt2dur ${data}/vox2_dev/dur.scp --trial_path ${trials_dir}/vox2_cali.kaldi
   fi
-  
+
   python wespeaker/bin/score.py \
     --exp_dir ${exp_dir} \
     --eval_scp_path ${exp_dir}/embeddings/vox2_dev/xvector.scp \
     --cal_mean True \
     --cal_mean_dir ${exp_dir}/embeddings/vox2_dev \
     ${trials_dir}/${calibration_trial}
-  
+
   python wespeaker/bin/score_norm.py \
     --score_norm_method $score_norm_method \
     --top_n $top_n \
@@ -88,7 +88,7 @@ fi
 
 cali_output_name=cali_${output_name}
 if [ $stage -le 4 ] && [ $stop_stage -ge 4 ]; then
-  echo "Infer calibration model"  
+  echo "Infer calibration model"
   for x in ${trials}; do
     python wespeaker/bin/score_calibration.py "infer_calibration" \
       --calibration_factor_file ${exp_dir}/scores/calibration/${output_name}_${x}.calibration \

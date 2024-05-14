@@ -18,6 +18,7 @@ import logging
 import random
 from tqdm import tqdm
 
+
 def main(utt2dur, trial_path, each_trial_num=10000):
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s %(levelname)s %(message)s')
@@ -57,11 +58,12 @@ def main(utt2dur, trial_path, each_trial_num=10000):
         for _ in tqdm(range(each_trial_num // 2)):
             enroll_spk = random.choice(short_spks)
             spk_index = short_spks.index(enroll_spk)
-            nontarget_spk = random.choice(short_spks[:spk_index] + 
+            nontarget_spk = random.choice(short_spks[:spk_index] +
                                           short_spks[spk_index + 1:])
 
             # short2short
-            enroll_utt, test_utt = random.choices(short_spk2utt[enroll_spk], k=2)
+            enroll_utt, test_utt = random.choices(short_spk2utt[enroll_spk],
+                                                  k=2)
             f.write("{} {} {}\n".format(enroll_utt, test_utt, 'target'))
             test_utt = random.choice(short_spk2utt[nontarget_spk])
             f.write("{} {} {}\n".format(enroll_utt, test_utt, 'nontarget'))
@@ -74,10 +76,12 @@ def main(utt2dur, trial_path, each_trial_num=10000):
             f.write("{} {} {}\n".format(enroll_utt, test_utt, 'nontarget'))
 
             # long2long
-            enroll_utt, test_utt = random.choices(long_spk2utt[enroll_spk], k=2)
+            enroll_utt, test_utt = random.choices(long_spk2utt[enroll_spk],
+                                                  k=2)
             f.write("{} {} {}\n".format(enroll_utt, test_utt, 'target'))
             test_utt = random.choice(long_spk2utt[nontarget_spk])
             f.write("{} {} {}\n".format(enroll_utt, test_utt, 'nontarget'))
+
 
 if __name__ == "__main__":
     fire.Fire(main)

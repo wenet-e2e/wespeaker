@@ -38,9 +38,8 @@ def gather_calibration_factors(wav_dur_scp, max_dur, score_norm_file,
     def reorder_values(value_1, value_2):
         max_value = max(value_1, value_2)
         min_value = min(value_1, value_2)
-        return "{:.4f} {:.4f} {:.4f} {:.4f}".format(min_value, 
-                                                    max_value, 
-                                                    max_value - min_value, 
+        return "{:.4f} {:.4f} {:.4f} {:.4f}".format(min_value, max_value,
+                                                    max_value - min_value,
                                                     max_value / min_value)
 
     # read factor from asnorm results
@@ -56,14 +55,15 @@ def gather_calibration_factors(wav_dur_scp, max_dur, score_norm_file,
                 idx1, idx2 = line[0], line[1]
                 dur_str = reorder_values(wavidx2dur[idx1], wavidx2dur[idx2])
                 mag_str = reorder_values(float(line[4]), float(line[5]))
-                cohort_mean_str = reorder_values(float(line[6]), float(line[7]))
-                fout.write('{} {} {} {} {} {} {}\n'.format(line[0], line[1], 
-                                                           line[3], line[2],
-                                                           dur_str, mag_str, 
-                                                           cohort_mean_str))
+                cohort_mean_str = reorder_values(float(line[6]),
+                                                 float(line[7]))
+                fout.write('{} {} {} {} {} {} {}\n'.format(
+                    line[0], line[1], line[3], line[2], dur_str, mag_str,
+                    cohort_mean_str))
 
 
 class LinearModel(nn.Module):
+
     def __init__(self, input_dim):
         super(LinearModel, self).__init__()
         self.linear = nn.Linear(input_dim, 1)
@@ -134,7 +134,9 @@ def train_calibration_model(calibration_factor_file, save_model_path):
 
     torch.save(model.state_dict(), save_model_path)
 
-def infer_calibration(calibration_factor_file, save_model_path, calibration_score_file):
+
+def infer_calibration(calibration_factor_file, save_model_path,
+                      calibration_score_file):
     llrs_list = []
     with open(calibration_factor_file, 'r', encoding='utf-8') as fin:
         lines = fin.readlines()
@@ -154,7 +156,9 @@ def infer_calibration(calibration_factor_file, save_model_path, calibration_scor
         for i, s in enumerate(lines):
             line = lines[i].strip().split()
             score = outputs[i].item()
-            fout.write('{} {} {} {}\n'.format(line[0], line[1], score, line[2]))
+            fout.write('{} {} {} {}\n'.format(line[0], line[1], score,
+                                              line[2]))
+
 
 if __name__ == "__main__":
     fire.Fire()
