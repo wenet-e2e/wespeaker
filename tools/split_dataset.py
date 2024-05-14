@@ -4,7 +4,7 @@ import argparse
 from sklearn.model_selection import train_test_split
 
 def add_length_cat(df):
-    categories = min(int(df.size*0.2/7 + 1), 7)
+    categories = min(int(df.size*0.2/5 + 1), 7)
     # print(df['subdir'].iloc[0],"split_size:", df.size, "categories:", categories)
     bin_edges = [df['length'].quantile(i) for i in np.linspace(0, 1.0, categories)]
     bin_edges[0] -= 1; bin_edges[-1] += 1
