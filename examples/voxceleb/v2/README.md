@@ -4,6 +4,17 @@
 * Scoring: cosine (sub mean of vox2_dev)
 * Metric: EER(%)
 
+* 🔥 UPDATE 2024.05.14: We support score calibration strategy (see [QMF](https://arxiv.org/pdf/2010.11255.pdf)), and obtain better performance.
+
+| Model | Params | Flops | LM | AS-Norm | QMF | vox1-O-clean | vox1-E-clean | vox1-H-clean |
+|:------|:------:|:------|:--:|:-------:|:---:|:------------:|:------------:|:------------:|
+| ResNet34-TSTP-emb256 | 6.63M | 4.55G | × | × | × | 0.862 | 1.053 | 1.966 |
+|                      |       |       | × | √ | × | 0.792 | 0.970 | 1.728 |
+|                      |       |       | × | √ | √ | 0.718 | 0.911 | 1.606 |
+|                      |       |       | √ | × | × | 0.797 | 0.943 | 1.702 |
+|                      |       |       | √ | √ | × | 0.723 | 0.874 | 1.537 |
+|                      |       |       | √ | √ | √ | 0.659 | 0.821 | 1.437 |
+
 * 🔥 UPDATE 2022.07.19: We apply the same setups as the winning system of CNSRC 2022 (see [cnceleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/cnceleb/v2) recipe for details), and obtain significant performance improvement.
     * LR scheduler warmup from 0
     * Remove one embedding layer in ResNet models
