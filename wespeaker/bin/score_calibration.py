@@ -28,12 +28,13 @@ from wespeaker.utils.file_utils import read_table
 
 
 def gather_calibration_factors(wav_dur_scp, max_dur, score_norm_file,
-                               calibration_factor_file):
-    wav_idx, dur_list = zip(*read_table(wav_dur_scp))
-    wavidx2dur = {
-        idx: min(float(dur), max_dur)
-        for idx, dur in zip(wav_idx, dur_list)
-    }
+                               calibration_factor_file, drop_duration=False):
+    if not drop_duration:
+        wav_idx, dur_list = zip(*read_table(wav_dur_scp))
+        wavidx2dur = {
+            idx: min(float(dur), max_dur)
+            for idx, dur in zip(wav_idx, dur_list)
+        }
 
     def reorder_values(value_1, value_2):
         max_value = max(value_1, value_2)
@@ -53,7 +54,10 @@ def gather_calibration_factors(wav_dur_scp, max_dur, score_norm_file,
             for line in tqdm(lines):
                 line = line.strip().split()
                 idx1, idx2 = line[0], line[1]
-                dur_str = reorder_values(wavidx2dur[idx1], wavidx2dur[idx2])
+                if drop_duration:
+                    dur_str = ""
+                else:
+                    dur_str = reorder_values(wavidx2dur[idx1], wavidx2dur[idx2])
                 mag_str = reorder_values(float(line[4]), float(line[5]))
                 cohort_mean_str = reorder_values(float(line[6]),
                                                  float(line[7]))
