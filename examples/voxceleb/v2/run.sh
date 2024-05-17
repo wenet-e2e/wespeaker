@@ -114,6 +114,19 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
 fi
 
 if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
+  echo "Score calibration ..."
+  local/score_calibration.sh \
+    --stage 1 --stop-stage 5 \
+    --score_norm_method $score_norm_method \
+    --calibration_trial "vox2_cali.kaldi" \
+    --cohort_set vox2_dev \
+    --top_n $top_n \
+    --data ${data} \
+    --exp_dir $exp_dir \
+    --trials "$trials"
+fi
+
+if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
   echo "Export the best model ..."
   python wespeaker/bin/export_jit.py \
     --config $exp_dir/config.yaml \
@@ -121,13 +134,13 @@ if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
     --output_file $exp_dir/models/final.zip
 fi
 
-if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
+if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
   echo "Large margin fine-tuning ..."
   lm_exp_dir=${exp_dir}-LM
   mkdir -p ${lm_exp_dir}/models
   # Use the pre-trained average model to initialize the LM training
   cp ${exp_dir}/models/avg_model.pt ${lm_exp_dir}/models/model_0.pt
-  bash run.sh --stage 3 --stop_stage 7 \
+  bash run.sh --stage 3 --stop_stage 8 \
       --data ${data} \
       --data_type ${data_type} \
       --config ${lm_config} \

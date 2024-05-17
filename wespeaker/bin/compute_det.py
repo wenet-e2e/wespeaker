@@ -26,9 +26,9 @@ def compute_det(scores_file, det_file):
     with open(scores_file) as readlines:
         for line in readlines:
             tokens = line.strip().split()
-            assert len(tokens) == 4
+            # assert len(tokens) == 4
             scores.append(float(tokens[2]))
-            labels.append(tokens[-1] == 'target')
+            labels.append(tokens[3] == 'target')
 
     scores = np.hstack(scores)
     labels = np.hstack(labels)

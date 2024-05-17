@@ -105,9 +105,14 @@ def main(score_norm_method,
                 normed_score = 0.5 * (
                     (score - enroll_mean[enroll_idx]) / enroll_std[enroll_idx]
                     + (score - test_mean[test_idx]) / test_std[test_idx])
-                fout.write('{} {} {:.5f} {}\n'.format(line[0], line[1],
-                                                      normed_score, line[3]))
-    logging.info("Over!")
+                # compute mag mean for score calibration
+                enroll_mag = np.linalg.norm(enroll_emb[enroll_idx])
+                test_mag = np.linalg.norm(test_emb[test_idx])
+                fout.write(
+                    '{} {} {:.5f} {} {:.4f} {:.4f} {:.4f} {:.4f}\n'.format(
+                        line[0], line[1], normed_score, line[3], enroll_mag,
+                        test_mag, enroll_mean[enroll_idx],
+                        test_mean[test_idx]))
 
 
 if __name__ == "__main__":

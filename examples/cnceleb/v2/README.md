@@ -2,6 +2,15 @@
 
 * Setup: fbank80, num_frms200, epoch150, ArcMargin, aug_prob0.6, speed_perturb (no spec_aug)
 * test_trials: CNC-Eval-Avg.lst
+
+* 🔥 UPDATE 2024.05.16: We update to support score calibration for cnceleb. It will improve the EER but degrade minDCF comparing with asnorm results.
+
+| Model                             | Params    | FLOPs   | LM  | AS-Norm   | Score Calibration | EER (%)   | minDCF (p=0.01)  |
+| :------------------------------   | :-------: | :-----: | :-: | :-------: | :---------------: | :-------: | :--------------: |
+| ResNet34-TSTP-emb256              | 6.63M     | 4.55 G  | ×   | ×         | ×                 | 7.124     | 0.408            |
+|                                   |           |         | ×   | √         | ×                 | 6.742     | 0.367            |
+|                                   |           |         | ×   | √         | √                 | 6.336     | 0.374            |
+
 * 🔥 UPDATE 2022.07.12: We update this recipe according to the setups in the winning system of CNSRC 2022, and get obvious performance improvement compared with the old recipe. Check the [commit1](https://github.com/wenet-e2e/wespeaker/pull/63/commits/b08804987b3bbb26f4963cedf634058474c743dd), [commit2](https://github.com/wenet-e2e/wespeaker/pull/66/commits/6f6af29197f0aa0a5d1b1993b7feb2f41b97891f) for details.
     * LR scheduler warmup from 0
     * Remove one embedding layer
