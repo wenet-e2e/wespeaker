@@ -60,7 +60,7 @@ pre-commit install  # for clean and tidy code
 ```
 
 ## 🔥 News
-* 2024.05.15: Add support for score calibration, see [#320](https://github.com/wenet-e2e/wespeaker/pull/320)
+* 2024.05.15: Add support for [score calibration](https://arxiv.org/pdf/2211.00815), see [#320](https://github.com/wenet-e2e/wespeaker/pull/320)
 * 2024.04.25: Add support for the gemini-dfresnet model, see [#291](https://github.com/wenet-e2e/wespeaker/pull/291)
 * 2024.04.23: Support MNN inference engine in runtime, see [#310](https://github.com/wenet-e2e/wespeaker/pull/310)
 * 2024.04.02: Release [Wespeaker document](http://wenet.org.cn/wespeaker) with detailed model-training tutorials, introduction of various runtime platforms, etc.
