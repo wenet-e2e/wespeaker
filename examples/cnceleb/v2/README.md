@@ -4,6 +4,7 @@
 * test_trials: CNC-Eval-Avg.lst
 
 * 🔥 UPDATE 2024.05.16: We update to support score calibration for cnceleb. It will improve the EER but degrade minDCF comparing with asnorm results.
+
 | Model                             | Params    | FLOPs   | LM  | AS-Norm   | Score Calibration | EER (%)   | minDCF (p=0.01)  |
 | :------------------------------   | :-------: | :-----: | :-: | :-------: | :---------------: | :-------: | :--------------: |
 | ResNet34-TSTP-emb256              | 6.63M     | 4.55 G  | ×   | ×         | ×                 | 7.124     | 0.408            |
