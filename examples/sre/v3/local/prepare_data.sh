@@ -37,7 +37,7 @@ compute_total_utterance_duration=true # Whether to compute the total utterance d
                                       # Can be used as an addition filtering requirement. Currently only supported for 
                                       # VoxCeleb. 
 compute_vad_for_voxceleb=true         
-include_voxceleb_vad_in_train_data=false # If false, only CTS vad will be inluded which means that VAD will not be applied for VoxCeleb during training. 
+include_voxceleb_vad_in_train_data=true # If false, only CTS vad will be inluded which means that VAD will not be applied for VoxCeleb during training. 
 
 . tools/parse_options.sh || exit 1
 
@@ -190,7 +190,7 @@ fi
 
 if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
 
-    false && {
+    true && {
     for dset in cts vox_gsmfr; do
 	echo $dset
         if [ -f ${data}/${dset}/vad ] && ( [ $dset != "vox_gsmfr" ] || $compute_vad_for_voxceleb ) ;then
@@ -203,6 +203,7 @@ if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
     done
     }    
 
+    true && {
     # The below need to be improved to work for a general wav.scp. It only works for the specif format of voxceleb wav.scp 
     # at the moment.
     for dset in vox_gsmfr; do
@@ -228,6 +229,7 @@ if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
 	    cp ${data}/${dset}/utt2dur ${data}/${dset}-bk/             # Good to have backup also of this 
         fi
     done
+    }
 fi
 
 if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
