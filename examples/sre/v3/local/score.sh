@@ -37,22 +37,35 @@ echo "  - xvectors $xvectors"
 echo "  - cal_mean dir $cal_mean_dir"
 echo "  - exp_dir $exp_dir"
 
-output_name=$(echo $cal_mean_dir | sed "s:.*embeddings/::" | sed -e "s:/:_:g")
+
 scores_dir=${exp_dir}/scores
+
+echo $cal_mean_dir
+
+if [ -z $cal_mean_dir ];then
+    cal_mean_string="--cal_mean False --cal_mean_dir xxxx"                                 # For the moment, score.py requires something to be input to --cal_mean_dir
+    output_name=$(basename $xvectors | sed "s:xvector::"  | sed "s:.scp::" | sed "s:^_::") # Changes xvector_proc_embd_proc_sre16_major.scp -> proc_embd_proc_sre16_major
+else                                                                                       #         xvector.scp -> ''  (empty string)
+    cal_mean_string="--cal_mean True --cal_mean_dir $cal_mean_dir"
+    output_name="mean_$(echo $cal_mean_dir | sed "s:.*embeddings/::" | sed -e "s:/:_:g")"  # Name will be e.g. mean_sre16_major if sre16/major data is used
+fi                                                                                         # for mean subtraction.                    
+
+
+echo $cal_mean_string
+echo $output_name
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "apply cosine scoring ..."
   mkdir -p ${exp_dir}/scores
   for x in $(echo $trials | tr "," " "); do
-    echo $x
+    echo "Trials $x"
     python wespeaker/bin/score.py \
       --exp_dir ${exp_dir} \
       --eval_scp_path $xvectors \
-      --cal_mean True \
-      --cal_mean_dir $cal_mean_dir \
+      $cal_mean_string \
       ${x}
-    xx=$(basename  $x)  
-    mv ${scores_dir}/${xx}.score ${scores_dir}/${xx}.mean_${output_name}_cos.score
+    xx=$(basename  $x)
+    mv ${scores_dir}/${xx}.score ${scores_dir}/${xx}.${output_name}_cos.score
   done
 fi
 
@@ -66,11 +79,11 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
         --p_target 0.01 \
         --c_fa 1 \
         --c_miss 1 \
-        ${scores_dir}/${xx}.mean_${output_name}_cos.score \
-        2>&1 | tee ${scores_dir}/${xx}.mean_${output_name}_cos.result
+        ${scores_dir}/${xx}.${output_name}_cos.score \
+        2>&1 | tee ${scores_dir}/${xx}.${output_name}_cos.result
 
     echo "compute DET curve ..."
     python wespeaker/bin/compute_det.py \
-        ${scores_dir}/${xx}.mean_${output_name}_cos.score
+        ${scores_dir}/${xx}.${output_name}_cos.score
   done
 fi

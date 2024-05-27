@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Copyright (c) 2023 Shuai Wang (wsstriving@gmail.com)
+#               2024 Johan Rohdin (rohdin@fit.vutbr.cz)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -79,13 +80,14 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
     python wespeaker/bin/eval_plda.py \
       --enroll_scp_path ${exp_dir}/embeddings/$enroll_scp \
       --test_scp_path ${exp_dir}/embeddings/$test_scp \
-      --indomain_scp ${exp_dir}/embeddings/$indomain_scp \
       --utt2spk $utt2spk \
       --trial ${x} \
       --score_path ${exp_dir}/scores/${xx}.proc_${preproc_name}_plda_adapt.score \
       --model_path ${exp_dir}/plda_adapt
   done
 fi
+#--indomain_scp ${exp_dir}/embeddings/$indomain_scp \ Note: This option was used before the new code for preprocessing.
+# With this code, all preprocessing takes place in the preprocessing chain. So we don't include it in the above code anymore. 
 
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
     echo "compute metrics (EER/minDCF) ..."

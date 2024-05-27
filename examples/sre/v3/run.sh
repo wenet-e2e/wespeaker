@@ -7,11 +7,24 @@
 
 . ./path.sh || exit 1
 
-stage=9
-stop_stage=9
+# Stages 
+#  1. Data preparation
+#  2. Shard / raw list creation
+#  3. Training
+#  4. Model averaging, embedding extraction
+#  5. Export model
+#  6. Cosine scoring using cts_aug, sre16_major, sre18_dev_unlabeled for mean subtraction but no other embedding processing
+#  7. PLDA scoring, including length-norm, lda and subtraction of the above mentioned sets. See details at the stage.
+#  8. Adapted PLDA scoring. Same embedding processing as above.
+#  9. Cosine scoring with same embedding processing as above.
+# 10. Summarization of results.
+
+stage=1
+stop_stage=10
 
 data=data
 data_type="shard"  # shard/raw
+
 # whether augment the PLDA data
 aug_plda_data=1
 
@@ -20,7 +33,7 @@ exp_dir=exp/ResNet34-TSTP-emb256-fbank64-num_frms200-aug0.6-spFalse-saFalse-Soft
 
 # gpus="[0,1]" # For slurm, just specify this according to the number of GPUs you have. 
 num_gpus_train=2  # If this variable is defined, safe_gpu will be used to select the free GPUs. 
-                  # If so, it will override whatever may have been specified in gpus="[x,x]
+                  # If so, it will override whatever may have been specified in gpus="[x,...]
                   # Typically, you would want to use this option for SGE.  
                   # If this variable is not set, or set to '', the script will assume that 
                   # the GPUs to use are specified in the variable "gpus" as above.
@@ -33,9 +46,11 @@ checkpoint=
 
 . tools/parse_options.sh || exit 1
 
+############################################################################################
+# The names of various lists are not consistent across sets. Therefore we need some mappings.
 
-# Different set may use different backend training sets, therefore we need several trial lists
-# Using "," instead of space as separator is a bit ugly but it seems parse_options,sh connot
+# Different sets may use different backend adaptation sets, therefore we need several trial 
+# lists. Using "," instead of space as separator is a bit ugly but it seems parse_options,sh connot
 # process an argument with space properly.
 declare -A trials=( ["sre16_eval"]='data/sre16/eval/trials,data/sre16/eval/trials_yue,data/sre16/eval/trials_tgl'
     ["sre18_dev"]="data/sre18/dev/sre18_dev_trials"
@@ -61,12 +76,18 @@ declare -A utt2mdl=( ["sre16_eval"]='data/sre16/eval/enrollment/utt2spk'
     ["sre21_dev"]="data/sre21/dev/enrollment/utt2mdl_id"
     ["sre21_eval"]="data/sre21/eval/enrollment/utt2mdl_id" )
 
+declare -A mdl2utt=( ["sre16_eval"]='data/sre16/eval/enrollment/spk2utt'
+    ["sre18_dev"]="data/sre18/dev/enrollment/mdl_id2utt"
+    ["sre18_eval"]="data/sre18/eval/enrollment/mdl_id2utt"
+    ["sre21_dev"]="data/sre21/dev/enrollment/mdl_id2utt"
+    ["sre21_eval"]="data/sre21/eval/enrollment/mdl_id2utt" )
+
 declare -A xvectors=( ["sre16_eval"]="sre16/eval/xvector.scp"
     ["sre18_dev"]="sre18/dev/xvector.scp"
     ["sre18_eval"]="sre18/eval/xvector.scp"
     ["sre21_dev"]="sre21/dev/xvector.scp"
     ["sre21_eval"]="sre21/eval/xvector.scp" )
-
+############################################################################################
 
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
@@ -112,18 +133,18 @@ fi
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     
   true && {  
-  echo "Convert train data to ${data_type}..."
-  for dset in cts_vox; do
-        python tools/make_shard_list.py --num_utts_per_shard 1000 \
-            --num_threads 12 \
-            --prefix shards \
-            --shuffle \
-            --vad_file ${data}/$dset/vad \
-            ${data}/$dset/wav.scp ${data}/$dset/utt2spk \
-            ${data}/$dset/shards ${data}/$dset/shard.list
-  done
+      echo "Convert train data to ${data_type}..."
+      for dset in cts_vox; do
+	  python tools/make_shard_list.py --num_utts_per_shard 1000 \
+              --num_threads 12 \
+              --prefix shards \
+              --shuffle \
+              --vad_file ${data}/$dset/vad \
+              ${data}/$dset/wav.scp ${data}/$dset/utt2spk \
+              ${data}/$dset/shards ${data}/$dset/shard.list
+      done
   }
-
+  
   true && {  
       echo "Convert data for PLDA backend training and evaluation to raw format..."
       if [ $aug_plda_data = 0 ];then
@@ -131,9 +152,12 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
       else
 	  sre_plda_data=cts_aug
       fi
-
+      
       # Raw format for backend and evaluation data
-      for dset in ${sre_plda_data} sre16/major sre16/eval/enrollment sre16/eval/test sre18/dev/enrollment sre18/dev/test sre18/dev/unlabeled sre18/eval/enrollment sre18/eval/test sre21/dev/enrollment sre21/dev/test sre21/eval/enrollment sre21/eval/test;do
+      for dset in ${sre_plda_data} sre16/major sre16/eval/enrollment sre16/eval/test \
+	  sre18/dev/enrollment sre18/dev/test sre18/dev/unlabeled sre18/eval/enrollment sre18/eval/test \
+	  sre21/dev/enrollment sre21/dev/test sre21/eval/enrollment sre21/eval/test;do
+	  
 	  # The below requires utt2spk to be present. So create a "dummy" one if we don't have it.
 	  # This is for example the case with sre21 eval data.
 	  if [ ! -f $data/$dset/utt2spk ];then
@@ -142,13 +166,12 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
 	  
 	  python tools/make_raw_list.py --vad_file ${data}/$dset/vad \
               ${data}/$dset/wav.scp \
-              ${data}/$dset/utt2spk ${data}/$dset/raw.list
-	  
+              ${data}/$dset/utt2spk ${data}/$dset/raw.list      
       done
   }
   
   true && {
-  # Convert all musan and rirs data to LMDB if they don't already exist.
+      # Convert all musan and rirs data to LMDB if they don't already exist.
       for x in rirs musan;do
 	  if [ ! -d $data/$x/lmdb ];then
 	      python tools/make_lmdb.py ${data}/$x/wav.scp ${data}/$x/lmdb
@@ -179,30 +202,30 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
       --reverb_data ${data}/rirs/lmdb \
       --noise_data ${data}/musan/lmdb \
       ${checkpoint:+--checkpoint $checkpoint}
-
 fi
 
 
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
 
-  true &&  { 
-  echo "Do model average ..."
-  avg_model=$exp_dir/models/avg_model.pt
-  python wespeaker/bin/average_model.py \
-    --dst_model $avg_model \
-    --src_path $exp_dir/models \
-    --num ${num_avg}
-
-  model_path=$avg_model
-  if [[ $config == *repvgg*.yaml ]]; then
-    echo "convert repvgg model ..."
-    python wespeaker/models/convert_repvgg.py \
-      --config $exp_dir/config.yaml \
-      --load $avg_model \
-      --save $exp_dir/models/convert_model.pt
-    model_path=$exp_dir/models/convert_model.pt
-  fi
+  false &&  { 
+      echo "Do model average ..."
+      avg_model=$exp_dir/models/avg_model.pt
+      python wespeaker/bin/average_model.py \
+	  --dst_model $avg_model \
+	  --src_path $exp_dir/models \
+	  --num ${num_avg}
+      
+      model_path=$avg_model
+      if [[ $config == *repvgg*.yaml ]]; then
+	  echo "convert repvgg model ..."
+	  python wespeaker/models/convert_repvgg.py \
+	      --config $exp_dir/config.yaml \
+	      --load $avg_model \
+	      --save $exp_dir/models/convert_model.pt
+	  model_path=$exp_dir/models/convert_model.pt
+      fi
   }
+
   avg_model=$exp_dir/models/avg_model.pt
   model_path=$avg_model
 
@@ -275,20 +298,6 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
     }
 
 fi
-
-
-true && {
-# This is a hack for BUT since these files are present in the scp but not in utt2spk which causes an error.
-# The files have been added to our audio data dirs and the scp is created to include all files there.
-grep -v SANITY $exp_dir/embeddings/sre21/eval/enrollment/xvector.scp > $exp_dir/embeddings/sre21/eval/enrollment/xvector2.scp
-grep -v SANITY $exp_dir/embeddings/sre21/dev/enrollment/xvector.scp > $exp_dir/embeddings/sre21/dev/enrollment/xvector2.scp
-grep -v SANITY $exp_dir/embeddings/sre18/eval/enrollment/xvector.scp > $exp_dir/embeddings/sre18/eval/enrollment/xvector2.scp
-grep -v SANITY $exp_dir/embeddings/sre18/dev/enrollment/xvector.scp > $exp_dir/embeddings/sre18/dev/enrollment/xvector2.scp
-enr_scp["sre18_dev"]="sre18/dev/enrollment/xvector2.scp"
-enr_scp["sre18_eval"]="sre18/eval/enrollment/xvector2.scp"
-enr_scp["sre21_dev"]="sre21/dev/enrollment/xvector2.scp"
-enr_scp["sre21_eval"]="sre21/eval/enrollment/xvector2.scp"
-}
 
 
 if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
@@ -374,7 +383,15 @@ fi
 
 
 if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
+
   echo "Score with adapted PLDA ..."  
+
+  # --indomain_scp is by default sre16/major/xvector.scp in local/score_plda_adapt.sh. 
+  # It is used for adaptation. Note that in other recipes, indomain_scp is passed to
+  # wespeaker/bin/eval_plda.py insdide local/score_plda_adapt.sh in which case it will
+  # be used for mean subtraction before scoring. In this recipe, mean subtraction is,
+  # however, part of the backend preprocessing chain and is therefore not used in
+  # wespeaker/bin/eval_plda.py.
 
   echo "### --- Mean: SRE16 Major --- ###" 
   true && {
@@ -388,8 +405,9 @@ if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
 
   preprocessing_path_sre18_unlab=${exp_dir}/embd_proc_sre18_dev_unlabeled.pkl
   echo "### --- Mean: SRE18 Unlabeled --- ###" 
-  # Stage 1 is only needed to be run once per domain, but since it is very fast we keep it 
-  # in the loop for keeping things clean.
+  # Stage 1 is only needed to be run once per domain so we could have set stage 1-4 for 
+  # sre18_eval and stage 1,3,4 for sre18_dev but since stage 2 is very fast we keep it 
+  # in order to keep the script clean.
   true && {
   for dset in sre18_eval sre18_dev;do
 
@@ -400,15 +418,76 @@ if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
 	  --aug_plda_data ${aug_plda_data} \
 	  --enroll_scp ${enr_scp[$dset]} \
 	  --test_scp ${test_scp[$dset]} \
-	  --indomain_scp sre18/dev/unlabeled/xvector.scp \
 	  --preprocessing_path "$preprocessing_path_sre18_unlab" \
+	  --indomain_scp sre18/dev/unlabeled/xvector.scp \
 	  --utt2spk ${utt2mdl[$dset]} \
 	  --trials ${trials[$dset]}
   done
   }
 fi
 
+
 if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
+    echo "### --- Score using Cosine Distance --- ###"
+
+    # The preprocessed embeddings are already stored but we need to create the lists as
+    # score.sh wants them. This is a bit messy and therefore kept in a separate script.
+    ./local/create_preproc_embd_lists.sh $exp_dir 
+
+    # Note that cal_mean_dir should not be provided since the embedding preprocessing includes mean subtration.
+
+    # Use SRE16 unlabeled data for mean subraction
+    echo "### --- Mean: SRE16 unlabeled ("SRE16 Major")  --- ###" 
+    true && {
+    preproc_name=embd_proc_sre16_major
+    for dset in sre16_eval;do		
+	# The xvector list for the relevant preprocessing chain. 
+	new_xvectors=$(echo $exp_dir/embeddings/${xvectors[$dset]} | sed "s:\.scp:_proc_$preproc_name\.scp:")  	
+	echo " * $new_xvectors"
+	local/score.sh \
+	    --stage 1 --stop-stage 2 \
+	    --trials ${trials[$dset]} \
+            --xvectors $new_xvectors \
+            --exp_dir $exp_dir
+    done
+    
+    }
+    
+    # Use SRE18 unlabeled data for mean subraction
+    echo "### --- Mean: SRE18 Unlabeled --- ###" 
+    true && {
+    preproc_name=embd_proc_sre18_dev_unlabeled
+    for dset in sre18_eval sre18_dev;do
+	new_xvectors=$(echo $exp_dir/embeddings/${xvectors[$dset]} | sed "s:\.scp:_proc_$preproc_name\.scp:")  
+	echo " * $new_xvectors"
+	local/score.sh \
+	    --stage 1 --stop-stage 2 \
+	    --trials ${trials[$dset]} \
+            --xvectors $new_xvectors \
+            --exp_dir $exp_dir 
+    done
+    }
+
+    # Use backend training data for mean subraction
+    echo "### --- Mean: SRE --- ###" 
+    true && {
+    preproc_name=embd_proc_cts_aug
+    for dset in sre16_eval sre18_eval sre18_dev sre21_eval sre21_dev;do
+	new_xvectors=$(echo $exp_dir/embeddings/${xvectors[$dset]} | sed "s:\.scp:_proc_$preproc_name\.scp:")  
+	echo " * $new_xvectors"
+	local/score.sh \
+	    --stage 1 --stop-stage 2 \
+	    --trials ${trials[$dset]} \
+            --xvectors $new_xvectors \
+            --exp_dir $exp_dir 
+    done
+    }
+
+fi
+
+
+
+if [ ${stage} -le 10 ] && [ ${stop_stage} -ge 10 ]; then
     # Summarize results
     echo ""
     echo "----------------------------------------------------"
@@ -424,7 +503,10 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
     done
     echo $eval_data > results_summary.txt
     # Collect the results
-    for sys in mean_cts_aug_cos mean_sre16_major_cos mean_sre18_dev_unlabeled_cos proc_embd_proc_cts_aug_plda proc_embd_proc_sre16_major_plda proc_embd_proc_sre16_major_plda_adapt proc_embd_proc_sre18_dev_unlabeled_plda proc_embd_proc_sre18_dev_unlabeled_plda_adapt;do 	
+    for sys in mean_cts_aug_cos mean_sre16_major_cos mean_sre18_dev_unlabeled_cos \
+               proc_embd_proc_cts_aug_cos proc_embd_proc_sre16_major_cos proc_embd_proc_sre18_dev_unlabeled_cos \
+               proc_embd_proc_cts_aug_plda proc_embd_proc_sre16_major_plda proc_embd_proc_sre18_dev_unlabeled_plda \
+               proc_embd_proc_sre16_major_plda_adapt  proc_embd_proc_sre18_dev_unlabeled_plda_adapt;do 	
 	res="$sys,"
 	for dset in sre16_eval sre18_dev sre18_eval sre21_dev sre21_eval;do
 	    for x in $(echo ${trials[$dset]} | tr "," " "); do
