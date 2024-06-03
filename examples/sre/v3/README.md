@@ -67,13 +67,13 @@ These is setting are arguably somewhat weird. Applying block one also to voxcele
 
 
 ### Some data statistics
-|                                              |  CTS    |      |  Vox    |      |
-|                                              |  #utt   | #spk | #utt    | #spk | Comment                                                                           |
-|----------------------------------------------|---------|------|---------|------|                                                                                   |
-|org                                           |  605760 | 6867 | 1245525 | 7245 |                                                                                   |
-|exclud recording with nospeech acording to VAD|  605704 | 6867 | 1245455 | 7245 | VAD is a bit random so this number could vary slightly, especially for voxceleb   |
-|After filtering according voiced duration     |  604774 | 6867 |  816411 | 7245 | Accordingly, here too. We don't use this for voxceleb in the current settings.    |
-|After filtering according tota duration       |  -      | -    |  868326 | 7245 | Haven't checked this for CTS.                                                     |
+|                                              |  CTS #utt   | CTS #spk | CTS #utt | CTS #spk | comment|
+| ---                                          |  ---    | ---  |    ---  |  --- |  --- |
+|Origanal data                                 |  605760 | 6867 | 1245525 | 7245 |      |
+|exclud recording with nospeech acording to VAD|  605704 | 6867 | 1245455 | 7245 | VAD is a bit random so this number could vary slightly, especially for voxceleb |
+|After filtering according voiced duration     |  604774 | 6867 |  816411 | 7245 | Accordingly, here too. We don't use this for voxceleb in the current settings.  |
+|After filtering according tota duration       |  -      | -    |  868326 | 7245 | Haven't checked this for CTS.                   
+
 No speaker are discarded in block three with the current setting.
    
 
