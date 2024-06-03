@@ -88,6 +88,7 @@ Very few things have been tuned. For example the following could be low-hanging 
 * Utterance durations of the training segments. 
 * Shall voxceleb be included? Is applying the GSM codec a good idea? (Note that GSM codec is applied in the data preparation stage while augmentation is applied at training time, i.e, GSM codec comes before augmentations since in reality, noise and reverberation comes before the data is recorded and encoded. This is not so realistica but consistent with CTS where we also apply augmentation at the already recorded audio.)
 * The other architectures. 
+
 We tune this futher in the future. We are also happy to hear about any such results obtained by others. 
 
 
