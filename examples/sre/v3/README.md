@@ -35,7 +35,7 @@ A processing chain is specified e.g., as follows
 ```
 mean-subtract --scp $mean1_scp | length-norm | lda --scp $lda_scp --utt2spk $utt2spk --dim $lda_dim | length-norm"
 ```
-The script ```wespeaker/bin/prep_embd_proc.py``` takes such a processing chain as input, loops through the processing steps (separated by ```|``), calculates 
+The script ```wespeaker/bin/prep_embd_proc.py``` takes such a processing chain as input, loops through the processing steps (separated by ```|```), calculates 
 the necessary processing parameters (means, lda transforms etc) and stores the whole processing chain with parameters in 
 pickle format. The parameters for each step will be calculated sequentially and the data specified for its parameter estimation will 
 be processed by the  earlier steps. Note that the data for the different steps can be different. For example when estimating lda in the above chain, the data given by ```$lda_scp``` will first be processed by ```mean-subtract``` whose parameters were estimated by ```$mean1_scp``` which could be a different dataset.
