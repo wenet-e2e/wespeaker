@@ -16,7 +16,7 @@
 
 stage=-1
 stop_stage=-1
-sad_type="system"
+sad_type="oracle"
 
 . tools/parse_options.sh
 

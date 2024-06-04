@@ -22,10 +22,10 @@ This is the roadmap for wespeaker version 2.0.
   - [ ] Documents
     - [ ] Speaker embedding learning basics
     - [ ] Core code explanation
-    - [ ] Step-by-step tutorials
-      - [ ] VoxCeleb Supervised
-      - [ ] VoxCeleb Self-supervised
-      - [ ] VoxSRC Diarization
+    - [x] Step-by-step tutorials
+      - [x] VoxCeleb Supervised
+      - [x] VoxCeleb Self-supervised
+      - [x] VoxSRC Diarization
 
 ## Version 1.0 （Time: 2022.09)
 
@@ -67,6 +67,7 @@ This is the roadmap for wespeaker version 1.0.
     - [x] [RepVGG](https://arxiv.org/pdf/2101.03697.pdf)
     - [x] [CAM++](https://arxiv.org/pdf/2303.00332.pdf)
     - [x] [ERes2Net](https://arxiv.org/pdf/2305.12838.pdf)
+    - [x] [Gemini-dfresnet](https://arxiv.org/abs/2312.03620)
 * Pooling Functions
     - [x] TAP(mean) / TSDP(std) / TSTP(mean+std)
         - Comparison of mean/std pooling can be found in [shuai_iscslp](https://x-lance.sjtu.edu.cn/en/papers/2021/iscslp21_shuai_1_.pdf), [anna_arxiv](https://arxiv.org/pdf/2203.10300.pdf)
@@ -85,9 +86,11 @@ This is the roadmap for wespeaker version 1.0.
     - [x] Cosine
     - [x] PLDA
     - [x] Score Normalization (AS-Norm)
+    - [x] Quality-aware Score Calibration
 * Metric
     - [x] EER
     - [x] minDCF
+    - [x] DER
 * Online Augmentation
     - [x] Noise && RIR
     - [x] Speed Perturb
@@ -100,6 +103,7 @@ This is the roadmap for wespeaker version 1.0.
     - [x] Python Binding
     - [x] Triton Inference Server on verification && diarization in GPU deployment
     - [x] C++ Onnxruntime
+    - [x] MNN
 * Self-Supervised Learning (SSL)
     - [x] [DINO](https://openaccess.thecvf.com/content/ICCV2021/papers/Caron_Emerging_Properties_in_Self-Supervised_Vision_Transformers_ICCV_2021_paper.pdf)
     - [x] [MoCo](https://openaccess.thecvf.com/content_CVPR_2020/papers/He_Momentum_Contrast_for_Unsupervised_Visual_Representation_Learning_CVPR_2020_paper.pdf)

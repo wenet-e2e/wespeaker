@@ -20,8 +20,9 @@
 
 #ifdef USE_ONNX
 #include "speaker/onnx_speaker_model.h"
-#elif USE_BPU
-#include "speaker/bpu_speaker_model.h"
+#endif
+#ifdef USE_MNN
+#include "speaker/mnn_speaker_model.h"
 #endif
 
 namespace wespeaker {
@@ -50,6 +51,8 @@ SpeakerEngine::SpeakerEngine(const std::string& model_path, const int feat_dim,
   OnnxSpeakerModel::SetGpuDeviceId(0);
 #endif
   model_ = std::make_shared<OnnxSpeakerModel>(model_path);
+#elif USE_MNN
+  model_ = std::make_shared<MnnSpeakerModel>(model_path, kNumGemmThreads);
 #elif USE_BPU
   model_ = std::make_shared<BpuSpeakerModel>(model_path);
 #endif
@@ -117,11 +120,11 @@ void SpeakerEngine::ExtractFeature(
           }
           chunk_feat.insert(
               chunk_feat.end(), chunk_feat.begin(),
-              chunk_feat.begin() + num_chunk_frames_ - chunk_feat.size());
+              chunk_feat.begin() + (num_chunk_frames_ - chunk_feat.size()));
         } else {
           chunk_feat.insert(chunk_feat.end(), (*chunks_feat)[0].begin(),
-                            (*chunks_feat)[0].begin() + num_chunk_frames_ -
-                                chunk_feat.size());
+                            (*chunks_feat)[0].begin() + (num_chunk_frames_ -
+                                chunk_feat.size()));
         }
         CHECK_EQ(chunk_feat.size(), num_chunk_frames_);
         chunks_feat->emplace_back(chunk_feat);

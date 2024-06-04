@@ -2,6 +2,8 @@
 
 # Copyright 2022 Hongji Wang (jijijiang77@gmail.com)
 #           2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
+#           2022 Zhengyang Chen (chenzhengyang117@gmail.com)
+#           2024 Qibing Bai (kibing.bai@gmail.com)
 
 . ./path.sh || exit 1
 
@@ -11,29 +13,32 @@ stop_stage=-1
 data=data
 data_type="shard"  # shard/raw
 
-config=conf/campplus.yaml
-exp_dir=exp/CAMPPlus-TSTP-emb512-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
+config=conf/ecapa_tdnn_ft.yaml
+exp_dir=exp/ECAPA_TDNN_GLOB_c1024-ASTP-emb192-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-fineTuneDINO-SGD-epoch50
 gpus="[0,1]"
-num_avg=10
+num_avg=3
 checkpoint=
 
-trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
+# averaged model after self-supervised pre-training (see v3 for details)
+model_init=path/to/init/model
+
+trials="CNC-Eval-Concat.lst CNC-Eval-Avg.lst"
 score_norm_method="asnorm"  # asnorm/snorm
 top_n=300
 
 # setup for large margin fine-tuning
-lm_config=conf/campplus_lm.yaml
+lm_config=conf/ecapa_tdnn_lm.yaml
 
 . tools/parse_options.sh || exit 1
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
-  echo "Prepare datasets ..."
+  echo "Preparing datasets ..."
   ./local/prepare_data.sh --stage 2 --stop_stage 4 --data ${data}
 fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
   echo "Covert train and test data to ${data_type}..."
-  for dset in vox2_dev vox1; do
+  for dset in cnceleb_train eval; do
     if [ $data_type == "shard" ]; then
       python tools/make_shard_list.py --num_utts_per_shard 1000 \
           --num_threads 16 \
@@ -61,10 +66,11 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
       --gpus $gpus \
       --num_avg ${num_avg} \
       --data_type "${data_type}" \
-      --train_data ${data}/vox2_dev/${data_type}.list \
-      --train_label ${data}/vox2_dev/utt2spk \
+      --train_data ${data}/cnceleb_train/${data_type}.list \
+      --train_label ${data}/cnceleb_train/utt2spk \
       --reverb_data ${data}/rirs/lmdb \
       --noise_data ${data}/musan/lmdb \
+      ${model_init:+--model_init $model_init} \
       ${checkpoint:+--checkpoint $checkpoint}
 fi
 
@@ -87,7 +93,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   fi
 
   echo "Extract embeddings ..."
-  local/extract_vox.sh \
+  local/extract_cnc.sh \
     --exp_dir $exp_dir --model_path $model_path \
     --nj 4 --gpus $gpus --data_type $data_type --data ${data}
 fi
@@ -96,8 +102,8 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
   echo "Score ..."
   local/score.sh \
     --stage 1 --stop-stage 2 \
-    --data ${data} \
     --exp_dir $exp_dir \
+    --data ${data} \
     --trials "$trials"
 fi
 
@@ -106,27 +112,14 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
   local/score_norm.sh \
     --stage 1 --stop-stage 3 \
     --score_norm_method $score_norm_method \
-    --cohort_set vox2_dev \
+    --cohort_set cnceleb_train \
     --top_n $top_n \
-    --data ${data} \
     --exp_dir $exp_dir \
+    --data ${data} \
     --trials "$trials"
 fi
 
 if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
-  echo "Score calibration ..."
-  local/score_calibration.sh \
-    --stage 1 --stop-stage 5 \
-    --score_norm_method $score_norm_method \
-    --calibration_trial "vox2_cali.kaldi" \
-    --cohort_set vox2_dev \
-    --top_n $top_n \
-    --data ${data} \
-    --exp_dir $exp_dir \
-    --trials "$trials"
-fi
-
-if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
   echo "Export the best model ..."
   python wespeaker/bin/export_jit.py \
     --config $exp_dir/config.yaml \
@@ -134,19 +127,28 @@ if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
     --output_file $exp_dir/models/final.zip
 fi
 
-if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
+# ================== Large margin fine-tuning ==================
+# for reference: https://arxiv.org/abs/2206.11699
+# It shoule be noted that the large margin fine-tuning
+# is optional. It often be used in speaker verification
+# challenge to further improve performance. This training
+# proces will take longer segment as input and will take
+# up more gpu memory.
+
+if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
   echo "Large margin fine-tuning ..."
   lm_exp_dir=${exp_dir}-LM
   mkdir -p ${lm_exp_dir}/models
   # Use the pre-trained average model to initialize the LM training
   cp ${exp_dir}/models/avg_model.pt ${lm_exp_dir}/models/model_0.pt
-  bash run.sh --stage 3 --stop_stage 8 \
+  bash run.sh --stage 3 --stop_stage 7 \
       --data ${data} \
       --data_type ${data_type} \
       --config ${lm_config} \
       --exp_dir ${lm_exp_dir} \
       --gpus $gpus \
       --num_avg 1 \
+      --model_init "" \
       --checkpoint ${lm_exp_dir}/models/model_0.pt \
       --trials "$trials" \
       --score_norm_method ${score_norm_method} \

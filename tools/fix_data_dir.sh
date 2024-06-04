@@ -16,8 +16,8 @@ spk_extra_files=
 . tools/parse_options.sh
 
 if [ $# != 1 ]; then
-  echo "Usage: tools/data/fix_data_dir.sh <data-dir>"
-  echo "e.g.: tools/data/fix_data_dir.sh data/train"
+  echo "Usage: tools/fix_data_dir.sh <data-dir>"
+  echo "e.g.: tools/fix_data_dir.sh data/train"
   echo "This script helps ensure that the various files in a data directory"
   echo "are correctly sorted and filtered, for example removing utterances"
   echo "that have no features (if feats.scp is present)"
