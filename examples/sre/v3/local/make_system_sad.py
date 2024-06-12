@@ -99,11 +99,13 @@ def silero_vad(utt_wav_pair, repo_path, min_duration,
         os.path.join(repo_path, 'files/silero_vad.jit'))
 
     utt, wav = utt_wav_pair
-    
+
     wav_f = wav
 
     wav, sr = load_wav(wav)
-    assert sr == sampling_rate, "Audio file {} has wrong sampling rate ({} instead of {})".format(wav_f, sr, sampling_rate)
+    assert sr == sampling_rate, "Audio file {} has wrong sampling rate \
+    ({} instead of {})".format(wav_f, sr, sampling_rate)
+
     speech_timestamps = utils_vad.get_speech_timestamps(
         wav, model, sampling_rate=sampling_rate,
         threshold=threshold)
@@ -121,18 +123,19 @@ def silero_vad(utt_wav_pair, repo_path, min_duration,
 
 def main():
     args = get_args()
-    
+
     vad = functools.partial(silero_vad,
                             repo_path=args.repo_path,
                             min_duration=args.min_duration)
     utt_wav_pair_list = read_scp(args.scp)
-    #with concurrent.futures.ProcessPoolExecutor() as executor:
+    # with concurrent.futures.ProcessPoolExecutor() as executor:
     #    print(''.join(executor.map(vad, utt_wav_pair_list)), end='')
-    # It seems the pool doesn't work well so split into chunks of max size n (e.g. 10000).
-    # Splitting like this also has the consequence that the VAD is printed after processing 
-    # n files instead of after processing all files. 
+    # It seems the pool doesn't work well so split into chunks of max size n 
+    # (e.g. 10000). Splitting like this also has the consequence that the VAD
+    # is printed after processing n files instead of after processing all files.
     n = 10000
-    utt_wav_pair_list_of_list = [utt_wav_pair_list[i * n:(i + 1) * n] for i in range((len(utt_wav_pair_list) + n - 1) // n )]
+    utt_wav_pair_list_of_list = [utt_wav_pair_list[i * n:(i + 1) * n] 
+                                 for i in range((len(utt_wav_pair_list) + n - 1) // n)]
     for lol in utt_wav_pair_list_of_list:
         with concurrent.futures.ProcessPoolExecutor() as executor:
             print(''.join(executor.map(vad, lol)), end='')

@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse, kaldiio, os
+import argparse
+import kaldiio
 import numpy as np
-from wespeaker.utils.plda.plda_utils import read_vec_scp_file
 from wespeaker.utils.embedding_processing import EmbeddingProcessingChain
 
 if __name__ == '__main__':
@@ -22,25 +22,28 @@ if __name__ == '__main__':
     xxx
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path',   type=str, default='', help='Path to processing chain.')
-    parser.add_argument('--input',  type=str, default='', help='Input scp file.')
-    parser.add_argument('--output', type=str, default='', help='Output scp/ark file.')
+    parser.add_argument('--path', type=str, default='', 
+                        help='Path to processing chain.')
+    parser.add_argument('--input', type=str, default='', 
+                        help='Input scp file.')
+    parser.add_argument('--output', type=str, default='', 
+                        help='Output scp/ark file.')
     args = parser.parse_args()
 
     processingChain = EmbeddingProcessingChain()
-    processingChain.load( args.path )
+    processingChain.load(args.path)
 
     embd = []
-    utt  = [] 
-    for k, v in kaldiio.load_scp_sequential( args.input ):
-        utt.append( k ) 
-        embd.append( v )
-    embd = np.array( embd )
-    utt = np.array( utt )
+    utt = [] 
+    for k, v in kaldiio.load_scp_sequential(args.input):
+        utt.append(k) 
+        embd.append(v)
+    embd = np.array(embd)
+    utt = np.array(utt)
 
-    print("Read {} embeddings of dimension {}.".format(embd.shape[0], embd.shape[1]) )
+    print("Read {} embeddings of dimension {}.".format(embd.shape[0], embd.shape[1]))
 
-    embd = processingChain( embd )
+    embd = processingChain(embd)
 
     # Store both ark and scp if extention '.ark,scp' or '.scp,ark'. Or, only
     # ark if extension is '.ark'
@@ -53,13 +56,13 @@ if __name__ == '__main__':
             for i, u in enumerate(utt):
                 e = embd[i]
                 writer(u, e)
-                
+
     elif output_file.endswith('ark'):
         with kaldiio.WriteHelper('ark:' + output_file) as writer:
             for i, u in enumerate(utt):
                 e = embd[i]
                 writer(u, e)
     else:
-        raise Exception("Invalid file extension of output file {}".format(output_file) )
+        raise Exception("Invalid file extension of output file {}".format(output_file))
 
-    print("Wrote {} embeddings of dimension {}.".format(embd.shape[0], embd.shape[1]) )
+    print("Wrote {} embeddings of dimension {}.".format(embd.shape[0], embd.shape[1]))

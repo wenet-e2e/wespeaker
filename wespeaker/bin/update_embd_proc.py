@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import argparse, kaldiio, os
-import numpy as np
-from wespeaker.utils.plda.plda_utils import read_vec_scp_file
+import argparse
 from wespeaker.utils.embedding_processing import EmbeddingProcessingChain
 
 if __name__ == '__main__':
@@ -22,16 +20,26 @@ if __name__ == '__main__':
     xxx
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--in_path', type=str, default='', help='Path where to load original processing chain.')
-    parser.add_argument('--out_path', type=str, default='', help='Path where to save updated processing chain.')
-    parser.add_argument('--link_no_to_remove', type=int, default='', help='Input scp file.')
-    parser.add_argument('--new_link', type=str, default='', help='new link, e.g., "mean-subtract --scp new_scp_for_mean.scp".')
+    parser.add_argument('--in_path',
+                        type=str,
+                        default='',
+                        help='Path where to load original processing chain.')
+    parser.add_argument('--out_path',
+                        type=str,
+                        default='',
+                        help='Path where to save updated processing chain.')
+    parser.add_argument('--link_no_to_remove',
+                        type=int,
+                        default='',
+                        help='Input scp file.')
+    parser.add_argument(
+        '--new_link',
+        type=str,
+        default='',
+        help='new link, e.g., "mean-subtract --scp new_scp_for_mean.scp".')
     args = parser.parse_args()
 
     processingChain = EmbeddingProcessingChain()
-    #print("Loading embedding processor from {}".format(args.in_path) )
-    processingChain.load( args.in_path )
-    processingChain.update_link( args.link_no_to_remove, args.new_link )
-    processingChain.save( args.out_path )
-    #print("Saving updated embedding processor to {}".format(args.out_path) )
-
+    processingChain.load(args.in_path)
+    processingChain.update_link(args.link_no_to_remove, args.new_link)
+    processingChain.save(args.out_path)

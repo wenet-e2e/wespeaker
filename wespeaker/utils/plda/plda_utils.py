@@ -72,7 +72,8 @@ def get_data_for_plda(scp_file, utt2spk_file):
             else:
                 model_dict[label] = [vec]
         else:
-            print("WARNING: {} not in utt2spk ({}), skipping it.".format(key, utt2spk_file) )
+            print("WARNING: {} not in utt2spk ({}), skipping it.".format(
+                key, utt2spk_file))
 
     return np.vstack(samples), model_dict
 

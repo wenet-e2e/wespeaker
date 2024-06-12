@@ -91,7 +91,7 @@ class TwoCovPLDA:
         if scp_file is not None:
             samples, self.embeddings_dict = get_data_for_plda(
                 scp_file, utt2spk_file)
-            if  subtract_train_set_mean:
+            if subtract_train_set_mean:
                 train_mean_vec = samples.mean(0)
             else:
                 train_mean_vec = np.zeros(embed_dim)
@@ -164,8 +164,9 @@ class TwoCovPLDA:
 
     def log_likelihood_ratio(self, transformed_train_embedding,
                              transformed_test_embedding, n):
-        mean = n*self.psi / (n*self.psi + 1.0) * transformed_train_embedding
-        variance = 1.0 + self.psi / (n*self.psi + 1.0)
+        mean = n * self.psi / (n * self.psi +
+                               1.0) * transformed_train_embedding
+        variance = 1.0 + self.psi / (n * self.psi + 1.0)
         logdet = np.sum(np.log(variance))
         sqdiff = transformed_test_embedding - mean
         sqdiff = np.power(sqdiff, 2.0)
@@ -221,13 +222,17 @@ class TwoCovPLDA:
                 enrollcounts[key] = len(value)
             value = np.vstack(value)
             value = value - mean_vec  # Shuai
+
+            # Normalize length
+            # It is questionable whether this should be applied
+            # after speaker mean in case of multisession scoring.
             if self.normalize_length:
-                tmp = norm_embeddings(np.mean(value, 0))   # It is questionable whether lnorm should be applied after speaker mean in case of multisession scoring. / Johan
+                tmp = norm_embeddings(np.mean(value, 0))
+
             else:
                 tmp = np.mean(value, 0)
             tmp = self.transform_embedding(tmp)
             enrollspks[key] = tmp
-
 
         for key, value in test_embeddings_dict.items():
             value = value - mean_vec  # Shuai
@@ -242,7 +247,7 @@ class TwoCovPLDA:
             with open(trials, 'r') as read_trials:
                 for line in tqdm(read_trials):
                     tokens = line.strip().split()
-                    score = self.log_likelihood_ratio(enrollspks[tokens[0]], 
+                    score = self.log_likelihood_ratio(enrollspks[tokens[0]],
                                                       testspks[tokens[1]],
                                                       enrollcounts[tokens[0]])
                     segs = line.strip().split()
@@ -333,8 +338,6 @@ class TwoCovPLDA:
                              data=int(self.subtract_train_set_mean),
                              maxshape=(None))
 
-
-
     @staticmethod
     def load_model(model_name, from_kaldi=False):
         plda = TwoCovPLDA()
@@ -349,9 +352,12 @@ class TwoCovPLDA:
                 plda.psi = f.get("psi")[()]
                 plda.offset = f.get("offset")[()]
                 plda.normalize_length = bool(f.get("normalize_length")[()])
-                plda.subtract_train_set_mean = bool(f.get("subtract_train_set_mean")[()])
-                print("PLDA normalize length is {}.".format(plda.normalize_length) )
-                print("PLDA subtract_train_set_mean is {}.".format(plda.subtract_train_set_mean) )
+                plda.subtract_train_set_mean = bool(
+                    f.get("subtract_train_set_mean")[()])
+                print("PLDA normalize length is {}.".format(
+                    plda.normalize_length))
+                print("PLDA subtract_train_set_mean is {}.".format(
+                    plda.subtract_train_set_mean))
 
-        plda.dim=plda.mu.shape[0]
+        plda.dim = plda.mu.shape[0]
         return plda

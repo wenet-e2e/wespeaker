@@ -38,7 +38,8 @@ if __name__ == '__main__':
                         help='score file to write to')
     parser.add_argument('--trial', type=str, help='trial file to score upon')
     parser.add_argument('--multisession_avg', default=False, action="store_true",
-                        help='Whether to score multisession by average instead of by-the-book. Default False.')
+                        help='Whether to score multisession by average instead '
+                        'of by-the-book. Default False.')
 
     args = parser.parse_args()
 

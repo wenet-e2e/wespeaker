@@ -14,7 +14,6 @@
 
 
 import argparse
-import os
 
 from wespeaker.utils.embedding_processing import EmbeddingProcessingChain
 
@@ -23,9 +22,10 @@ if __name__ == '__main__':
     xxx
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--chain', type=str, default='whitening | length-norm ', help='')
+    parser.add_argument('--chain', type=str, 
+                        default='whitening | length-norm ', help='')
     parser.add_argument('--path', type=str)
     args = parser.parse_args()
 
-    processingChain = EmbeddingProcessingChain( chain=args.chain )
-    processingChain.save( args.path )
+    processingChain = EmbeddingProcessingChain(chain=args.chain)
+    processingChain.save(args.path)
