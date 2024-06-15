@@ -1,0 +1,1 @@
+../../../voxceleb/v2/local/prepare_data.sh

@@ -197,10 +197,17 @@ def main():
             if vad_dict is None:
                 data.append((key, spk, wav))
             else:
+                """
                 if key not in vad_dict:
                     continue
                 vad = vad_dict[key]
                 data.append((key, spk, wav, vad))
+                """
+                if key not in vad_dict:
+                    data.append((key, spk, wav))
+                else:
+                    vad = vad_dict[key]
+                    data.append((key, spk, wav, vad))
 
     if args.shuffle:
         random.shuffle(data)
