@@ -135,7 +135,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
   true && {  
       echo "Convert train data to ${data_type}..."
       for dset in cts_vox; do
-	  python tools/make_shard_list.py --num_utts_per_shard 1000 \
+          python tools/make_shard_list.py --num_utts_per_shard 1000 \
               --num_threads 12 \
               --prefix shards \
               --shuffle \
@@ -148,23 +148,23 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
   true && {  
       echo "Convert data for PLDA backend training and evaluation to raw format..."
       if [ $aug_plda_data = 0 ];then
-	  sre_plda_data=cts
+          sre_plda_data=cts
       else
-	  sre_plda_data=cts_aug
+          sre_plda_data=cts_aug
       fi
       
       # Raw format for backend and evaluation data
       for dset in ${sre_plda_data} sre16/major sre16/eval/enrollment sre16/eval/test \
-	  sre18/dev/enrollment sre18/dev/test sre18/dev/unlabeled sre18/eval/enrollment sre18/eval/test \
-	  sre21/dev/enrollment sre21/dev/test sre21/eval/enrollment sre21/eval/test;do
-	  
-	  # The below requires utt2spk to be present. So create a "dummy" one if we don't have it.
-	  # This is for example the case with sre21 eval data.
-	  if [ ! -f $data/$dset/utt2spk ];then
+          sre18/dev/enrollment sre18/dev/test sre18/dev/unlabeled sre18/eval/enrollment sre18/eval/test \
+          sre21/dev/enrollment sre21/dev/test sre21/eval/enrollment sre21/eval/test;do
+          
+          # The below requires utt2spk to be present. So create a "dummy" one if we don't have it.
+          # This is for example the case with sre21 eval data.
+          if [ ! -f $data/$dset/utt2spk ];then
               awk '{print $1 " unk"}' ${data}/${dset}/wav.scp > ${data}/${dset}/utt2spk
-	  fi
-	  
-	  python tools/make_raw_list.py --vad_file ${data}/$dset/vad \
+          fi
+          
+          python tools/make_raw_list.py --vad_file ${data}/$dset/vad \
               ${data}/$dset/wav.scp \
               ${data}/$dset/utt2spk ${data}/$dset/raw.list      
       done
@@ -173,9 +173,9 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
   true && {
       # Convert all musan and rirs data to LMDB if they don't already exist.
       for x in rirs musan;do
-	  if [ ! -d $data/$x/lmdb ];then
-	      python tools/make_lmdb.py ${data}/$x/wav.scp ${data}/$x/lmdb
-	  fi
+          if [ ! -d $data/$x/lmdb ];then
+              python tools/make_lmdb.py ${data}/$x/wav.scp ${data}/$x/lmdb
+          fi
       done
   }
   
@@ -211,18 +211,18 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
       echo "Do model average ..."
       avg_model=$exp_dir/models/avg_model.pt
       python wespeaker/bin/average_model.py \
-	  --dst_model $avg_model \
-	  --src_path $exp_dir/models \
-	  --num ${num_avg}
+          --dst_model $avg_model \
+          --src_path $exp_dir/models \
+          --num ${num_avg}
       
       model_path=$avg_model
       if [[ $config == *repvgg*.yaml ]]; then
-	  echo "convert repvgg model ..."
-	  python wespeaker/models/convert_repvgg.py \
-	      --config $exp_dir/config.yaml \
-	      --load $avg_model \
-	      --save $exp_dir/models/convert_model.pt
-	  model_path=$exp_dir/models/convert_model.pt
+          echo "convert repvgg model ..."
+          python wespeaker/models/convert_repvgg.py \
+              --config $exp_dir/config.yaml \
+              --load $avg_model \
+              --save $exp_dir/models/convert_model.pt
+          model_path=$exp_dir/models/convert_model.pt
       fi
   }
 
@@ -259,10 +259,10 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
     echo "### --- Mean: SRE16 unlabeled ("SRE16 Major")  --- ###" 
     true && {
     for dset in sre16_eval;do
-	echo " * $dset"
-	local/score.sh \
-	    --stage 1 --stop-stage 2 \
-	    --trials ${trials[$dset]} \
+        echo " * $dset"
+        local/score.sh \
+            --stage 1 --stop-stage 2 \
+            --trials ${trials[$dset]} \
             --xvectors $exp_dir/embeddings/${xvectors[$dset]} \
             --cal_mean_dir ${exp_dir}/embeddings/sre16/major \
             --exp_dir $exp_dir 
@@ -273,10 +273,10 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
     echo "### --- Mean: SRE18 Unlabeled --- ###" 
     true && {
     for dset in sre18_eval sre18_dev;do
-	echo " * $dset"
-	local/score.sh \
-	    --stage 1 --stop-stage 2 \
-	    --trials ${trials[$dset]} \
+        echo " * $dset"
+        local/score.sh \
+            --stage 1 --stop-stage 2 \
+            --trials ${trials[$dset]} \
             --xvectors $exp_dir/embeddings/${xvectors[$dset]} \
             --cal_mean_dir ${exp_dir}/embeddings/sre18/dev/unlabeled \
             --exp_dir $exp_dir 
@@ -287,10 +287,10 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
     echo "### --- Mean: SRE --- ###" 
     true && {
     for dset in sre16_eval sre18_eval sre18_dev sre21_eval sre21_dev;do
-	echo " * $dset"
-	local/score.sh \
-	    --stage 1 --stop-stage 2 \
-	    --trials ${trials[$dset]} \
+        echo " * $dset"
+        local/score.sh \
+            --stage 1 --stop-stage 2 \
+            --trials ${trials[$dset]} \
             --xvectors $exp_dir/embeddings/${xvectors[$dset]} \
             --cal_mean_dir ${exp_dir}/embeddings/cts_aug \
             --exp_dir $exp_dir 
@@ -326,17 +326,17 @@ if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
   # Score the other sets. We need only stage 4-6 for this.
   true && {
       for dset in sre18_eval sre18_dev sre21_eval sre21_dev;do
-	  local/score_plda.sh \
-	      --stage 4 --stop-stage 6 \
-	      --data ${data} \
-	      --exp_dir $exp_dir \
-	      --enroll_scp ${enr_scp[$dset]} \
-	      --test_scp ${test_scp[$dset]} \
-	      --aug_plda_data ${aug_plda_data} \
-	      --preprocessing_path "$preprocessing_path" \
-	      --preprocessing_path "$preprocessing_path_cts_aug" \
-	      --utt2spk ${utt2mdl[$dset]} \
-	      --trials ${trials[$dset]}
+          local/score_plda.sh \
+              --stage 4 --stop-stage 6 \
+              --data ${data} \
+              --exp_dir $exp_dir \
+              --enroll_scp ${enr_scp[$dset]} \
+              --test_scp ${test_scp[$dset]} \
+              --aug_plda_data ${aug_plda_data} \
+              --preprocessing_path "$preprocessing_path" \
+              --preprocessing_path "$preprocessing_path_cts_aug" \
+              --utt2spk ${utt2mdl[$dset]} \
+              --trials ${trials[$dset]}
       done 
   }
 
@@ -412,16 +412,16 @@ if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
   for dset in sre18_eval sre18_dev;do
 
       local/score_plda_adapt.sh \
-	  --stage 1 --stop-stage 4 \
-	  --data ${data} \
-	  --exp_dir $exp_dir \
-	  --aug_plda_data ${aug_plda_data} \
-	  --enroll_scp ${enr_scp[$dset]} \
-	  --test_scp ${test_scp[$dset]} \
-	  --preprocessing_path "$preprocessing_path_sre18_unlab" \
-	  --indomain_scp sre18/dev/unlabeled/xvector.scp \
-	  --utt2spk ${utt2mdl[$dset]} \
-	  --trials ${trials[$dset]}
+          --stage 1 --stop-stage 4 \
+          --data ${data} \
+          --exp_dir $exp_dir \
+          --aug_plda_data ${aug_plda_data} \
+          --enroll_scp ${enr_scp[$dset]} \
+          --test_scp ${test_scp[$dset]} \
+          --preprocessing_path "$preprocessing_path_sre18_unlab" \
+          --indomain_scp sre18/dev/unlabeled/xvector.scp \
+          --utt2spk ${utt2mdl[$dset]} \
+          --trials ${trials[$dset]}
   done
   }
 fi
@@ -440,13 +440,13 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
     echo "### --- Mean: SRE16 unlabeled ("SRE16 Major")  --- ###" 
     true && {
     preproc_name=embd_proc_sre16_major
-    for dset in sre16_eval;do		
-	# The xvector list for the relevant preprocessing chain. 
-	new_xvectors=$(echo $exp_dir/embeddings/${xvectors[$dset]} | sed "s:\.scp:_proc_$preproc_name\.scp:")  	
-	echo " * $new_xvectors"
-	local/score.sh \
-	    --stage 1 --stop-stage 2 \
-	    --trials ${trials[$dset]} \
+    for dset in sre16_eval;do                
+        # The xvector list for the relevant preprocessing chain. 
+        new_xvectors=$(echo $exp_dir/embeddings/${xvectors[$dset]} | sed "s:\.scp:_proc_$preproc_name\.scp:")          
+        echo " * $new_xvectors"
+        local/score.sh \
+            --stage 1 --stop-stage 2 \
+            --trials ${trials[$dset]} \
             --xvectors $new_xvectors \
             --exp_dir $exp_dir
     done
@@ -458,11 +458,11 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
     true && {
     preproc_name=embd_proc_sre18_dev_unlabeled
     for dset in sre18_eval sre18_dev;do
-	new_xvectors=$(echo $exp_dir/embeddings/${xvectors[$dset]} | sed "s:\.scp:_proc_$preproc_name\.scp:")  
-	echo " * $new_xvectors"
-	local/score.sh \
-	    --stage 1 --stop-stage 2 \
-	    --trials ${trials[$dset]} \
+        new_xvectors=$(echo $exp_dir/embeddings/${xvectors[$dset]} | sed "s:\.scp:_proc_$preproc_name\.scp:")  
+        echo " * $new_xvectors"
+        local/score.sh \
+            --stage 1 --stop-stage 2 \
+            --trials ${trials[$dset]} \
             --xvectors $new_xvectors \
             --exp_dir $exp_dir 
     done
@@ -473,11 +473,11 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
     true && {
     preproc_name=embd_proc_cts_aug
     for dset in sre16_eval sre18_eval sre18_dev sre21_eval sre21_dev;do
-	new_xvectors=$(echo $exp_dir/embeddings/${xvectors[$dset]} | sed "s:\.scp:_proc_$preproc_name\.scp:")  
-	echo " * $new_xvectors"
-	local/score.sh \
-	    --stage 1 --stop-stage 2 \
-	    --trials ${trials[$dset]} \
+        new_xvectors=$(echo $exp_dir/embeddings/${xvectors[$dset]} | sed "s:\.scp:_proc_$preproc_name\.scp:")  
+        echo " * $new_xvectors"
+        local/score.sh \
+            --stage 1 --stop-stage 2 \
+            --trials ${trials[$dset]} \
             --xvectors $new_xvectors \
             --exp_dir $exp_dir 
     done
@@ -496,31 +496,31 @@ if [ ${stage} -le 10 ] && [ ${stop_stage} -ge 10 ]; then
     # Make the header
     eval_data='system'
     for dset in sre16_eval sre18_dev sre18_eval sre21_dev sre21_eval;do
-	for x in $(echo ${trials[$dset]} | tr "," " "); do
-	    xx=$(basename  $x) 
-	    eval_data="$eval_data, $xx  "
-	done
+        for x in $(echo ${trials[$dset]} | tr "," " "); do
+            xx=$(basename  $x) 
+            eval_data="$eval_data, $xx  "
+        done
     done
     echo $eval_data > results_summary.txt
     # Collect the results
     for sys in mean_cts_aug_cos mean_sre16_major_cos mean_sre18_dev_unlabeled_cos \
                proc_embd_proc_cts_aug_cos proc_embd_proc_sre16_major_cos proc_embd_proc_sre18_dev_unlabeled_cos \
                proc_embd_proc_cts_aug_plda proc_embd_proc_sre16_major_plda proc_embd_proc_sre18_dev_unlabeled_plda \
-               proc_embd_proc_sre16_major_plda_adapt  proc_embd_proc_sre18_dev_unlabeled_plda_adapt;do 	
-	res="$sys,"
-	for dset in sre16_eval sre18_dev sre18_eval sre21_dev sre21_eval;do
-	    for x in $(echo ${trials[$dset]} | tr "," " "); do
-		xx=$(basename  $x) 
-		eval_data="$eval_data $xx  "
-		if [ -e ${exp_dir}/scores/${xx}.${sys}.result ];then
-		    res="$res $(grep EER ${exp_dir}/scores/${xx}.${sys}.result | sed 's:.* = ::')"
-		    res="$res / $(grep minDCF ${exp_dir}/scores/${xx}.${sys}.result | sed 's:.* = ::'),"
-		else
-		    res="$res - -,"
-		fi
-	    done 
-	done
-	echo -e $res >> results_summary.txt
+               proc_embd_proc_sre16_major_plda_adapt  proc_embd_proc_sre18_dev_unlabeled_plda_adapt;do         
+        res="$sys,"
+        for dset in sre16_eval sre18_dev sre18_eval sre21_dev sre21_eval;do
+            for x in $(echo ${trials[$dset]} | tr "," " "); do
+                xx=$(basename  $x) 
+                eval_data="$eval_data $xx  "
+                if [ -e ${exp_dir}/scores/${xx}.${sys}.result ];then
+                    res="$res $(grep EER ${exp_dir}/scores/${xx}.${sys}.result | sed 's:.* = ::')"
+                    res="$res / $(grep minDCF ${exp_dir}/scores/${xx}.${sys}.result | sed 's:.* = ::'),"
+                else
+                    res="$res - -,"
+                fi
+            done 
+        done
+        echo -e $res >> results_summary.txt
     done
     column -t -s"," results_summary.txt
     echo ""

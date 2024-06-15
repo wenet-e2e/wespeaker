@@ -42,14 +42,14 @@ preproc_name=$(basename $preprocessing_path .pkl)
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     echo "Applying preprocessing on evaluation and adaptation data."
     for x in $enroll_scp $test_scp $indomain_scp;do
-	#new_x=$(echo $x | sed "s:\.scp:_proc\.ark,scp:")
-	new_x=$(echo $x | sed "s:\.scp:_proc_$preproc_name\.ark,scp:")
-	echo "Processing in: $x"
-	echo "Processing out: $new_x"
-	python wespeaker/bin/apply_embd_proc.py \
-	    --path $preprocessing_path \
-	    --input ${exp_dir}/embeddings/$x \
-	    --output ${exp_dir}/embeddings/$new_x
+        #new_x=$(echo $x | sed "s:\.scp:_proc\.ark,scp:")
+        new_x=$(echo $x | sed "s:\.scp:_proc_$preproc_name\.ark,scp:")
+        echo "Processing in: $x"
+        echo "Processing out: $new_x"
+        python wespeaker/bin/apply_embd_proc.py \
+            --path $preprocessing_path \
+            --input ${exp_dir}/embeddings/$x \
+            --output ${exp_dir}/embeddings/$new_x
     done
 fi
 
@@ -93,17 +93,17 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
     echo "compute metrics (EER/minDCF) ..."
     scores_dir=${exp_dir}/scores
     for x in $(echo $trials | tr "," " "); do
-	xx=$(basename  $x)  
-	python wespeaker/bin/compute_metrics.py \
+        xx=$(basename  $x)  
+        python wespeaker/bin/compute_metrics.py \
             --p_target 0.01 \
             --c_fa 1 \
             --c_miss 1 \
             ${scores_dir}/${xx}.proc_${preproc_name}_plda_adapt.score \
             2>&1 | tee ${scores_dir}/${xx}.proc_${preproc_name}_plda_adapt.result
-	   #2>&1 | tee -a ${scores_dir}/${xx}_plda_adapt_result
+           #2>&1 | tee -a ${scores_dir}/${xx}_plda_adapt_result
 
-	echo "compute DET curve ..."
-	python wespeaker/bin/compute_det.py \
+        echo "compute DET curve ..."
+        python wespeaker/bin/compute_det.py \
             ${scores_dir}/${xx}.proc_${preproc_name}_plda_adapt.score
     done
 fi

@@ -67,16 +67,16 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
     echo "compute metrics (EER/minDCF) ..."
     scores_dir=${exp_dir}/scores
     for x in $(echo $trials | tr "," " "); do
-	xx=$(basename  $x)  
-	python wespeaker/bin/compute_metrics.py \
+        xx=$(basename  $x)  
+        python wespeaker/bin/compute_metrics.py \
             --p_target 0.01 \
             --c_fa 1 \
             --c_miss 1 \
             ${scores_dir}/${xx}.pldascore \
             2>&1 | tee -a ${scores_dir}/${xx}_plda_result
-	
-	echo "compute DET curve ..."
-	python wespeaker/bin/compute_det.py \
+        
+        echo "compute DET curve ..."
+        python wespeaker/bin/compute_det.py \
             ${scores_dir}/${xx}.pldascore
     done
 fi

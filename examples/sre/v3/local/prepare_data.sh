@@ -55,8 +55,8 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     # https://github.com/kaldi-asr/kaldi/tree/master/egs/sre16/v2
     echo "Preparing SRE16"
     for dset in sre16_major sre16_eval_enroll sre16_eval_test; do
-	new_dset=$(echo ${dset} | sed "s:_:/:g" | sed "s:enroll:enrollment:g" ) # To get organization and naming consistent with other sets. 
-	echo "Renaming $dset to $new_dset"
+        new_dset=$(echo ${dset} | sed "s:_:/:g" | sed "s:enroll:enrollment:g" ) # To get organization and naming consistent with other sets. 
+        echo "Renaming $dset to $new_dset"
         mkdir -p ${data}/${new_dset}
         cp ${sre_data_dir}/${dset}/wav.scp ${data}/${new_dset}/wav.scp
         [ -f ${sre_data_dir}/${dset}/utt2spk ] && cp ${sre_data_dir}/${dset}/utt2spk ${data}/${new_dset}/utt2spk
@@ -91,7 +91,7 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
     # Only mixer data. Used for backend training. Create only lists here. 
     # The data directory will be created later, after VAD.
     awk -F"\t" '{if($7 == "mx3" || $7 ==  "mx45" || $7 == "mx6"){print $0}  }' ${cts_superset_dir}/docs/cts_superset_segment_key.tsv \
-	> data/cts_superset_segment_key_mx3456.tsv
+         > data/cts_superset_segment_key_mx3456.tsv
     cut -f 1  data/cts_superset_segment_key_mx3456.tsv | sed s:\\.sph$:: > data/mx_3456.list  
     
 fi
@@ -106,8 +106,8 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
     echo "Preparing VoxCeleb"
     if [[ $voxceleb_dir == "" ]];then
         echo "Preparing Voxceleb, rirs and Musan"
-	voxceleb_dir=${data}_vox
-	mkdir ${voxceleb_dir}
+        voxceleb_dir=${data}_vox
+        mkdir ${voxceleb_dir}
         local/prepare_vox.sh --stage 1 --stop_stage 4 --data ${data}_vox
     fi
     
@@ -120,8 +120,8 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
     # extraction chain rather than creating the new wav files explicitly.
     sox_command='-t gsm -r 8000 - | sox -t gsm -r 8000 - -t wav -r 8000 -c 1 -e signed-integer -' 
     for dset in vox1 vox2_dev;do
-	tools/copy_data_dir.sh $voxceleb_dir/$dset $data/${dset}_gsmfr
-	awk -v sc="$sox_command" '{print $1 " sox " $2 " " sc " |" }' $voxceleb_dir/$dset/wav.scp > $data/${dset}_gsmfr/wav.scp
+        tools/copy_data_dir.sh $voxceleb_dir/$dset $data/${dset}_gsmfr
+        awk -v sc="$sox_command" '{print $1 " sox " $2 " " sc " |" }' $voxceleb_dir/$dset/wav.scp > $data/${dset}_gsmfr/wav.scp
     done
 
     # Combine all Voxceleb data
@@ -132,12 +132,12 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
     # we just link it. Otherwise we copy it and let later stages create the lmdb
     # format data here. Since we don't want to affect the original data.
     for x in rirs musan;do
-	if [ -d $voxceleb_dir/$x/lmdb ];then
-	    ln -s $voxceleb_dir/$x $data/
-	else
-	    mkdir $data/$x
-	    cp -r $voxceleb_dir/$x/wav.scp $data/$x/wav.scp 	    
-	fi
+        if [ -d $voxceleb_dir/$x/lmdb ];then
+            ln -s $voxceleb_dir/$x $data/
+        else
+            mkdir $data/$x
+            cp -r $voxceleb_dir/$x/wav.scp $data/$x/wav.scp             
+        fi
     done
 
 fi
@@ -147,43 +147,43 @@ if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
     
     echo "Get vad segmentation for dataset."
     true && { 
-	# Set VAD min duration
-	min_duration=0.25
-	for dset in vox_gsmfr cts sre18/dev/test sre18/dev/enrollment sre18/dev/unlabeled sre18/eval/test sre18/eval/enrollment sre21/dev/test sre21/dev/enrollment sre21/eval/test sre21/eval/enrollment sre16_major sre16/eval/enrollment sre16/eval/test; do
+        # Set VAD min duration
+        min_duration=0.25
+        for dset in vox_gsmfr cts sre18/dev/test sre18/dev/enrollment sre18/dev/unlabeled sre18/eval/test sre18/eval/enrollment sre21/dev/test sre21/dev/enrollment sre21/eval/test sre21/eval/enrollment sre16_major sre16/eval/enrollment sre16/eval/test; do
             python3 local/make_system_sad.py \
-		--repo-path external_tools/silero-vad-4.0 \
-		--scp ${data}/${dset}/wav.scp \
-		--min-duration $min_duration > ${data}/${dset}/vad
-	    cp -r  ${data}/${dset} ${data}/${dset}-bk # Since VAD is quite time-consuming, it is good to have a backup.
-	done
+                --repo-path external_tools/silero-vad-4.0 \
+                --scp ${data}/${dset}/wav.scp \
+                --min-duration $min_duration > ${data}/${dset}/vad
+            cp -r  ${data}/${dset} ${data}/${dset}-bk # Since VAD is quite time-consuming, it is good to have a backup.
+        done
     }
     
     true && { 
-	# We may consider to use only the mixer portion of the CTS data for backen training
-	# as it may be closer to the SRE data.
+        # We may consider to use only the mixer portion of the CTS data for backen training
+        # as it may be closer to the SRE data.
 
-	tools/subset_data_dir.sh --utt-list data/mx_3456.list data/cts data/mx_3456
-	tools/filter_scp.pl -f 2 ${data}/mx_3456/wav.scp ${data}/cts/vad > ${data}/mx_3456/vad
+        tools/subset_data_dir.sh --utt-list data/mx_3456.list data/cts data/mx_3456
+        tools/filter_scp.pl -f 2 ${data}/mx_3456/wav.scp ${data}/cts/vad > ${data}/mx_3456/vad
  
 
-	# For PLDA training, it is better to augment the training data
-	python3 local/generate_sre_aug.py --ori_dir ${data}/mx_3456 \
+        # For PLDA training, it is better to augment the training data
+        python3 local/generate_sre_aug.py --ori_dir ${data}/mx_3456 \
             --aug_dir ${data}/mx_3456_aug \
             --aug_copy_num 2
 
-	tools/utt2spk_to_spk2utt.pl ${data}/mx_3456_aug/utt2spk > ${data}/mx_3456_aug/spk2utt	
+        tools/utt2spk_to_spk2utt.pl ${data}/mx_3456_aug/utt2spk > ${data}/mx_3456_aug/spk2utt        
     }
 
     true && { 
-	# We may consider to use only the mixer portion of the CTS data for backend training
-	# as it may be closer to the SRE data.
+        # We may consider to use only the mixer portion of the CTS data for backend training
+        # as it may be closer to the SRE data.
 
-	# For PLDA training, it is better to augment the training data
-	python3 local/generate_sre_aug.py --ori_dir ${data}/cts \
+        # For PLDA training, it is better to augment the training data
+        python3 local/generate_sre_aug.py --ori_dir ${data}/cts \
             --aug_dir ${data}/cts_aug \
             --aug_copy_num 2
 
-	tools/utt2spk_to_spk2utt.pl ${data}/cts_aug/utt2spk > ${data}/cts_aug/spk2utt	
+        tools/utt2spk_to_spk2utt.pl ${data}/cts_aug/utt2spk > ${data}/cts_aug/spk2utt        
     }
 
 fi
@@ -192,14 +192,14 @@ if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
 
     true && {
     for dset in cts vox_gsmfr; do
-	echo $dset
+        echo $dset
         if [ -f ${data}/${dset}/vad ] && ( [ $dset != "vox_gsmfr" ] || $compute_vad_for_voxceleb ) ;then
             echo "Using VAD info"
             python3 local/utt2voice_duration.py \
                  --vad_file ${data}/${dset}/vad \
                  --utt2voice_dur ${data}/${dset}/utt2voice_dur
-	    cp ${data}/${dset}/utt2voice_dur ${data}/${dset}-bk/             # Good to have backup also of this 
-	fi
+            cp ${data}/${dset}/utt2voice_dur ${data}/${dset}-bk/             # Good to have backup also of this 
+        fi
     done
     }    
 
@@ -208,25 +208,25 @@ if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
     # at the moment.
     for dset in vox_gsmfr; do
         if $compute_total_utterance_duration; then 
-	    # We may, for example, avoid applying VAD on VoxCeleb in which case we need this.
-	    # Note that the durations are estimated on the original wave file, before sox 
-	    # downsampling and GSM codec is applied.
+            # We may, for example, avoid applying VAD on VoxCeleb in which case we need this.
+            # Note that the durations are estimated on the original wave file, before sox 
+            # downsampling and GSM codec is applied.
             echo "Using soxi"
   
-	    cut -f3 -d" " ${data}/${dset}/wav.scp | awk '{ print "soxi -D " $0 }' > ${data}/${dset}/soxi_cmd.sh
-	    split -a 4 -d -n l/12 ${data}/${dset}/soxi_cmd.sh ${data}/${dset}/soxi_cmd.split.
-	    for i in {0000..11}; do 
-	    	bash ${data}/${dset}/soxi_cmd.split.$i > ${data}/${dset}/soxi_cmd.split.$i.out &
-	    done
-	    wait
+            cut -f3 -d" " ${data}/${dset}/wav.scp | awk '{ print "soxi -D " $0 }' > ${data}/${dset}/soxi_cmd.sh
+            split -a 4 -d -n l/12 ${data}/${dset}/soxi_cmd.sh ${data}/${dset}/soxi_cmd.split.
+            for i in {0000..11}; do 
+                    bash ${data}/${dset}/soxi_cmd.split.$i > ${data}/${dset}/soxi_cmd.split.$i.out &
+            done
+            wait
 
-	    for i in {0000..11}; do cat ${data}/${dset}/soxi_cmd.split.$i.out; done > ${data}/${dset}/dur_tmp
-	    cut -f1 -d" " ${data}/${dset}/wav.scp > ${data}/${dset}/utt_tmp
-	    paste -d " " ${data}/${dset}/utt_tmp ${data}/${dset}/dur_tmp > ${data}/${dset}/utt2dur
-	    
-	    rm ${data}/${dset}/soxi_cmd.* ${data}/${dset}/vox_gsmfr/dur_tmp ${data}/${dset}/utt_tmp
-	    	    
-	    cp ${data}/${dset}/utt2dur ${data}/${dset}-bk/             # Good to have backup also of this 
+            for i in {0000..11}; do cat ${data}/${dset}/soxi_cmd.split.$i.out; done > ${data}/${dset}/dur_tmp
+            cut -f1 -d" " ${data}/${dset}/wav.scp > ${data}/${dset}/utt_tmp
+            paste -d " " ${data}/${dset}/utt_tmp ${data}/${dset}/dur_tmp > ${data}/${dset}/utt2dur
+            
+            rm ${data}/${dset}/soxi_cmd.* ${data}/${dset}/vox_gsmfr/dur_tmp ${data}/${dset}/utt_tmp
+                        
+            cp ${data}/${dset}/utt2dur ${data}/${dset}-bk/             # Good to have backup also of this 
         fi
     done
     }
@@ -248,42 +248,42 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
     echo "Applying filtering based on voice duration "
     #for dset in cts vox_gsmfr; do
     for dset in cts; do
-	n_utt_before=$( wc -l ${data}/${dset}/utt2spk | cut -f1 -d " " )
-	n_spk_before=$( wc -l ${data}/${dset}/spk2utt | cut -f1 -d " " )
+        n_utt_before=$( wc -l ${data}/${dset}/utt2spk | cut -f1 -d " " )
+        n_spk_before=$( wc -l ${data}/${dset}/spk2utt | cut -f1 -d " " )
         python3 local/filter_utt_accd_dur.py \
             --wav_scp ${data}/${dset}/wav.scp \
             --utt2voice_dur ${data}/${dset}/utt2voice_dur \
             --filter_wav_scp ${data}/${dset}/filter_wav.scp \
             --dur_thres ${voice_dur_threshold[$dset]}
-	mv ${data}/${dset}/wav.scp ${data}/${dset}/wav.scp.bak
+        mv ${data}/${dset}/wav.scp ${data}/${dset}/wav.scp.bak
         mv ${data}/${dset}/filter_wav.scp ${data}/${dset}/wav.scp
-	tools/fix_data_dir.sh ${data}/${dset}
-	echo " $dset "
-	echo " #utt / #spk before: $n_utt_before / $n_spk_before " 
-	n_utt_after=$( wc -l ${data}/${dset}/utt2spk | cut -f1 -d " " )
-	n_spk_after=$( wc -l ${data}/${dset}/spk2utt | cut -f1 -d " " )
-	echo " #utt / #spk after: $n_utt_after / $n_spk_after " 
+        tools/fix_data_dir.sh ${data}/${dset}
+        echo " $dset "
+        echo " #utt / #spk before: $n_utt_before / $n_spk_before " 
+        n_utt_after=$( wc -l ${data}/${dset}/utt2spk | cut -f1 -d " " )
+        n_spk_after=$( wc -l ${data}/${dset}/spk2utt | cut -f1 -d " " )
+        echo " #utt / #spk after: $n_utt_after / $n_spk_after " 
     done
     }
     echo "Stage 9, block 2"
     echo "Applying filtering based on the whole utterance duration (including non-speech parts) "
     #for dset in cts vox_gsmfr; do
     for dset in vox_gsmfr; do
-	n_utt_before=$( wc -l ${data}/${dset}/utt2spk | cut -f1 -d " " )
-	n_spk_before=$( wc -l ${data}/${dset}/spk2utt | cut -f1 -d " " )
+        n_utt_before=$( wc -l ${data}/${dset}/utt2spk | cut -f1 -d " " )
+        n_spk_before=$( wc -l ${data}/${dset}/spk2utt | cut -f1 -d " " )
         python3 local/filter_utt_accd_dur.py \
             --wav_scp ${data}/${dset}/wav.scp \
             --utt2voice_dur ${data}/${dset}/utt2dur \
             --filter_wav_scp ${data}/${dset}/filter_wav.scp \
             --dur_thres ${dur_threshold[$dset]}
-	mv ${data}/${dset}/wav.scp ${data}/${dset}/wav.scp.bak
+        mv ${data}/${dset}/wav.scp ${data}/${dset}/wav.scp.bak
         mv ${data}/${dset}/filter_wav.scp ${data}/${dset}/wav.scp
-	tools/fix_data_dir.sh ${data}/${dset}
-	echo " $dset "
-	echo " #utt / #spk before: $n_utt_before / $n_spk_before " 
-	n_utt_after=$( wc -l ${data}/${dset}/utt2spk | cut -f1 -d " " )
-	n_spk_after=$( wc -l ${data}/${dset}/spk2utt | cut -f1 -d " " )
-	echo " #utt / #spk after: $n_utt_after / $n_spk_after " 
+        tools/fix_data_dir.sh ${data}/${dset}
+        echo " $dset "
+        echo " #utt / #spk before: $n_utt_before / $n_spk_before " 
+        n_utt_after=$( wc -l ${data}/${dset}/utt2spk | cut -f1 -d " " )
+        n_spk_after=$( wc -l ${data}/${dset}/spk2utt | cut -f1 -d " " )
+        echo " #utt / #spk after: $n_utt_after / $n_spk_after " 
     done
     
 
@@ -300,9 +300,9 @@ if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
 
     ./tools/combine_data.sh data/cts_vox data/cts/ data/vox_gsmfr 
     if $include_voxceleb_vad_in_train_data;then 
-	cat data/cts/vad data/vox_gsmfr/vad > data/cts_vox/vad            
+        cat data/cts/vad data/vox_gsmfr/vad > data/cts_vox/vad            
     else
-	cat data/cts/vad > data/cts_vox/vad            
+        cat data/cts/vad > data/cts_vox/vad            
     fi
 fi
 

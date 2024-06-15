@@ -48,12 +48,12 @@ if [ ! -f $src_dir/utt2spk ]; then
     echo "$0 WARNING: copy_data_dir.sh: no such file $src_dir/utt2spk"
 else
     if [ ! -z "$utt_list" ];then
-	awk 'NR==FNR{a[$1];next}$1 in a{print $0}' $utt_list $src_dir/utt2spk > $dest_dir/utt2spk
+        awk 'NR==FNR{a[$1];next}$1 in a{print $0}' $utt_list $src_dir/utt2spk > $dest_dir/utt2spk
     elif [ ! -z "$spk_list" ];then
-	#echo "A"
-	awk 'NR==FNR{a[$1];next}$2 in a{print $0}' $spk_list $src_dir/utt2spk > $dest_dir/utt2spk 
+        #echo "A"
+        awk 'NR==FNR{a[$1];next}$2 in a{print $0}' $spk_list $src_dir/utt2spk > $dest_dir/utt2spk 
     else
-	cp $src_dir/utt2spk $dest_dir/utt2spk
+        cp $src_dir/utt2spk $dest_dir/utt2spk
     fi
 fi
 
@@ -62,15 +62,15 @@ if [ ! -f $src_dir/spk2utt ]; then
     echo "$0 WARNING: copy_data_dir.sh: no such file $src_dir/spk2utt"
 else
     if [ ! -z "$utt_list" ];then
-	# This will work even if utt2spk doesn't exist and was simpler than reducing spk2utt directly.
-	cat $scrdir/spk2utt | tools/spk2utt_to_utt2spk.pl \
-	    | awk 'NR==FNR{a[$1];next}$1 in a{print $0}' $utt_list - \
-	    | tools/utt2spk_to_spk2utt.pl > $dest_dir/spk2utt
-	
+        # This will work even if utt2spk doesn't exist and was simpler than reducing spk2utt directly.
+        cat $scrdir/spk2utt | tools/spk2utt_to_utt2spk.pl \
+            | awk 'NR==FNR{a[$1];next}$1 in a{print $0}' $utt_list - \
+            | tools/utt2spk_to_spk2utt.pl > $dest_dir/spk2utt
+        
     elif [ ! -z "$spk_list" ];then
-	awk 'NR==FNR{a[$1];next}$1 in a{print $0}' $spk_list $src_dir/spk2utt > $dest_dir/spk2utt
+        awk 'NR==FNR{a[$1];next}$1 in a{print $0}' $spk_list $src_dir/spk2utt > $dest_dir/spk2utt
     else
-	cp $src_dir/spk2utt $dest_dir/spk2utt
+        cp $src_dir/spk2utt $dest_dir/spk2utt
     fi        
 fi
 
@@ -80,11 +80,11 @@ if [ ! -f $src_dir/wav.scp ]; then
     exit 1;
 else
     if [ $update_wav_path == true ];then
-	src_root_dir=$(readlink -f $src_dir | sed "s:data/.*::")
-	dest_root_dir=$(readlink -f $dest_dir | sed "s:data/.*::")
-	cat $src_dir/wav.scp | sed "s:$src_root_dir:$dest_root_dir:" > $dest_dir/wav.scp
+        src_root_dir=$(readlink -f $src_dir | sed "s:data/.*::")
+        dest_root_dir=$(readlink -f $dest_dir | sed "s:data/.*::")
+        cat $src_dir/wav.scp | sed "s:$src_root_dir:$dest_root_dir:" > $dest_dir/wav.scp
     else
-	cp $src_dir/wav.scp $dest_dir/wav.scp
+        cp $src_dir/wav.scp $dest_dir/wav.scp
     fi
 fi
 
@@ -92,14 +92,14 @@ fi
 # Sanity checks
 if [ -f $dest_dir/utt2spk ];then
     if [ $( wc -l $dest_dir/utt2spk | cut -f1 -d" ") -ne $( wc -l $dest_dir/wav.scp | cut -f1 -d" " ) ];then
-	echo "ERROR: Length of utt2spk and wav.scp doesn't match."
-	exit 1
+        echo "ERROR: Length of utt2spk and wav.scp doesn't match."
+        exit 1
     fi
     if [ -f $src_dir/spk2utt ]; then
-	if [ $( cat $dest_dir/utt2spk | sort | md5sum | cut -f1 -d" " ) != $( tools/spk2utt_to_utt2spk.pl $dest_dir/spk2utt | sort | md5sum | cut -f1 -d" " ) ];then
-	    echo "ERROR: utt2spk and spk2utt doesn't match."
-	    exit 1
-	fi
+        if [ $( cat $dest_dir/utt2spk | sort | md5sum | cut -f1 -d" " ) != $( tools/spk2utt_to_utt2spk.pl $dest_dir/spk2utt | sort | md5sum | cut -f1 -d" " ) ];then
+            echo "ERROR: utt2spk and spk2utt doesn't match."
+            exit 1
+        fi
     fi
 fi
 
