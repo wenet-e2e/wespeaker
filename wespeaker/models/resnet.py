@@ -115,7 +115,8 @@ class ResNet(nn.Module):
                  feat_dim=40,
                  embed_dim=128,
                  pooling_func='TSTP',
-                 two_emb_layer=False):
+                 two_emb_layer=False,
+                 ncnn_mode=False):
         super(ResNet, self).__init__()
         self.in_planes = m_channels
         self.feat_dim = feat_dim
@@ -147,9 +148,8 @@ class ResNet(nn.Module):
                                        num_blocks[3],
                                        stride=2)
 
-        self.pool = getattr(pooling_layers,
-                            pooling_func)(in_dim=self.stats_dim *
-                                          block.expansion)
+        self.pool = getattr(pooling_layers, pooling_func)(
+            in_dim=self.stats_dim * block.expansion, ncnn_mode=ncnn_mode)
         self.pool_out_dim = self.pool.get_out_dim()
         self.seg_1 = nn.Linear(self.pool_out_dim, embed_dim)
         if self.two_emb_layer:
@@ -189,60 +189,95 @@ class ResNet(nn.Module):
             return torch.tensor(0.0), embed_a
 
 
-def ResNet18(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
+def ResNet18(feat_dim,
+             embed_dim,
+             pooling_func='TSTP',
+             two_emb_layer=False,
+             ncnn_mode=False):
     return ResNet(BasicBlock, [2, 2, 2, 2],
                   feat_dim=feat_dim,
                   embed_dim=embed_dim,
                   pooling_func=pooling_func,
-                  two_emb_layer=two_emb_layer)
+                  two_emb_layer=two_emb_layer,
+                  ncnn_mode=ncnn_mode)
 
 
-def ResNet34(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
+def ResNet34(feat_dim,
+             embed_dim,
+             pooling_func='TSTP',
+             two_emb_layer=False,
+             ncnn_mode=False):
     return ResNet(BasicBlock, [3, 4, 6, 3],
                   feat_dim=feat_dim,
                   embed_dim=embed_dim,
                   pooling_func=pooling_func,
-                  two_emb_layer=two_emb_layer)
+                  two_emb_layer=two_emb_layer,
+                  ncnn_mode=ncnn_mode)
 
 
-def ResNet50(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
+def ResNet50(feat_dim,
+             embed_dim,
+             pooling_func='TSTP',
+             two_emb_layer=False,
+             ncnn_mode=False):
     return ResNet(Bottleneck, [3, 4, 6, 3],
                   feat_dim=feat_dim,
                   embed_dim=embed_dim,
                   pooling_func=pooling_func,
-                  two_emb_layer=two_emb_layer)
+                  two_emb_layer=two_emb_layer,
+                  ncnn_mode=ncnn_mode)
 
 
-def ResNet101(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
+def ResNet101(feat_dim,
+              embed_dim,
+              pooling_func='TSTP',
+              two_emb_layer=False,
+              ncnn_mode=False):
     return ResNet(Bottleneck, [3, 4, 23, 3],
                   feat_dim=feat_dim,
                   embed_dim=embed_dim,
                   pooling_func=pooling_func,
-                  two_emb_layer=two_emb_layer)
+                  two_emb_layer=two_emb_layer,
+                  ncnn_mode=ncnn_mode)
 
 
-def ResNet152(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
+def ResNet152(feat_dim,
+              embed_dim,
+              pooling_func='TSTP',
+              two_emb_layer=False,
+              ncnn_mode=False):
     return ResNet(Bottleneck, [3, 8, 36, 3],
                   feat_dim=feat_dim,
                   embed_dim=embed_dim,
                   pooling_func=pooling_func,
-                  two_emb_layer=two_emb_layer)
+                  two_emb_layer=two_emb_layer,
+                  ncnn_mode=ncnn_mode)
 
 
-def ResNet221(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
+def ResNet221(feat_dim,
+              embed_dim,
+              pooling_func='TSTP',
+              two_emb_layer=False,
+              ncnn_mode=False):
     return ResNet(Bottleneck, [6, 16, 48, 3],
                   feat_dim=feat_dim,
                   embed_dim=embed_dim,
                   pooling_func=pooling_func,
-                  two_emb_layer=two_emb_layer)
+                  two_emb_layer=two_emb_layer,
+                  ncnn_mode=ncnn_mode)
 
 
-def ResNet293(feat_dim, embed_dim, pooling_func='TSTP', two_emb_layer=False):
+def ResNet293(feat_dim,
+              embed_dim,
+              pooling_func='TSTP',
+              two_emb_layer=False,
+              ncnn_mode=False):
     return ResNet(Bottleneck, [10, 20, 64, 3],
                   feat_dim=feat_dim,
                   embed_dim=embed_dim,
                   pooling_func=pooling_func,
-                  two_emb_layer=two_emb_layer)
+                  two_emb_layer=two_emb_layer,
+                  ncnn_mode=ncnn_mode)
 
 
 if __name__ == '__main__':
