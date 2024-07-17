@@ -217,8 +217,8 @@ class Speaker:
 
         pcm, sample_rate = torchaudio.load(audio_path, normalize=False)
         # 1. vad
-        vad_segments = self.vad.get_speech_timestamps(audio_path,
-                                                      return_seconds=True)
+        wav = read_audio(audio_path)
+        vad_segments = get_speech_timestamps(wav, self.vad, return_seconds=True)
 
         # 2. extact fbanks
         subsegs, subseg_fbanks = [], []
