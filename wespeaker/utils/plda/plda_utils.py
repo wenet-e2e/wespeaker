@@ -65,11 +65,16 @@ def get_data_for_plda(scp_file, utt2spk_file):
     model_dict = {}
     for key, vec in samples_dict.items():
         samples.append(vec)
-        label = labels_dict[key]
-        if label in model_dict.keys():
-            model_dict[label].append(vec)
+        if key in labels_dict:
+            label = labels_dict[key]
+            if label in model_dict.keys():
+                model_dict[label].append(vec)
+            else:
+                model_dict[label] = [vec]
         else:
-            model_dict[label] = [vec]
+            print("WARNING: {} not in utt2spk ({}), skipping it.".format(
+                key, utt2spk_file))
+
     return np.vstack(samples), model_dict
 
 

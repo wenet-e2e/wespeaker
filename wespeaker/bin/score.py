@@ -73,6 +73,8 @@ def trials_cosine_score(eval_scp_path='',
 
 
 def main(exp_dir, eval_scp_path, cal_mean, cal_mean_dir, *trials):
+
+    print(cal_mean)
     if not cal_mean:
         print("Do not do mean normalization for evaluation embeddings.")
         mean_vec_path = None
