@@ -42,7 +42,7 @@ def run_epoch(dataloader,
         cur_iter = (epoch - 1) * epoch_iter + i
         scheduler.step(cur_iter)
         margin_scheduler.step(cur_iter)
-        
+
         utts = batch['key']
         targets = batch['label']
         targets = targets.long().to(device)  # (B)

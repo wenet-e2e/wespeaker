@@ -22,7 +22,7 @@ def apply_cmvn(feats, norm_mean=True, norm_var=False):
         feats = feats - torch.mean(feats, dim=1, keepdim=True)
     if norm_var:
         feats = feats / torch.sqrt(torch.var(feats, dim=1, keepdim=True) + 1e-7)
-    
+
     return feats
 
 
