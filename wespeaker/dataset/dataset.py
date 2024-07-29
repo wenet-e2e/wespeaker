@@ -155,8 +155,12 @@ def Dataset(data_type,
             reverb_lmdb_file: reverb data source lmdb file
             noise_lmdb_file: noise data source lmdb file
             whole_utt: use whole utt or random chunk
+            repeat_dataset: True for training while False for testing
     """
     assert data_type in ['shard', 'raw', 'feat']
+    frontend_type = configs.get('frontend', 'fbank')
+    frontend_args = frontend_type + "_args"
+
     lists = read_lists(data_list_file)
     shuffle = configs.get('shuffle', False)
     # Global shuffle
@@ -174,7 +178,7 @@ def Dataset(data_type,
         filter_conf = configs.get('filter_args', {})
         dataset = Processor(dataset,
                             processor.filter,
-                            frame_shift=configs['fbank_args'].get(
+                            frame_shift=configs[frontend_args].get(
                                 'frame_shift', 10),
                             data_type=data_type,
                             **filter_conf)
@@ -205,8 +209,8 @@ def Dataset(data_type,
         if not whole_utt:
             # random chunk
             num_frms = configs.get('num_frms', 200)
-            frame_shift = configs['fbank_args'].get('frame_shift', 10)
-            frame_length = configs['fbank_args'].get('frame_length', 25)
+            frame_shift = configs[frontend_args].get('frame_shift', 10)
+            frame_length = configs[frontend_args].get('frame_length', 25)
             chunk_len = ((num_frms - 1) * frame_shift +
                          frame_length) * resample_rate // 1000
             dataset = Processor(dataset, processor.random_chunk, chunk_len,
@@ -220,9 +224,17 @@ def Dataset(data_type,
                                 reverb_data, noise_data, resample_rate,
                                 aug_prob)
         # compute fbank
-        dataset = Processor(dataset, processor.compute_fbank,
-                            **configs['fbank_args'])
+        if frontend_type == 'fbank':
+            dataset = Processor(dataset, processor.compute_fbank,
+                                **configs['fbank_args'])
 
+    # !!!IMPORTANT NOTICE!!!
+    # To support different frontends (including ssl pretrained models),
+    # we have to move apply_cmvn and spec_aug out of the dataset pipeline
+    # which runs totally in cpus.
+    # These two modules are now used in wespeaker/utils/executor.py (train)
+    # and wespeaker/bin/extract.py (test), which runs in gpus.
+    '''
     # apply cmvn
     dataset = Processor(dataset, processor.apply_cmvn)
 
@@ -231,5 +243,5 @@ def Dataset(data_type,
     if spec_aug_flag:
         dataset = Processor(dataset, processor.spec_aug,
                             **configs['spec_aug_args'])
-
+    '''
     return dataset

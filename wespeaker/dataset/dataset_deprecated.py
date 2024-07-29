@@ -23,9 +23,9 @@ from scipy.io import wavfile
 import torchaudio.compliance.kaldi as kaldi
 
 from wespeaker.utils.file_utils import read_scp
-from wespeaker.utils.dataset_utils_deprecated import (get_random_chunk,
-                                                      speed_perturb,
-                                                      spec_augmentation)
+from wespeaker.dataset.dataset_utils_deprecated import (get_random_chunk,
+                                                        speed_perturb,
+                                                        spec_augmentation)
 
 
 class FeatList_LableDict_Dataset(Dataset):
