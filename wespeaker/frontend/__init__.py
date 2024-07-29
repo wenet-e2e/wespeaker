@@ -15,4 +15,4 @@
 
 from .s3prl import S3prlFrontend
 
-frontend_class_dict = {'s3prl':S3prlFrontend}
+frontend_class_dict = {'s3prl' : S3prlFrontend}

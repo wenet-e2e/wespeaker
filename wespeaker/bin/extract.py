@@ -48,7 +48,7 @@ def extract(config='conf/config.yaml', **kwargs):
     model = get_speaker_model(configs['model'])(**configs['model_args'])
     frontend_type = test_conf.get('frontend', 'fbank')
     if frontend_type == 's3prl':
-        frontend_args = frontend_type+"_args"
+        frontend_args = frontend_type + "_args"
         print('Initializing frontend model (this could take some time) ...')
         frontend = frontend_class_dict[frontend_type](**test_conf[frontend_args],
             sample_rate=test_conf['resample_rate'])
@@ -60,7 +60,7 @@ def extract(config='conf/config.yaml', **kwargs):
     model.to(device).eval()
 
     # test_configs
-    #test_conf = copy.deepcopy(configs['dataset_args'])
+    # test_conf = copy.deepcopy(configs['dataset_args'])
     test_conf['speed_perturb'] = False
     if 'fbank_args' in test_conf:
         test_conf['fbank_args']['dither'] = 0.0

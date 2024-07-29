@@ -110,8 +110,9 @@ def train(config='conf/config.yaml', **kwargs):
     # frontend: fbank or s3prl
     frontend_type = configs['dataset_args'].get('frontend', 'fbank')
     if frontend_type == 's3prl':
-        frontend_args = frontend_type+"_args"
-        frontend = frontend_class_dict[frontend_type](**configs['dataset_args'][frontend_args], sample_rate=configs['dataset_args']['resample_rate'])
+        frontend_args = frontend_type + "_args"
+        frontend = frontend_class_dict[frontend_type](**configs['dataset_args'][frontend_args],
+                sample_rate=configs['dataset_args']['resample_rate'])
         # speaker model
         configs['model_args']['feat_dim'] = frontend.output_size()
         model = get_speaker_model(configs['model'])(**configs['model_args'])
@@ -155,7 +156,8 @@ def train(config='conf/config.yaml', **kwargs):
             script_model.save(os.path.join(model_dir, 'init.zip'))
 
     # If specify checkpoint, load some info from checkpoint.
-    # For checkpoint, frontend, speaker model, and projection layer are all needed !!!
+    # For checkpoint, frontend, speaker model, and projection layer
+    # are all needed !!!
     if checkpoint is not None:
         load_checkpoint(model, checkpoint)
         start_epoch = int(re.findall(r"(?<=model_)\d*(?=.pt)",
