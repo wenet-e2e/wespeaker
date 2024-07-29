@@ -3,16 +3,16 @@
 exp_dir: exp/ECAPA_TDNN_GLOB_c1024-ASTP-emb192-WavLM_Large_joint_lmft-num_frms300-aug0.6-spTrue-saFalse-ArcMargin_intertopk_subcenter-SGD-epoch20
 gpus: "[0,1]"
 num_avg: 2
-enable_amp: False # whether enable automatic mixed precision training
+enable_amp: True # whether enable automatic mixed precision training
 do_lm: True
 
 seed: 42
 num_epochs: 20
-save_epoch_interval: 2 # save model every 2 epochs
+save_epoch_interval: 1 # save model every epoch
 log_batch_interval: 100 # log every 100 batchs
 
 dataloader_args:
-  batch_size: 24
+  batch_size: 32
   num_workers: 8
   pin_memory: False
   prefetch_factor: 8
@@ -87,6 +87,6 @@ optimizer_args:
 scheduler: ExponentialDecrease
 scheduler_args:
   initial_lr: 0.0001
-  final_lr: 0.000005
+  final_lr: 0.000025
   warm_up_epoch: 1
   warm_from_zero: True
