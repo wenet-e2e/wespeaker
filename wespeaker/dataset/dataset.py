@@ -159,7 +159,7 @@ def Dataset(data_type,
     """
     assert data_type in ['shard', 'raw', 'feat']
     frontend_type = configs.get('frontend', 'fbank')
-    frontend_args = frontend_type+"_args"
+    frontend_args = frontend_type + "_args"
 
     lists = read_lists(data_list_file)
     shuffle = configs.get('shuffle', False)

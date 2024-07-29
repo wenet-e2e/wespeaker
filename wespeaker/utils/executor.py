@@ -20,18 +20,8 @@ import torchnet as tnt
 from wespeaker.dataset.dataset_utils import apply_cmvn, spec_aug
 
 
-def run_epoch(dataloader,
-              epoch_iter,
-              model,
-              criterion,
-              optimizer,
-              scheduler,
-              margin_scheduler,
-              epoch,
-              logger,
-              scaler,
-              device,
-              configs):
+def run_epoch(dataloader, epoch_iter, model, criterion, optimizer, scheduler,
+              margin_scheduler, epoch, logger, scaler, device, configs):
     model.train()
     # By default use average pooling
     loss_meter = tnt.meter.AverageValueMeter()
@@ -52,14 +42,16 @@ def run_epoch(dataloader,
         else:  # 's3prl'
             wavs = batch['wav']  # (B,1,W)
             wavs = wavs.squeeze(1).float().to(device)  # (B,W)
-            wavs_len = torch.LongTensor([wavs.shape[1]]).repeat(wavs.shape[0]).to(device)  # (B)
+            wavs_len = torch.LongTensor([wavs.shape[1]]).repeat(
+                wavs.shape[0]).to(device)  # (B)
             with torch.cuda.amp.autocast(enabled=configs['enable_amp']):
                 features, _ = model.module.frontend(wavs, wavs_len)
 
         with torch.cuda.amp.autocast(enabled=configs['enable_amp']):
             # apply cmvn
             if configs['dataset_args'].get('cmvn', True):
-                features = apply_cmvn(features, **configs['dataset_args'].get('cmvn_args', {}))
+                features = apply_cmvn(
+                    features, **configs['dataset_args'].get('cmvn_args', {}))
             # spec augmentation
             if configs['dataset_args'].get('spec_aug', False):
                 features = spec_aug(features, **configs['spec_aug_args'])

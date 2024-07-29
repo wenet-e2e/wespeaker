@@ -50,8 +50,8 @@ def extract(config='conf/config.yaml', **kwargs):
     if frontend_type == 's3prl':
         frontend_args = frontend_type + "_args"
         print('Initializing frontend model (this could take some time) ...')
-        frontend = frontend_class_dict[frontend_type](**test_conf[frontend_args],
-            sample_rate=test_conf['resample_rate'])
+        frontend = frontend_class_dict[frontend_type](
+            **test_conf[frontend_args], sample_rate=test_conf['resample_rate'])
         model.add_module("frontend", frontend)
     print('Loading checkpoint ...')
     load_checkpoint(model, model_path)
@@ -98,12 +98,14 @@ def extract(config='conf/config.yaml', **kwargs):
                 else:  # 's3prl'
                     wavs = batch['wav']  # (B,1,W)
                     wavs = wavs.squeeze(1).float().to(device)  # (B,W)
-                    wavs_len = torch.LongTensor([wavs.shape[1]]).repeat(wavs.shape[0]).to(device)  # (B)
+                    wavs_len = torch.LongTensor([wavs.shape[1]]).repeat(
+                        wavs.shape[0]).to(device)  # (B)
                     features, _ = model.frontend(wavs, wavs_len)
 
                 # apply cmvn
                 if test_conf.get('cmvn', True):
-                    features = apply_cmvn(features, **test_conf.get('cmvn_args', {}))
+                    features = apply_cmvn(features,
+                                          **test_conf.get('cmvn_args', {}))
                 # spec augmentation
                 if test_conf.get('spec_aug', False):
                     features = spec_aug(features, **test_conf['spec_aug_args'])

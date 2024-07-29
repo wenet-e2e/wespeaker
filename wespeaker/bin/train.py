@@ -111,8 +111,9 @@ def train(config='conf/config.yaml', **kwargs):
     frontend_type = configs['dataset_args'].get('frontend', 'fbank')
     if frontend_type == 's3prl':
         frontend_args = frontend_type + "_args"
-        frontend = frontend_class_dict[frontend_type](**configs['dataset_args'][frontend_args],
-                sample_rate=configs['dataset_args']['resample_rate'])
+        frontend = frontend_class_dict[frontend_type](
+            **configs['dataset_args'][frontend_args],
+            sample_rate=configs['dataset_args']['resample_rate'])
         # speaker model
         configs['model_args']['feat_dim'] = frontend.output_size()
         model = get_speaker_model(configs['model'])(**configs['model_args'])

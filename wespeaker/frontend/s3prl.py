@@ -23,17 +23,15 @@ from s3prl.nn import Featurizer, S3PRLUpstream
 class S3prlFrontend(nn.Module):
     """Speech Pretrained Representation Frontend."""
 
-    def __init__(
-        self,
-        upstream_args: dict,
-        download_dir: str = "./s3prl_hub",
-        multilayer_feature: bool = True,
-        layer: int = -1,
-        frozen: bool = False,
-        frame_shift: int = 20,
-        frame_length: int = 20,
-        sample_rate: int = 16000
-    ):
+    def __init__(self,
+                 upstream_args: dict,
+                 download_dir: str = "./s3prl_hub",
+                 multilayer_feature: bool = True,
+                 layer: int = -1,
+                 frozen: bool = False,
+                 frame_shift: int = 20,
+                 frame_length: int = 20,
+                 sample_rate: int = 16000):
         super().__init__()
 
         self.multilayer_feature = multilayer_feature
@@ -43,7 +41,8 @@ class S3prlFrontend(nn.Module):
         if download_dir is not None:
             s3prl.util.download.set_dir(download_dir)
 
-        assert upstream_args.get("name", None) in S3PRLUpstream.available_names()
+        assert upstream_args.get("name",
+                                 None) in S3PRLUpstream.available_names()
         self.upstream = S3PRLUpstream(
             upstream_args.get("name"),
             path_or_url=upstream_args.get("path_or_url", None),
@@ -51,8 +50,8 @@ class S3prlFrontend(nn.Module):
             extra_conf=upstream_args.get("extra_conf", None),
         )
         if getattr(self.upstream.upstream, "model", None):
-            if getattr(self.upstream.upstream.model,
-                    "feature_grad_mult", None) is not None:
+            if getattr(self.upstream.upstream.model, "feature_grad_mult",
+                       None) is not None:
                 self.upstream.upstream.model.feature_grad_mult = 1.0
         self.upstream.eval()
 
@@ -61,7 +60,8 @@ class S3prlFrontend(nn.Module):
             assert not multilayer_feature, "multilayer_feature must be False if layer is specified"
         else:
             layer_selections = None
-        self.featurizer = Featurizer(self.upstream, layer_selections=layer_selections)
+        self.featurizer = Featurizer(self.upstream,
+                                     layer_selections=layer_selections)
 
         assert self.featurizer.downsample_rate == sample_rate * frame_shift // 1000
 
@@ -73,10 +73,8 @@ class S3prlFrontend(nn.Module):
                 if "mask_emb" in name:
                     param.requires_grad_(False)
 
-
     def output_size(self):
         return self.featurizer.output_size
-
 
     def forward(self, input: torch.Tensor, input_lengths: torch.LongTensor):
         with torch.no_grad() if self.frozen else contextlib.nullcontext():
