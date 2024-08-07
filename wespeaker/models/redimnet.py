@@ -799,7 +799,7 @@ class ReDimNet(nn.Module):
         # -------------------------
         embed_dim=192,
         pooling_func="ASTP",
-        global_context_att=False,
+        global_context_att=True,
         two_emb_layer=False,
     ):
 
@@ -887,7 +887,7 @@ def ReDimNetB1(feat_dim=72, embed_dim=192, pooling_func="ASTP", two_emb_layer=Fa
         out_channels=None,
         embed_dim=embed_dim,
         pooling_func=pooling_func,
-        global_context_att=False,
+        global_context_att=True,
         two_emb_layer=two_emb_layer,
     )
 
@@ -1020,7 +1020,7 @@ if __name__ == "__main__":
     # Currently, the model sizes differ from the ones in the paper
     model_classes = [
         ReDimNetB0,  # 1.0M v.s. 1.0M
-        ReDimNetB1,  # 1.9M v.s. 2.2M
+        ReDimNetB1,  # 2.1M v.s. 2.2M
         ReDimNetB2,  # 4.9M v.s. 4.7M
         ReDimNetB3,  # 3.2M v.s. 3.0M
         ReDimNetB4,  # 6.4M v.s. 6.3M
