@@ -1008,14 +1008,14 @@ def ReDimNetB6(feat_dim=72, embed_dim=192, pooling_func="ASTP", two_emb_layer=Fa
 
 
 if __name__ == "__main__":
-    # x = torch.zeros(1, 200, 72)
-    # model = ReDimNet(feat_dim=72, embed_dim=192, two_emb_layer=False)
-    # model.eval()
-    # out = model(x)
-    # print(out[-1].size())
+    x = torch.zeros(1, 200, 72)
+    model = ReDimNet(feat_dim=72, embed_dim=192, two_emb_layer=False)
+    model.eval()
+    out = model(x)
+    print(out[-1].size())
 
-    # num_params = sum(p.numel() for p in model.parameters())
-    # print("{} M".format(num_params / 1e6))
+    num_params = sum(p.numel() for p in model.parameters())
+    print("{} M".format(num_params / 1e6))
 
     # Currently, the model sizes differ from the ones in the paper
     model_classes = [
