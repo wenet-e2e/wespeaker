@@ -20,13 +20,14 @@ Repo: https://github.com/IDRnD/ReDimNet
 
 Cite:
 @misc{yakovlev2024reshapedimensionsnetworkspeaker,
-      title={Reshape Dimensions Network for Speaker Recognition}, 
-      author={Ivan Yakovlev and Rostislav Makarov and Andrei Balykin and Pavel Malov and Anton Okhotnikov and Nikita Torgashov},
+      title={Reshape Dimensions Network for Speaker Recognition},
+      author={Ivan Yakovlev and Rostislav Makarov and Andrei Balykin
+      and Pavel Malov and Anton Okhotnikov and Nikita Torgashov},
       year={2024},
       eprint={2407.18223},
       archivePrefix={arXiv},
       primaryClass={eess.AS},
-      url={https://arxiv.org/abs/2407.18223}, 
+      url={https://arxiv.org/abs/2407.18223},
 }
 """
 import math
@@ -210,11 +211,6 @@ class ConvBlock2d(nn.Module):
         return self.conv_block(x)
 
 
-# -------------------------------------------------------------
-# Copy multi-head attention module from hugginface wav2vec2
-# -------------------------------------------------------------
-# Copied from https://github.com/huggingface/transformers/blob/v4.26.1/src/transformers/models/wav2vec2/modeling_wav2vec2.py
-# Copied from transformers.models.bart.modeling_bart.BartAttention with Bart->Wav2Vec2
 class MultiHeadAttention(nn.Module):
     """Multi-headed attention from 'Attention Is All You Need' paper"""
 
@@ -233,8 +229,8 @@ class MultiHeadAttention(nn.Module):
 
         if (self.head_dim * num_heads) != self.embed_dim:
             raise ValueError(
-                f"embed_dim must be divisible by num_heads (got `embed_dim`: {self.embed_dim}"
-                f" and `num_heads`: {num_heads})."
+                f"embed_dim must be divisible by num_heads (got "
+                f"`embed_dim`: {self.embed_dim} and `num_heads`: {num_heads})."
             )
         self.scaling = self.head_dim**-0.5
 
@@ -275,7 +271,8 @@ class MultiHeadAttention(nn.Module):
         attn_output = attn_output.view(bsz, self.num_heads, tgt_len, self.head_dim)
         attn_output = attn_output.transpose(1, 2)
 
-        # Use the `embed_dim` from the config (stored in the class) rather than `hidden_state` because `attn_output` can be
+        # Use the `embed_dim` from the config (stored in the class)
+        # rather than `hidden_state` because `attn_output` can be
         # partitioned aross GPUs when using tensor-parallelism.
         attn_output = attn_output.reshape(bsz, tgt_len, self.embed_dim)
 
@@ -1020,7 +1017,7 @@ if __name__ == "__main__":
     # num_params = sum(p.numel() for p in model.parameters())
     # print("{} M".format(num_params / 1e6))
 
-    # Currently, the model sizes are not exactly the same with the ones in the paper
+    # Currently, the model sizes differ from the ones in the paper
     model_classes = [
         ReDimNetB0,  # 1.0M v.s. 1.0M
         ReDimNetB1,  # 1.9M v.s. 2.2M
