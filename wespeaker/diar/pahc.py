@@ -44,7 +44,7 @@ class PAHC:
         self.cost_map = {}
         self.heap = []
         self.next_index = -1
-    
+
         self.build_label_map()
         self.build_cost_map()
 
@@ -93,11 +93,11 @@ class PAHC:
         for i in range(len(labels)):
             labels[i] = label_to_label[labels[i]]
         return labels
-    
+
     def eliminate(self, i):
         del self.label_map[i]
         self.active_clusters.remove(i)
-    
+
     def build_label_map(self):
         self.label_map = defaultdict(list)
 
@@ -126,7 +126,7 @@ class PAHC:
                 if i < self.num_labeled and j < self.num_labeled:
                     self.cost_map[(i, j)] = -np.inf
                     continue
-                
+
                 self.cost_map[(i, j)] = self.compute_cost(i_indexes, j_indexes)
 
                 factor = len(i_indexes) * len(j_indexes)

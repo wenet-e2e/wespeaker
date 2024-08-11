@@ -29,7 +29,7 @@ from wespeaker.cli.hub import Hub
 from wespeaker.cli.utils import get_args
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.utils.checkpoint import load_checkpoint
-from wespeaker.diar.spectral_clusterer import cluster
+from wespeaker.diar.umap_clusterer import cluster
 from wespeaker.diar.extract_emb import subsegment
 from wespeaker.diar.make_rttm import merge_segments
 from wespeaker.utils.utils import set_seed
@@ -55,9 +55,6 @@ class Speaker:
         self.wavform_norm = False
 
         # diarization parmas
-        self.diar_num_spks = None
-        self.diar_min_num_spks = 1
-        self.diar_max_num_spks = 20
         self.diar_min_duration = 0.255
         self.diar_window_secs = 1.5
         self.diar_period_secs = 0.75
@@ -83,18 +80,12 @@ class Speaker:
         self.model = self.model.to(self.device)
 
     def set_diarization_params(self,
-                               num_spks=None,
-                               min_num_spks=1,
-                               max_num_spks=20,
                                min_duration: float = 0.255,
                                window_secs: float = 1.5,
                                period_secs: float = 0.75,
                                frame_shift: int = 10,
                                batch_size: int = 32,
                                subseg_cmn: bool = True):
-        self.diar_num_spks = num_spks
-        self.diar_min_num_spks = min_num_spks
-        self.diar_max_num_spks = max_num_spks
         self.diar_min_duration = min_duration
         self.diar_window_secs = window_secs
         self.diar_period_secs = period_secs
@@ -251,10 +242,7 @@ class Speaker:
 
         # 4. cluster
         subseg2label = []
-        labels = cluster(embeddings,
-                         num_spks=self.diar_num_spks,
-                         min_num_spks=self.diar_min_num_spks,
-                         max_num_spks=self.diar_max_num_spks)
+        labels = cluster(embeddings)
         for (_subseg, _label) in zip(subsegs, labels):
             # b, e = process_seg_id(_subseg, frame_shift=self.diar_frame_shift)
             # subseg2label.append([b, e, _label])
@@ -316,10 +304,7 @@ def main():
     model.set_resample_rate(args.resample_rate)
     model.set_vad(args.vad)
     model.set_gpu(args.gpu)
-    model.set_diarization_params(num_spks=args.diar_num_spks,
-                                 min_num_spks=args.diar_min_num_spks,
-                                 max_num_spks=args.diar_max_num_spks,
-                                 min_duration=args.diar_min_duration,
+    model.set_diarization_params(min_duration=args.diar_min_duration,
                                  window_secs=args.diar_window_secs,
                                  period_secs=args.diar_period_secs,
                                  frame_shift=args.diar_frame_shift,
