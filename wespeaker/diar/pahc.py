@@ -108,7 +108,7 @@ class PAHC:
 
         if -1 in self.label_map:
             self.num_labeled -= 1
-            for i, j in zip(range(self.num_labeled, 
+            for i, j in zip(range(self.num_labeled,
                                   self.num_labeled + len(self.label_map[-1])),
                             self.label_map[-1]):
                 self.label_map[i].append(j)
@@ -132,7 +132,7 @@ class PAHC:
                 factor = len(i_indexes) * len(j_indexes)
                 normalized_cost = self.cost_map[(i, j)] / factor
                 if normalized_cost >= self.merge_cutoff:
-                    heapq.heappush(self.heap, (-normalized_cost, (i, j)))    
+                    heapq.heappush(self.heap, (-normalized_cost, (i, j)))
 
     def compute_cost(self, i_indexes, j_indexes):
         i_embedding = sum([
@@ -155,7 +155,7 @@ class PAHC:
             factor = (len(i_indexes) + len(j_indexes)) * len(self.label_map[k])
             normalized_cost = cost / factor
             if normalized_cost >= self.merge_cutoff:
-                heapq.heappush(self.heap, (-normalized_cost, 
+                heapq.heappush(self.heap, (-normalized_cost,
                                            (k, self.next_index)))
 
         self.label_map[self.next_index] = i_indexes + j_indexes
