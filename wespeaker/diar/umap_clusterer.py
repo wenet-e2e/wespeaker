@@ -24,6 +24,7 @@ os.environ["NUMBA_NUM_THREADS"] = "1"
 import argparse
 import concurrent.futures
 from collections import OrderedDict
+import functools
 
 import numpy as np
 
@@ -75,12 +76,10 @@ def read_emb(scp):
     return subsegs_list, embeddings_list
 
 
-def cluster(embeddings):
+def cluster(embeddings, n_neighbors=16, min_dist=0.05):
     # Fallback
     if len(embeddings) <= 2:
         return [0] * len(embeddings)
-
-    n_neighbors, min_dist = int(args.n_neighbors), float(args.min_dist)
 
     umap_embeddings = umap.UMAP(n_components=min(32, len(embeddings) - 2),
                                 metric='cosine',
@@ -107,10 +106,16 @@ if __name__ == '__main__':
 
     os.makedirs(os.path.dirname(args.output), exist_ok=True)
 
+    n_neighbors, min_dist = int(args.n_neighbors), float(args.min_dist)
+
+    run_cluster = functools.partial(cluster,
+                                    n_neighbors=n_neighbors,
+                                    min_dist=min_dist)
+
     with concurrent.futures.ProcessPoolExecutor() as executor:
         with open(args.output, 'w') as fd:
             for (subsegs, labels) in zip(subsegs_list,
-                                         executor.map(cluster,
+                                         executor.map(run_cluster,
                                                       embeddings_list)):
                 [print(subseg,
                        label,
