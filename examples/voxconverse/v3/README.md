@@ -15,8 +15,8 @@
 
     | system | MISS | FA | SC | DER |
     |:---|:---:|:---:|:---:|:---:|
-    | This repo (with oracle SAD) | 2.3 | 0.0 | 2.1 | 4.4 |
-    | This repo (with system SAD) | 3.7 | 0.8 | 2.2 | 6.8 |
+    | This repo (with oracle SAD) | 2.3 | 0.0 | 1.3 | 3.6 |
+    | This repo (with system SAD) | 3.4 | 0.6 | 1.4 | 5.4 |
     | DIHARD 2019 baseline [^1] | 11.1 | 1.4 | 11.3 | 23.8 |
     | DIHARD 2019 baseline w/ SE [^1] | 9.3 | 1.3 | 9.7 | 20.2 |
     | (SyncNet ASD only) [^1] | 2.2 | 4.1 | 4.0 | 10.4 |
@@ -27,7 +27,8 @@
 
     | system | MISS | FA | SC | DER |
     |:---|:---:|:---:|:---:|:---:|
-    | This repo (with system SAD) | 4.0 | 2.4 | 3.4 | 9.8 |
+    | This repo (with oracle SAD) | 1.6 | 0.0 | 1.9 | 3.5 |
+    | This repo (with system SAD) | 3.8 | 1.7 | 1.8 | 7.4 |
 
 
 [^1]: Spot the conversation: speaker diarisation in the wild, https://arxiv.org/pdf/2007.01216.pdf

@@ -50,7 +50,7 @@ def get_args():
                              "when estimating the manifold structure of "
                              "the data, losing fine detail structure for "
                              "the sake of getting the broader of the data.")
-    parser.add_argument('--min_dist', required=False, default=0.1,
+    parser.add_argument('--min_dist', required=False, default=0.05,
                         help="The minimum distance between points in "
                              "the low dimensional representation.")
     args = parser.parse_args()
@@ -86,12 +86,13 @@ def cluster(embeddings):
                                 metric='cosine',
                                 n_neighbors=n_neighbors,
                                 min_dist=min_dist,
-                                random_state=2020,
+                                random_state=2023,
                                 n_jobs=1).fit_transform(np.array(embeddings))
 
-    labels = hdbscan.HDBSCAN(core_dist_n_jobs=1,
-                             allow_single_cluster=True,
-                             min_cluster_size=4).fit_predict(umap_embeddings)
+    labels = hdbscan.HDBSCAN(allow_single_cluster=True,
+                             min_cluster_size=4,
+                             approx_min_span_tree=False,
+                             core_dist_n_jobs=1).fit_predict(umap_embeddings)
 
     labels = pahc.PAHC(merge_cutoff=0.3,
                        min_cluster_size=3,
@@ -103,6 +104,8 @@ if __name__ == '__main__':
     args = get_args()
 
     subsegs_list, embeddings_list = read_emb(args.scp)
+
+    os.makedirs(os.path.dirname(args.output), exist_ok=True)
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
         with open(args.output, 'w') as fd:
