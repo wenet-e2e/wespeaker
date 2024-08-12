@@ -31,7 +31,7 @@ import numpy as np
 import kaldiio
 import umap
 import hdbscan
-import pahc
+from . import pahc
 
 
 def get_args():

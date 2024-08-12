@@ -75,18 +75,6 @@ def get_args():
                         help='output file to save speaker embedding '
                         'or save diarization result')
     # diarization params
-    parser.add_argument('--diar_num_spks',
-                        type=int,
-                        default=None,
-                        help='number of speakers')
-    parser.add_argument('--diar_min_num_spks',
-                        type=int,
-                        default=1,
-                        help='minimum number of speakers')
-    parser.add_argument('--diar_max_num_spks',
-                        type=int,
-                        default=20,
-                        help='maximum number of speakers')
     parser.add_argument('--diar_min_duration',
                         type=float,
                         default=0.255,
