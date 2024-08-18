@@ -105,7 +105,7 @@ def train(config='conf/config.yaml', **kwargs):
         logger.info("train dataloaders created")
         logger.info('epoch iteration number: {}'.format(epoch_iter))
 
-    # model: frondend (optional) => speaker model => projection layer
+    # model: frontend (optional) => speaker model => projection layer
     logger.info("<== Model ==>")
     # frontend: fbank or s3prl
     frontend_type = configs['dataset_args'].get('frontend', 'fbank')
