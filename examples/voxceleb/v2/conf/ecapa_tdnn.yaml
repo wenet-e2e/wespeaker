@@ -32,6 +32,7 @@ dataset_args:
   speed_perturb: True
   num_frms: 200
   aug_prob: 0.6 # prob to add reverb & noise aug per sample
+  frontend: "fbank" # fbank, s3prl
   fbank_args:
     num_mel_bins: 80
     frame_shift: 10

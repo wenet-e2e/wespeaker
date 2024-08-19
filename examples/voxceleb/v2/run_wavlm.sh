@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Copyright 2022 Hongji Wang (jijijiang77@gmail.com)
-#           2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
+# Copyright 2024 Hongji Wang (jijijiang77@gmail.com)
 
 . ./path.sh || exit 1
 
@@ -11,9 +10,9 @@ stop_stage=-1
 data=data
 data_type="shard"  # shard/raw
 
-config=conf/resnet.yaml
-exp_dir=exp/ResNet34-TSTP-emb256-fbank80-num_frms200-aug0.6-spTrue-saFalse-ArcMargin-SGD-epoch150
-gpus="[0,1]"
+config=conf/ecapa_tdnn_WavLM_frozen.yaml
+exp_dir=exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-WavLM_large_frozen_num_frms150-aug0.6-spTrue-saFalse-ArcMargin_intertopk_subcenter-SGD-epoch150
+gpus="[0,1,2,3]" #,4,5,6,7]"
 num_avg=10
 checkpoint=
 
@@ -21,8 +20,11 @@ trials="vox1_O_cleaned.kaldi vox1_E_cleaned.kaldi vox1_H_cleaned.kaldi"
 score_norm_method="asnorm"  # asnorm/snorm
 top_n=300
 
-# setup for large margin fine-tuning
-lm_config=conf/resnet_lm.yaml
+# setup for joint ft and lmft
+joint_ft_config=conf/ecapa_tdnn_WavLM_joint_ft.yaml
+joint_ft_exp_dir=exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-WavLM_Large_joint_ft-num_frms150-aug0.6-spTrue-saFalse-ArcMargin_intertopk_subcenter-SGD-epoch20
+joint_lmft_config=conf/ecapa_tdnn_WavLM_joint_lmft.yaml
+joint_lmft_exp_dir=exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-WavLM_Large_joint_lmft-num_frms300-aug0.6-spTrue-saFalse-ArcMargin_intertopk_subcenter-SGD-epoch10
 
 . tools/parse_options.sh || exit 1
 
@@ -71,25 +73,15 @@ fi
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   echo "Do model average ..."
   avg_model=$exp_dir/models/avg_model.pt
-  python wespeaker/bin/average_model.py \
+  false && python wespeaker/bin/average_model.py \
     --dst_model $avg_model \
     --src_path $exp_dir/models \
     --num ${num_avg}
 
-  model_path=$avg_model
-  if [[ $config == *repvgg*.yaml ]]; then
-    echo "convert repvgg model ..."
-    python wespeaker/models/convert_repvgg.py \
-      --config $exp_dir/config.yaml \
-      --load $avg_model \
-      --save $exp_dir/models/convert_model.pt
-    model_path=$exp_dir/models/convert_model.pt
-  fi
-
   echo "Extract embeddings ..."
   local/extract_vox.sh \
-    --exp_dir $exp_dir --model_path $model_path \
-    --nj 4 --gpus $gpus --data_type $data_type --data ${data}
+    --exp_dir $exp_dir --model_path $avg_model \
+    --nj 8 --gpus $gpus --data_type $data_type --data ${data}
 fi
 
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
@@ -127,27 +119,38 @@ if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
 fi
 
 if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
-  echo "Export the best model ..."
-  python wespeaker/bin/export_jit.py \
-    --config $exp_dir/config.yaml \
-    --checkpoint $exp_dir/models/avg_model.pt \
-    --output_file $exp_dir/models/final.zip
+  echo "Joint fine-tuning ..."
+  mkdir -p ${joint_ft_exp_dir}/models
+  # Use the average frozen model to initialize the joint-ft training
+  cp ${exp_dir}/models/avg_model.pt ${joint_ft_exp_dir}/models/model_0.pt
+  bash run_wavlm.sh --stage 3 --stop_stage 7 \
+      --data ${data} \
+      --data_type ${data_type} \
+      --config ${joint_ft_config} \
+      --exp_dir ${joint_ft_exp_dir} \
+      --gpus $gpus \
+      --num_avg 3 \
+      --checkpoint ${joint_ft_exp_dir}/models/model_0.pt \
+      --trials "$trials" \
+      --score_norm_method ${score_norm_method} \
+      --top_n ${top_n}
 fi
 
 if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
-  echo "Large margin fine-tuning ..."
-  lm_exp_dir=${exp_dir}-LM
-  mkdir -p ${lm_exp_dir}/models
-  # Use the pre-trained average model to initialize the LM training
-  cp ${exp_dir}/models/avg_model.pt ${lm_exp_dir}/models/model_0.pt
-  bash run.sh --stage 3 --stop_stage 8 \
+  echo "Joint LM fine-tuning ..."
+  [ ! -f ${joint_ft_exp_dir}/models/avg_model.pt ] &&
+      echo "Please do joint fint-tuning first" && exit 1
+  mkdir -p ${joint_lmft_exp_dir}/models
+  # Use the average joint_ft model to initialize the joint_lmft training
+  cp ${joint_ft_exp_dir}/models/avg_model.pt ${joint_lmft_exp_dir}/models/model_0.pt
+  bash run_wavlm.sh --stage 3 --stop_stage 7 \
       --data ${data} \
       --data_type ${data_type} \
-      --config ${lm_config} \
-      --exp_dir ${lm_exp_dir} \
+      --config ${joint_lmft_config} \
+      --exp_dir ${joint_lmft_exp_dir} \
       --gpus $gpus \
       --num_avg 1 \
-      --checkpoint ${lm_exp_dir}/models/model_0.pt \
+      --checkpoint ${joint_lmft_exp_dir}/models/model_0.pt \
       --trials "$trials" \
       --score_norm_method ${score_norm_method} \
       --top_n ${top_n}
