@@ -42,3 +42,4 @@ tensorboard
 *.onnx
 external_tools
 pretrained_models
+s3prl_hub
