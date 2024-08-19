@@ -12,7 +12,7 @@ data_type="shard"  # shard/raw
 
 config=conf/ecapa_tdnn_WavLM_frozen.yaml
 exp_dir=exp/ECAPA_TDNN_GLOB_c512-ASTP-emb192-WavLM_large_frozen_num_frms150-aug0.6-spTrue-saFalse-ArcMargin_intertopk_subcenter-SGD-epoch150
-gpus="[0,1,2,3]" #,4,5,6,7]"
+gpus="[0,1,2,3,4,5,6,7]"
 num_avg=10
 checkpoint=
 
