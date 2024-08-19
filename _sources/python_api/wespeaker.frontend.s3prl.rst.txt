@@ -1,0 +1,7 @@
+wespeaker.frontend.s3prl module
+===============================
+
+.. automodule:: wespeaker.frontend.s3prl
+   :members:
+   :undoc-members:
+   :show-inheritance:

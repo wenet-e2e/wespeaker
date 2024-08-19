@@ -14,5 +14,6 @@ Subpackages
 
    wespeaker.cli
    wespeaker.diar
+   wespeaker.frontend
    wespeaker.models
    wespeaker.utils
