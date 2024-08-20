@@ -6,7 +6,7 @@
   * Refer to [voxceleb sv recipe](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxceleb/v2)
   * [pretrained model path](https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34_LM.onnx)
 * Speaker activity detection model: oracle SAD (from ground truth annotation) or system SAD (VAD model pretrained by silero, https://github.com/snakers4/silero-vad)
-* Clustering method: spectral clustering
+* Clustering method: umap dimensionality reduction + hdbscan clustering
 * Metric: DER = MISS + FALSE ALARM + SPEAKER CONFUSION (%)
 
 ## Results
