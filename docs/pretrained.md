@@ -39,6 +39,8 @@ in [the voxconverse recipe](https://github.com/wenet-e2e/wespeaker/tree/master/e
 
 ## Model List
 
+The model with suffix **LM** means that it is further fine-tuned using large-margin fine-tuning, which could perform better on long audios, e.g. >3s.
+
 ### modelscope
 
 | Datasets                                      | Languages | Checkpoint (pt)                                                                                                                                                                                                                     | Runtime Model (onnx)                                                                                                                                                                                                                  |
