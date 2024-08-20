@@ -18,3 +18,4 @@ Submodules
    wespeaker.diar.make_rttm
    wespeaker.diar.make_system_sad
    wespeaker.diar.spectral_clusterer
+   wespeaker.diar.umap_clusterer

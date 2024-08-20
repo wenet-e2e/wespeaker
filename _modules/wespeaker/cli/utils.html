@@ -154,18 +154,6 @@
                         <span class="n">help</span><span class="o">=</span><span class="s1">&#39;output file to save speaker embedding &#39;</span>
                         <span class="s1">&#39;or save diarization result&#39;</span><span class="p">)</span>
     <span class="c1"># diarization params</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--diar_num_spks&#39;</span><span class="p">,</span>
-                        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
-                        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;number of speakers&#39;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--diar_min_num_spks&#39;</span><span class="p">,</span>
-                        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
-                        <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;minimum number of speakers&#39;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--diar_max_num_spks&#39;</span><span class="p">,</span>
-                        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
-                        <span class="n">default</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;maximum number of speakers&#39;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--diar_min_duration&#39;</span><span class="p">,</span>
                         <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
                         <span class="n">default</span><span class="o">=</span><span class="mf">0.255</span><span class="p">,</span>

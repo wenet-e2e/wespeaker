@@ -1,0 +1,7 @@
+wespeaker.diar.umap\_clusterer module
+=====================================
+
+.. automodule:: wespeaker.diar.umap_clusterer
+   :members:
+   :undoc-members:
+   :show-inheritance:
