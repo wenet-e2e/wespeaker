@@ -24,3 +24,5 @@ pypeln==0.4.9
 silero-vad
 pre-commit==3.5.0
 s3prl
+hdbscan==0.8.37
+umap-learn==0.5.6
