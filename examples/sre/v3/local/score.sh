@@ -48,7 +48,7 @@ if [ -z $cal_mean_dir ];then
 else                                                                                       #         xvector.scp -> ''  (empty string)
     cal_mean_string="--cal_mean True --cal_mean_dir $cal_mean_dir"
     output_name="mean_$(echo $cal_mean_dir | sed "s:.*embeddings/::" | sed -e "s:/:_:g")"  # Name will be e.g. mean_sre16_major if sre16/major data is used
-fi                                                                                         # for mean subtraction.                    
+fi                                                                                         # for mean subtraction.
 
 
 echo $cal_mean_string
@@ -73,7 +73,7 @@ fi
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
   echo "compute metrics (EER/minDCF) ..."
   for x in $(echo $trials | tr "," " "); do
-    xx=$(basename  $x)  
+    xx=$(basename  $x)
     echo $xx
     python wespeaker/bin/compute_metrics.py \
         --p_target 0.01 \

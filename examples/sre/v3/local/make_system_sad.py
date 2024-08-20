@@ -1,6 +1,6 @@
 # Copyright (c) 2022 Xu Xiang
 #               2023 Zhengyang Chen
-#               2024 Johan Rohdin               
+#               2024 Johan Rohdin
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -130,11 +130,11 @@ def main():
     utt_wav_pair_list = read_scp(args.scp)
     # with concurrent.futures.ProcessPoolExecutor() as executor:
     #    print(''.join(executor.map(vad, utt_wav_pair_list)), end='')
-    # It seems the pool doesn't work well so split into chunks of max size n 
+    # It seems the pool doesn't work well so split into chunks of max size n
     # (e.g. 10000). Splitting like this also has the consequence that the VAD
     # is printed after processing n files instead of after processing all files.
     n = 10000
-    utt_wav_pair_list_of_list = [utt_wav_pair_list[i * n:(i + 1) * n] 
+    utt_wav_pair_list_of_list = [utt_wav_pair_list[i * n:(i + 1) * n]
                                  for i in range((len(utt_wav_pair_list) + n - 1) // n)]
     for lol in utt_wav_pair_list_of_list:
         with concurrent.futures.ProcessPoolExecutor() as executor:

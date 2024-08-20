@@ -109,7 +109,7 @@ done
 wait
 }
 
-# Create enrollment models. This is the first order statistics. The zeroth order 
+# Create enrollment models. This is the first order statistics. The zeroth order
 # (the number of enrollment vectors) should, in principle, also be considered.
 echo "mean vector of enroll"
 python tools/vector_mean.py \

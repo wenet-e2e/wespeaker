@@ -19,9 +19,9 @@ if [ $? -eq 0 ]; then
     eval "$__conda_setup"
 else
     if [ -f "/mnt/matylda5/iplchot/python_public/anaconda3/etc/profile.d/conda.sh" ]; then
-        . "/mnt/matylda5/iplchot/python_public/anaconda3/etc/profile.d/conda.sh" 
+        . "/mnt/matylda5/iplchot/python_public/anaconda3/etc/profile.d/conda.sh"
     else
-        export PATH="$PATH:/mnt/matylda5/iplchot/python_public/anaconda3/bin"  
+        export PATH="$PATH:/mnt/matylda5/iplchot/python_public/anaconda3/bin"
     fi
 fi
 unset __conda_setup
@@ -31,6 +31,6 @@ conda activate /mnt/matylda6/rohdin/conda/wespeaker_20240220/
 which python
 export PATH=$PATH:/mnt/matylda6/rohdin/software/kaldi_20210625/tools/sph2pipe/
 
-./run.sh > logs/run.sh.stage4.log.1 2>&1 
+./run.sh > logs/run.sh.stage4.log.1 2>&1
 
 

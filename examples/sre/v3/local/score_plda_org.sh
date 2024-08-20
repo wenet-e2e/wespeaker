@@ -15,7 +15,7 @@
 # limitations under the License.
 exp_dir=
 data=data
-trials="${data}/sre16/eval/trials ${data}/sre16/eval/trials_tgl ${data}/sre16/eval/trials_yue"  
+trials="${data}/sre16/eval/trials ${data}/sre16/eval/trials_tgl ${data}/sre16/eval/trials_yue"
 aug_plda_data=0
 
 enroll_scp=sre16/eval/enrollment/xvector.scp
@@ -50,7 +50,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
   echo "apply plda scoring ..."
   mkdir -p ${exp_dir}/scores
   for x in $(echo $trials | tr "," " "); do
-    xx=$(basename  $x)  
+    xx=$(basename  $x)
     echo "scoring on " $x
     python wespeaker/bin/eval_plda.py \
       --enroll_scp_path ${exp_dir}/embeddings/$enroll_scp \
@@ -67,14 +67,14 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
     echo "compute metrics (EER/minDCF) ..."
     scores_dir=${exp_dir}/scores
     for x in $(echo $trials | tr "," " "); do
-        xx=$(basename  $x)  
+        xx=$(basename  $x)
         python wespeaker/bin/compute_metrics.py \
             --p_target 0.01 \
             --c_fa 1 \
             --c_miss 1 \
             ${scores_dir}/${xx}.pldascore \
             2>&1 | tee -a ${scores_dir}/${xx}_plda_result
-        
+
         echo "compute DET curve ..."
         python wespeaker/bin/compute_det.py \
             ${scores_dir}/${xx}.pldascore

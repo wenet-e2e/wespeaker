@@ -16,7 +16,7 @@
 # limitations under the License.
 exp_dir=exp/ResNet34-TSTP-emb256-fbank40-num_frms200-aug0.6-spFalse-saFalse-Softmax-SGD-epoch10/
 data=data
-trials="${data}/sre16/eval/trials ${data}/sre16/eval/trials_tgl ${data}/sre16/eval/trials_yue"  
+trials="${data}/sre16/eval/trials ${data}/sre16/eval/trials_tgl ${data}/sre16/eval/trials_yue"
 aug_plda_data=0
 
 enroll_scp=sre16/eval/enrollment/xvector.scp
@@ -75,7 +75,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
 
   mkdir -p ${exp_dir}/scores
   for x in $(echo $trials | tr "," " "); do
-    xx=$(basename  $x)  
+    xx=$(basename  $x)
     echo "scoring on " $x
     python wespeaker/bin/eval_plda.py \
       --enroll_scp_path ${exp_dir}/embeddings/$enroll_scp \
@@ -87,13 +87,13 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   done
 fi
 #--indomain_scp ${exp_dir}/embeddings/$indomain_scp \ Note: This option was used before the new code for preprocessing.
-# With this code, all preprocessing takes place in the preprocessing chain. So we don't include it in the above code anymore. 
+# With this code, all preprocessing takes place in the preprocessing chain. So we don't include it in the above code anymore.
 
 if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
     echo "compute metrics (EER/minDCF) ..."
     scores_dir=${exp_dir}/scores
     for x in $(echo $trials | tr "," " "); do
-        xx=$(basename  $x)  
+        xx=$(basename  $x)
         python wespeaker/bin/compute_metrics.py \
             --p_target 0.01 \
             --c_fa 1 \

@@ -16,7 +16,7 @@
 # limitations under the License.
 exp_dir="exp/ResNet34-TSTP-emb256-fbank40-num_frms200-aug0.6-spFalse-saFalse-Softmax-SGD-epoch10/"
 data=data
-trials="${data}/sre16/eval/trials ${data}/sre16/eval/trials_tgl ${data}/sre16/eval/trials_yue"  
+trials="${data}/sre16/eval/trials ${data}/sre16/eval/trials_tgl ${data}/sre16/eval/trials_yue"
 aug_plda_data=0
 
 enroll_scp=sre16/eval/enrollment/xvector.scp
@@ -36,7 +36,7 @@ if [ $aug_plda_data = 0 ];then
 else
     sre_plda_data=cts_aug
 fi
-  
+
 echo "preprocessing_path $preprocessing_path"
 preproc_name=$(basename $preprocessing_path .pkl)
 echo "preproc_name $preproc_name"
@@ -49,7 +49,7 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     python wespeaker/bin/prep_embd_proc.py \
     --chain "$preprocessing_chain" \
     --path $preprocessing_path
-  echo "Backend preprocessor prepared"    
+  echo "Backend preprocessor prepared"
 fi
 
 
@@ -58,7 +58,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     python wespeaker/bin/apply_embd_proc.py \
     --path $preprocessing_path \
     --input ${exp_dir}/embeddings/${sre_plda_data}/xvector.scp \
-    --output ${exp_dir}/embeddings/${sre_plda_data}/xvector_proc_$preproc_name.ark,scp 
+    --output ${exp_dir}/embeddings/${sre_plda_data}/xvector_proc_$preproc_name.ark,scp
 fi
 
 
@@ -69,7 +69,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
     --scp_path ${exp_dir}/embeddings/${sre_plda_data}/xvector_proc_$preproc_name.scp \
     --utt2spk ${data}/${sre_plda_data}/utt2spk \
     --indim 100 \
-    --iter 10 
+    --iter 10
   echo "plda training finished"
 fi
 
@@ -97,7 +97,7 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
   test_scp=$(echo $test_scp | sed "s:\.scp:_proc_$preproc_name\.scp:")
 
   for x in $(echo $trials | tr "," " "); do
-    xx=$(basename  $x)  
+    xx=$(basename  $x)
     echo "scoring on " $x
     python wespeaker/bin/eval_plda.py \
       --enroll_scp_path ${exp_dir}/embeddings/$enroll_scp \
@@ -105,7 +105,7 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
       --utt2spk $utt2spk \
       --trial ${x} \
       --score_path ${exp_dir}/scores/${xx}.proc_${preproc_name}_plda.score \
-      --model_path ${exp_dir}/plda 
+      --model_path ${exp_dir}/plda
   done
 fi
 
@@ -114,7 +114,7 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
     echo "compute metrics (EER/minDCF) ..."
     scores_dir=${exp_dir}/scores
     for x in $(echo $trials | tr "," " "); do
-        xx=$(basename  $x)  
+        xx=$(basename  $x)
         python wespeaker/bin/compute_metrics.py \
             --p_target 0.01 \
             --c_fa 1 \
