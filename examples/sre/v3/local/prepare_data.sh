@@ -17,9 +17,13 @@
 
 stage=-1
 stop_stage=-1
-sre_data_dir=
+#sre_data_dir=
 data=data
 
+###
+sre16_unlab_dir=""
+sre16_evalset_dir=""
+sre16_evalset_keys=""
 ###
 sre18_devset_dir=""
 sre18_evalset_dir=""
@@ -51,20 +55,14 @@ fi
 
 ### SRE16
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
-    # The meta data for SRE16 should be pre-prepared using Kaldi recipe:
-    # https://github.com/kaldi-asr/kaldi/tree/master/egs/sre16/v2
-    echo "Preparing SRE16"
-    for dset in sre16_major sre16_eval_enroll sre16_eval_test; do
-        new_dset=$(echo ${dset} | sed "s:_:/:g" | sed "s:enroll:enrollment:g" ) # To get organization and naming consistent with other sets.
-        echo "Renaming $dset to $new_dset"
-        mkdir -p ${data}/${new_dset}
-        cp ${sre_data_dir}/${dset}/wav.scp ${data}/${new_dset}/wav.scp
-        [ -f ${sre_data_dir}/${dset}/utt2spk ] && cp ${sre_data_dir}/${dset}/utt2spk ${data}/${new_dset}/utt2spk
-        [ -f ${sre_data_dir}/${dset}/spk2utt ] && cp ${sre_data_dir}/${dset}/spk2utt ${data}/${new_dset}/spk2utt
-    done
-    cp -r ${sre_data_dir}/sre16_eval_test/trials ${data}/sre16/eval/
-    cp -r ${sre_data_dir}/sre16_eval_test/trials_tgl ${data}/sre16/eval/
-    cp -r ${sre_data_dir}/sre16_eval_test/trials_yue ${data}/sre16/eval/
+    # We use the scripts from the Kaldi SRE16 recipe with some minor modifications. 
+
+    # Prepare NIST SRE 2016 evaluation data.
+    local/make_sre16_eval.pl $sre16_evalset_dir $sre16_evalset_keys data
+
+    # Prepare unlabeled Cantonese and Tagalog development data. This dataset
+    # was distributed to SRE participants.
+    local/make_sre16_unlabeled.pl $sre16_unlab_dir data
 fi
 
 

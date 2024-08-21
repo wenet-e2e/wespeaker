@@ -20,7 +20,7 @@
 # 10. Summarization of results.
 
 stage=1
-stop_stage=10
+stop_stage=1
 
 data=data
 data_type="shard"  # shard/raw
@@ -97,8 +97,12 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   ######################################################################################
   ### Test sets. Please specify paths
   # SRE16 should be prepared by the Kaldi recipe and the path should be specified here:
-  sre_data_dir=/mnt/matylda4/burget/kaldi-trunk/kaldi/egs/sre16/v2/data/
+  #sre_data_dir=/mnt/matylda4/burget/kaldi-trunk/kaldi/egs/sre16/v2/data/
   # Will be used by ./local/prepare_data.sh below. (only wav.scp, utt2spk and spk2utt files are needed.)
+  sre16_unlab_dir=/mnt/matylda2/data/NIST/sre16/LDC2016E46_SRE16_Call_My_Net_Training_Data
+  sre16_evalset_dir=/mnt/matylda2/data/NIST/sre16/R149_0_1
+  # Eval keys are not in the above directory since they were distributed after the evaluation.
+  sre16_evalset_keys=/mnt/matylda2/data/NIST/sre16/download/sre16_evaluation_key.tar.bz2
 
   # SRE18
   sre18_devset_dir=/mnt/matylda2/data/NIST/sre18/LDC2018E46_2018_NIST_Speaker_Recognition_Evaluation_Development_Set
@@ -123,7 +127,8 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
 
   # This script is based on ../v2/local/prepare_data.sh
   # Copies SRE16 relevant files, extracts VAD for all files, does some pruning of the training set.
-  ./local/prepare_data.sh --stage 1 --stop_stage 9 --data ${data} --sre_data_dir ${sre_data_dir} \
+  ./local/prepare_data.sh --stage 1 --stop_stage 10 --data ${data} \
+                          --sre16_unlab_dir ${sre16_unlab_dir} --sre16_evalset_dir ${sre16_evalset_dir} --sre16_evalset_keys ${sre16_evalset_keys} \
                           --sre18_devset_dir ${sre18_devset_dir} --sre18_evalset_dir ${sre18_evalset_dir} --sre18_evalset_keys ${sre18_evalset_keys} \
                           --sre21_devset_dir ${sre21_devset_dir} --sre21_evalset_dir ${sre21_evalset_dir} --sre21_evalset_keys ${sre21_evalset_keys} \
                           --cts_superset_dir ${cts_superset_dir} --voxceleb_dir ${voxceleb_dir}

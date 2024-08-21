@@ -23,7 +23,7 @@ mkdir -p $data_cts
 
 echo -n "" > ${data_cts}/wav.scp
 for x in $(tail -n +2 $cts_superset_dir/docs/cts_superset_segment_key.tsv | cut -f 1 | sed "s:\.sph::" );do
-    echo "$x sph2pipe -f wav -p ${cts_superset_dir}/data/${x}.sph |" >> ${data_cts}/wav.scp
+    echo "$x ffmpeg -nostdin -i ${cts_superset_dir}/data/${x}.sph -ar 8000 -f wav pipe:1 |" >> $data_cts/wav.scp
 done
 
 

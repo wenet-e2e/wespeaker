@@ -60,7 +60,7 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
                 name=$(basename $x .sph)
                 if [ $name != $x ];then
                     # suffix is .sph
-                    echo "$name sph2pipe -f wav -p $src_dir/data/audio/${s}/$x |" >> $tgt_dir/wav.scp
+                    echo "$name ffmpeg -nostdin -i $src_dir/data/audio/${s}/$x -ar 8000 -f wav pipe:1 |" >> $tgt_dir/wav.scp
                 else
                     name=$(basename $x .flac)
                     if [ $name != $x ];then
