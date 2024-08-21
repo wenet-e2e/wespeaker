@@ -12,8 +12,8 @@ use File::Basename;
 # 1. The path to the keys tar file are provided as an additional input argument.
 # 2. The produced wav.scp will use ffmpeg instead of sph2pipe.
 # 3. Some changes in paths to fit wespeaker recipe.
-# 4. Warning if wav files have no meta data. Mainly happens if the directory 
-#    searched for wav files contains files that are not in the original data. 
+# 4. Warning if wav files have no meta data. Mainly happens if the directory
+#    searched for wav files contains files that are not in the original data.
 # 5  Formatting to fit Wespeaker's requirement.
 
 if (@ARGV != 3) {
@@ -36,11 +36,11 @@ if (system("mkdir -p $tmp_dir_enroll") != 0) {
   die "Error making directory $tmp_dir_enroll";
 }
 
-open(SPKR, ">$out_dir_enroll/utt2spk") 
+open(SPKR, ">$out_dir_enroll/utt2spk")
     || die "Could not open the output file $out_dir_enroll/utt2spk";
-open(WAV, ">$out_dir_enroll/wav.scp") 
+open(WAV, ">$out_dir_enroll/wav.scp")
     || die "Could not open the output file $out_dir_enroll/wav.scp";
-open(META, "<$db_base/docs/sre16_eval_enrollment.tsv") 
+open(META, "<$db_base/docs/sre16_eval_enrollment.tsv")
     or die "cannot open wav list";
 %utt2fixedutt = ();
 while (<META>) {
@@ -99,18 +99,18 @@ my $key_name = basename( $evalset_keys );
 
 if (system("tar -xvf $out_dir_test/$key_name -C $out_dir_test")) {
     die "Could not untar sre16 keys.";
-} 
+}
 
 
-open(SPKR, ">$out_dir_test/utt2spk") 
+open(SPKR, ">$out_dir_test/utt2spk")
     || die "Could not open the output file $out_dir_test/utt2spk";
-open(WAV, ">$out_dir_test/wav.scp") 
+open(WAV, ">$out_dir_test/wav.scp")
     || die "Could not open the output file $out_dir_test/wav.scp";
-open(TRIALS, ">$out_dir_test/trials") 
+open(TRIALS, ">$out_dir_test/trials")
     || die "Could not open the output file $out_dir_test/trials";
-open(TGL_TRIALS, ">$out_dir_test/trials_tgl") 
+open(TGL_TRIALS, ">$out_dir_test/trials_tgl")
     || die "Could not open the output file $out_dir_test/trials_tgl";
-open(YUE_TRIALS, ">$out_dir_test/trials_yue") 
+open(YUE_TRIALS, ">$out_dir_test/trials_yue")
     || die "Could not open the output file $out_dir_test/trials_yue";
 
 my $cmd2="find $db_base/data/test/ -name '*.sph' > $tmp_dir_test/sph.list";
@@ -119,14 +119,14 @@ if (system($cmd2) != 0) {
 }
 
 
-open(KEY, "<$out_dir_test/R149_0_1/docs/sre16_eval_trial_key.tsv") 
+open(KEY, "<$out_dir_test/R149_0_1/docs/sre16_eval_trial_key.tsv")
     || die "Could not open trials file",
     " $out_dir_test/R149_0_1/docs/sre16_eval_trial_key.tsv.";
-open(SEG_KEY, "<$out_dir_test/R149_0_1/docs/sre16_eval_segment_key.tsv") 
+open(SEG_KEY, "<$out_dir_test/R149_0_1/docs/sre16_eval_segment_key.tsv")
     || die "Could not open trials file",
     " $out_dir_test/R149_0_1/docs/sre16_eval_segment_key.tsv.";
-open(LANG_KEY, "<$out_dir_test/R149_0_1/metadata/calls.tsv") 
-    || die " Could not open trials file", 
+open(LANG_KEY, "<$out_dir_test/R149_0_1/metadata/calls.tsv")
+    || die " Could not open trials file",
     " $out_dir_test/R149_0_1/metadata/calls.tsv.";
 open(WAVLIST, "<$tmp_dir_test/sph.list") or die "cannot open wav list";
 

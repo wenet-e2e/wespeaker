@@ -55,7 +55,7 @@ fi
 
 ### SRE16
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
-    # We use the scripts from the Kaldi SRE16 recipe with some minor modifications. 
+    # We use the scripts from the Kaldi SRE16 recipe with some minor modifications.
 
     # Prepare NIST SRE 2016 evaluation data.
     local/make_sre16_eval.pl $sre16_evalset_dir $sre16_evalset_keys data
