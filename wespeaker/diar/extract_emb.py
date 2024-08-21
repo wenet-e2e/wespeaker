@@ -37,7 +37,7 @@ def init_session(source, device):
     opts = ort.SessionOptions()
     opts.inter_op_num_threads = 1
     opts.intra_op_num_threads = 1
-    opts.log_severity_level = 0
+    opts.log_severity_level = 1
     session = ort.InferenceSession(source,
                                    sess_options=opts,
                                    providers=providers)

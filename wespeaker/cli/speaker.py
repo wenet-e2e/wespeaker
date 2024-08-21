@@ -72,11 +72,7 @@ class Speaker:
     def set_vad(self, apply_vad: bool):
         self.apply_vad = apply_vad
 
-    def set_gpu(self, device_id: int):
-        if device_id >= 0:
-            device = 'cuda:{}'.format(device_id)
-        else:
-            device = 'cpu'
+    def set_device(self, device: str):
         self.device = torch.device(device)
         self.model = self.model.to(self.device)
 
@@ -304,7 +300,7 @@ def main():
         model = load_model_local(args.pretrain)
     model.set_resample_rate(args.resample_rate)
     model.set_vad(args.vad)
-    model.set_gpu(args.gpu)
+    model.set_device(args.device)
     model.set_diarization_params(min_duration=args.diar_min_duration,
                                  window_secs=args.diar_window_secs,
                                  period_secs=args.diar_period_secs,
