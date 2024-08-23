@@ -57,7 +57,7 @@ class S3prlFrontend(nn.Module):
 
         if layer != -1:
             layer_selections = [layer]
-            assert not multilayer_feature,\
+            assert not multilayer_feature, \
                 "multilayer_feature must be False if layer is specified"
         else:
             layer_selections = None
