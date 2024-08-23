@@ -21,6 +21,8 @@ $ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt
 $ wespeaker --task embedding_kaldi --wav_scp wav.scp --output_file /path/to/embedding
 $ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav
 $ wespeaker --task diarization --audio_file audio.wav
+$ wespeaker --task diarization --audio_file audio.wav --device cuda:0 # use CUDA on Windows/Linux
+$ wespeaker --task diarization --audio_file audio.wav --device mps    # use Metal Performance Shaders on MacOS
 ```
 
 You can specify the following parameters. (use `-h` for details)
@@ -33,7 +35,7 @@ You can specify the following parameters. (use `-h` for details)
     - diarization_list: apply speaker diarization for a kaldi-style wav.scp
 * `-l` or `--language`: use Chinese/English speaker models
 * `-p` or `--pretrain`: the path of pretrained model, `avg_model.pt` and `config.yaml` should be contained
-* `-g` or `--gpu`: use GPU for inference, number $< 0$ means using CPU
+* `--device`: set pytorch device, `cpu`, `cuda`, `cuda:0` or `mps`
 * `--campplus`:
   use [`campplus_cn_common_200k` of damo](https://www.modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary)
 * `--eres2net`:
@@ -69,14 +71,14 @@ which can either be the ones we provided and trained by yourself.
 import wespeaker
 
 model = wespeaker.load_model('chinese')
-# set_gpu to enable the cuda inference, number < 0 means using CPU
-model.set_gpu(0)
+# set the device on which tensors are or will be allocated.
+model.set_device('cuda:0')
 
 # embedding/embedding_kaldi/similarity/diarization
 embedding = model.extract_embedding('audio.wav')
 utt_names, embeddings = model.extract_embedding_list('wav.scp')
 similarity = model.compute_similarity('audio1.wav', 'audio2.wav')
-diar_result = model.diarize('audio.wav')
+diar_result = model.diarize('audio.wav', 'give_this_utt_a_name')
 
 # register and recognize
 model.register('spk1', 'spk1_audio1.wav')

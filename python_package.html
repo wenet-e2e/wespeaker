@@ -107,6 +107,8 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 $<span class="w"> </span>wespeaker<span class="w"> </span>--task<span class="w"> </span>embedding_kaldi<span class="w"> </span>--wav_scp<span class="w"> </span>wav.scp<span class="w"> </span>--output_file<span class="w"> </span>/path/to/embedding
 $<span class="w"> </span>wespeaker<span class="w"> </span>--task<span class="w"> </span>similarity<span class="w"> </span>--audio_file<span class="w"> </span>audio.wav<span class="w"> </span>--audio_file2<span class="w"> </span>audio2.wav
 $<span class="w"> </span>wespeaker<span class="w"> </span>--task<span class="w"> </span>diarization<span class="w"> </span>--audio_file<span class="w"> </span>audio.wav
+$<span class="w"> </span>wespeaker<span class="w"> </span>--task<span class="w"> </span>diarization<span class="w"> </span>--audio_file<span class="w"> </span>audio.wav<span class="w"> </span>--device<span class="w"> </span>cuda:0<span class="w"> </span><span class="c1"># use CUDA on Windows/Linux</span>
+$<span class="w"> </span>wespeaker<span class="w"> </span>--task<span class="w"> </span>diarization<span class="w"> </span>--audio_file<span class="w"> </span>audio.wav<span class="w"> </span>--device<span class="w"> </span>mps<span class="w">    </span><span class="c1"># use Metal Performance Shaders on MacOS</span>
 </pre></div>
 </div>
 <p>You can specify the following parameters. (use <code class="docutils literal notranslate"><span class="pre">-h</span></code> for details)</p>
@@ -122,7 +124,7 @@ $<span class="w"> </span>wespeaker<span class="w"> </span>--task<span class="w">
 </li>
 <li><p><code class="docutils literal notranslate"><span class="pre">-l</span></code> or <code class="docutils literal notranslate"><span class="pre">--language</span></code>: use Chinese/English speaker models</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">-p</span></code> or <code class="docutils literal notranslate"><span class="pre">--pretrain</span></code>: the path of pretrained model, <code class="docutils literal notranslate"><span class="pre">avg_model.pt</span></code> and <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> should be contained</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">-g</span></code> or <code class="docutils literal notranslate"><span class="pre">--gpu</span></code>: use GPU for inference, number $&lt; 0$ means using CPU</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--device</span></code>: set pytorch device, <code class="docutils literal notranslate"><span class="pre">cpu</span></code>, <code class="docutils literal notranslate"><span class="pre">cuda</span></code>, <code class="docutils literal notranslate"><span class="pre">cuda:0</span></code> or <code class="docutils literal notranslate"><span class="pre">mps</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--campplus</span></code>:
 use <a class="reference external" href="https://www.modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary"><code class="docutils literal notranslate"><span class="pre">campplus_cn_common_200k</span></code> of damo</a></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--eres2net</span></code>:
@@ -156,14 +158,14 @@ which can either be the ones we provided and trained by yourself.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">wespeaker</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">wespeaker</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s1">&#39;chinese&#39;</span><span class="p">)</span>
-<span class="c1"># set_gpu to enable the cuda inference, number &lt; 0 means using CPU</span>
-<span class="n">model</span><span class="o">.</span><span class="n">set_gpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1"># set the device on which tensors are or will be allocated.</span>
+<span class="n">model</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="s1">&#39;cuda:0&#39;</span><span class="p">)</span>
 
 <span class="c1"># embedding/embedding_kaldi/similarity/diarization</span>
 <span class="n">embedding</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">extract_embedding</span><span class="p">(</span><span class="s1">&#39;audio.wav&#39;</span><span class="p">)</span>
 <span class="n">utt_names</span><span class="p">,</span> <span class="n">embeddings</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">extract_embedding_list</span><span class="p">(</span><span class="s1">&#39;wav.scp&#39;</span><span class="p">)</span>
 <span class="n">similarity</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">compute_similarity</span><span class="p">(</span><span class="s1">&#39;audio1.wav&#39;</span><span class="p">,</span> <span class="s1">&#39;audio2.wav&#39;</span><span class="p">)</span>
-<span class="n">diar_result</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">diarize</span><span class="p">(</span><span class="s1">&#39;audio.wav&#39;</span><span class="p">)</span>
+<span class="n">diar_result</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">diarize</span><span class="p">(</span><span class="s1">&#39;audio.wav&#39;</span><span class="p">,</span> <span class="s1">&#39;give_this_utt_a_name&#39;</span><span class="p">)</span>
 
 <span class="c1"># register and recognize</span>
 <span class="n">model</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;spk1&#39;</span><span class="p">,</span> <span class="s1">&#39;spk1_audio1.wav&#39;</span><span class="p">)</span>
