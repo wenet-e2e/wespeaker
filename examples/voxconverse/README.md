@@ -4,4 +4,4 @@ Two recipes are provided, including **v1** and **v2**. Their only difference is 
 
 🔥 UPDATE 2024.08.20:
 * silero-vad v5.1 is used in place of v3.1
-* umap dimensionality reduction + hdbscan clustering is also supported
+* umap dimensionality reduction + hdbscan clustering is also supported in v2
