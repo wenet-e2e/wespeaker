@@ -52,11 +52,12 @@ def get_args():
                         type=str,
                         default="",
                         help='model directory')
-    parser.add_argument('-g',
-                        '--gpu',
-                        type=int,
-                        default=-1,
-                        help='which gpu to use (number <0 means using cpu)')
+    parser.add_argument('--device',
+                        type=str,
+                        default='cpu',
+                        help="device type (most commonly cpu or cuda,"
+                             "but also potentially mps, xpu, xla or meta)"
+                             "and optional device ordinal for the device type.")
     parser.add_argument('--audio_file', help='audio file')
     parser.add_argument('--audio_file2',
                         help='audio file2, specifically for similarity task')
