@@ -21,13 +21,13 @@ from wespeaker.utils.plda.plda_utils import get_data_for_plda
 
 
 def chain_string_to_dict(chain_string=None):
-    # This function converts an input string into a list and dictionary 
-    # structure suitable for use by the embedding processing classes below. 
+    # This function converts an input string into a list and dictionary
+    # structure suitable for use by the embedding processing classes below.
     # For example,
-    #     "mean-subtract --scp mean1_xvector.scp | length-norm " | 
+    #     "mean-subtract --scp mean1_xvector.scp | length-norm " |
     #     "| lda  --scp lda_xvector.scp --utt2spk utt2spk --dim $lda_dim "
     #     "| length-norm"
-    # (The above three lines is supposed to be one long string but style 
+    # (The above three lines is supposed to be one long string but style
     # rules prevents it from be written that way here.)
     # becomes
     # [
@@ -74,8 +74,8 @@ class Lda:
                                               utt2spk_file,
                                               equal_speaker_weight=False,
                                               current_chain=None):
-        # equal_speaker_weight: If True, each speaker is considered equally 
-        # important in the calculation of the mean and scatter matrices. If 
+        # equal_speaker_weight: If True, each speaker is considered equally
+        # important in the calculation of the mean and scatter matrices. If
         # False, speakers are weighted by their number of utterances.
         if current_chain is None:
             current_chain = []
@@ -89,7 +89,7 @@ class Lda:
         for s in speakers:
             embd_s = current_chain(np.vstack(embeddings_dict[s]))
             count_s = embd_s.shape[0]
-            # With bias=False we need at least 2 speakers, with bias=True we 
+            # With bias=False we need at least 2 speakers, with bias=True we
             # need at least 1. But this would result in covariance matrix = 0
             # for all its elements. (This is not necessarily wrong).
             if count_s > 1:
@@ -144,12 +144,12 @@ class Lda:
             scp_file, utt2spk_file, current_chain=current_chain)
 
         E, M = spl.eigh(WC)
-        # Floor the within-class covariance eigenvalues. We noticed that this 
+        # Floor the within-class covariance eigenvalues. We noticed that this
         # was done in Kaldi.
         E_floor = np.max(E) * eps
         E[E < E_floor] = E_floor
-        """ 
-        # The new within-class covariance.        
+        """
+        # The new within-class covariance.
         WC       = M.dot(np.diag(E).dot(M.T))
         D, lda   = spl.eigh( BC, WC )         # The output of eigh is sorted in
         self.lda = lda[:,-dim:]               # ascending order so we so we kee
@@ -157,10 +157,10 @@ class Lda:
         """
         # Since we have already found the eigen decomposition of WC, we could
         # whiten it by T1 = 1 / sqrt(E), I = T1 WC T1'. So instead of solving
-        # spl.eigh( BC, WC ) we can apply T1 on BC and solve 
-        # spl.eigh( T1 BC T1', T1 WC T1' ) 
-        #  = spl.eigh( T1 BC T1', I ) 
-        #  = spl.eigh( T1 BC T1') 
+        # spl.eigh( BC, WC ) we can apply T1 on BC and solve
+        # spl.eigh( T1 BC T1', T1 WC T1' )
+        #  = spl.eigh( T1 BC T1', I )
+        #  = spl.eigh( T1 BC T1')
         # as follows. However, T1 then needs to be inlcluded when transforming
         # the data. In either case, the result is that after LDA transform, the
         # data will have white WC and diagonal BC
@@ -169,10 +169,9 @@ class Lda:
         D, lda = spl.eigh(BC)
         self.lda = np.dot(T1.T, lda[:, -dim:])
 
-        print(
-            "  Input dimension: {}, output dimension: {},"
-            " sum of all eigenvalues {:.2f}, sum of kept eigenvalues {:.2f}"
-            .format(len(D), dim, np.sum(D), np.sum(D[-dim:])))
+        print("  Input dimension: {}, output dimension: {},"
+              " sum of all eigenvalues {:.2f}, sum of kept eigenvalues {:.2f}".
+              format(len(D), dim, np.sum(D), np.sum(D[-dim:])))
         print("  All eigenvalues: {}".format(D))
 
     def __call__(self, embd):
@@ -189,9 +188,9 @@ class Length_norm:
         embd_proc /= np.sqrt((embd_proc**2).sum(
             axis=1)[:, np.newaxis])  # This would make the lengths equal to one
         """
-        Todo: For Kaldi compatibility we may want to add this as option as 
+        Todo: For Kaldi compatibility we may want to add this as option as
         well as Kaldi style normalization.
-        embd_proc   *= np.sqrt(embd_normed.shape[1])       
+        embd_proc   *= np.sqrt(embd_normed.shape[1])
         """
         return (embd_proc)
 

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import argparse
 
 from wespeaker.utils.embedding_processing import EmbeddingProcessingChain
@@ -22,8 +21,10 @@ if __name__ == '__main__':
     xxx
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--chain', type=str, 
-                        default='whitening | length-norm ', help='')
+    parser.add_argument('--chain',
+                        type=str,
+                        default='whitening | length-norm ',
+                        help='')
     parser.add_argument('--path', type=str)
     args = parser.parse_args()
 

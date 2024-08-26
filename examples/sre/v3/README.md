@@ -7,7 +7,7 @@
 Similarly to ../v2, this recipe uses silero vad https://github.com/snakers4/silero-vad
 downloaded from here https://github.com/snakers4/silero-vad/archive/refs/tags/v4.0.zip
 If you intended to use this recipe for an evaluation/competition, make sure to check that
-it is allowed to use the data used to train Silero.
+it is allowed to use the data that has been used to train Silero.
 
 ### Instructions
 * Set the paths in stage 1. The variable ```sre_data_dir``` is assumed to be prepared by

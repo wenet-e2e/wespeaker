@@ -22,11 +22,17 @@ if __name__ == '__main__':
     xxx
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path', type=str, default='', 
+    parser.add_argument('--path',
+                        type=str,
+                        default='',
                         help='Path to processing chain.')
-    parser.add_argument('--input', type=str, default='', 
+    parser.add_argument('--input',
+                        type=str,
+                        default='',
                         help='Input scp file.')
-    parser.add_argument('--output', type=str, default='', 
+    parser.add_argument('--output',
+                        type=str,
+                        default='',
                         help='Output scp/ark file.')
     args = parser.parse_args()
 
@@ -34,20 +40,21 @@ if __name__ == '__main__':
     processingChain.load(args.path)
 
     embd = []
-    utt = [] 
+    utt = []
     for k, v in kaldiio.load_scp_sequential(args.input):
-        utt.append(k) 
+        utt.append(k)
         embd.append(v)
     embd = np.array(embd)
     utt = np.array(utt)
 
-    print("Read {} embeddings of dimension {}.".format(embd.shape[0], embd.shape[1]))
+    print("Read {} embeddings of dimension {}.".format(embd.shape[0],
+                                                       embd.shape[1]))
 
     embd = processingChain(embd)
 
     # Store both ark and scp if extention '.ark,scp' or '.scp,ark'. Or, only
     # ark if extension is '.ark'
-    output_file = args.output 
+    output_file = args.output
     if output_file.endswith('ark,scp') or output_file.endswith('scp,ark'):
         output_file = output_file.rstrip('ark,scp')
         output_file = output_file.rstrip('scp,ark')
@@ -63,6 +70,8 @@ if __name__ == '__main__':
                 e = embd[i]
                 writer(u, e)
     else:
-        raise Exception("Invalid file extension of output file {}".format(output_file))
+        raise Exception(
+            "Invalid file extension of output file {}".format(output_file))
 
-    print("Wrote {} embeddings of dimension {}.".format(embd.shape[0], embd.shape[1]))
+    print("Wrote {} embeddings of dimension {}.".format(
+        embd.shape[0], embd.shape[1]))

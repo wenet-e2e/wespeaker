@@ -51,7 +51,7 @@ else
         awk 'NR==FNR{a[$1];next}$1 in a{print $0}' $utt_list $src_dir/utt2spk > $dest_dir/utt2spk
     elif [ ! -z "$spk_list" ];then
         #echo "A"
-        awk 'NR==FNR{a[$1];next}$2 in a{print $0}' $spk_list $src_dir/utt2spk > $dest_dir/utt2spk 
+        awk 'NR==FNR{a[$1];next}$2 in a{print $0}' $spk_list $src_dir/utt2spk > $dest_dir/utt2spk
     else
         cp $src_dir/utt2spk $dest_dir/utt2spk
     fi
@@ -66,12 +66,12 @@ else
         cat $scrdir/spk2utt | tools/spk2utt_to_utt2spk.pl \
             | awk 'NR==FNR{a[$1];next}$1 in a{print $0}' $utt_list - \
             | tools/utt2spk_to_spk2utt.pl > $dest_dir/spk2utt
-        
+
     elif [ ! -z "$spk_list" ];then
         awk 'NR==FNR{a[$1];next}$1 in a{print $0}' $spk_list $src_dir/spk2utt > $dest_dir/spk2utt
     else
         cp $src_dir/spk2utt $dest_dir/spk2utt
-    fi        
+    fi
 fi
 
 
