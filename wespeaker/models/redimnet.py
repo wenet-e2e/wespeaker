@@ -141,9 +141,7 @@ class ConvNeXtLikeBlock(nn.Module):
         self,
         C,
         dim=2,
-        kernel_sizes=[
-            (3, 3),
-        ],
+        kernel_sizes=((3, 3),),
         group_divisor=1,
         padding="same",
     ):
@@ -612,7 +610,7 @@ class ReDimNetBone(nn.Module):
         C=16,
         block_1d_type="conv+att",
         block_2d_type="basic_resnet",
-        stages_setup=[
+        stages_setup=(
             # stride, num_blocks, conv_exp, kernel_size, att_block_red
             (1, 2, 1, [(3, 3)], None),  # 16
             (2, 3, 1, [(3, 3)], None),  # 32
@@ -621,7 +619,7 @@ class ReDimNetBone(nn.Module):
             (2, 5, 1, [(3, 3)], 8),  # 128
             (1, 5, 1, [(7, 1)], 8),  # 128 # TDNN - time context
             (2, 3, 1, [(3, 3)], 8),  # 256
-        ],
+        ),
         group_divisor=1,
         out_channels=512,
     ):
@@ -785,7 +783,7 @@ class ReDimNet(nn.Module):
         block_1d_type="conv+att",
         block_2d_type="basic_resnet",
         # Default setup: M version:
-        stages_setup=[
+        stages_setup=(
             # stride, num_blocks, kernel_sizes, layer_ext, att_block_red
             (1, 2, 1, [(3, 3)], 12),
             (2, 2, 1, [(3, 3)], 12),
@@ -793,7 +791,7 @@ class ReDimNet(nn.Module):
             (2, 4, 1, [(3, 3)], 8),
             (1, 4, 1, [(3, 3)], 8),
             (2, 4, 1, [(3, 3)], 4),
-        ],
+        ),
         group_divisor=4,
         out_channels=None,
         # -------------------------
