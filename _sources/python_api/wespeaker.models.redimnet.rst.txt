@@ -1,0 +1,7 @@
+wespeaker.models.redimnet module
+================================
+
+.. automodule:: wespeaker.models.redimnet
+   :members:
+   :undoc-members:
+   :show-inheritance:
