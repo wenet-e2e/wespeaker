@@ -10,7 +10,7 @@
 
     * [Whisper-PMFA: Partial Multi-Scale Feature Aggregation for Speaker Verification using Whisper Models ](https://arxiv.org/pdf/2408.15585)
 
-    
+
 
 | Model                                | AS-Norm | Params | vox1-O-clean |
 | :----------------------------------- | ------- | ------ | :----------: |

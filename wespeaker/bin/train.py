@@ -112,8 +112,8 @@ def train(config='conf/config.yaml', **kwargs):
     if frontend_type != "fbank":
         frontend_args = frontend_type + "_args"
         frontend = frontend_class_dict[frontend_type](
-                **configs['dataset_args'][frontend_args],
-                sample_rate=configs['dataset_args']['resample_rate'])
+            **configs['dataset_args'][frontend_args],
+            sample_rate=configs['dataset_args']['resample_rate'])
         configs['model_args']['feat_dim'] = frontend.output_size()
         model = get_speaker_model(configs['model'])(**configs['model_args'])
         model.add_module("frontend", frontend)
