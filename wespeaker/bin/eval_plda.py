@@ -37,9 +37,14 @@ if __name__ == '__main__':
                         type=str,
                         help='score file to write to')
     parser.add_argument('--trial', type=str, help='trial file to score upon')
+    parser.add_argument('--multisession_avg', default=False, action="store_true",
+                        help='Whether to score multisession by average instead '
+                        'of by-the-book. Default False.')
+
     args = parser.parse_args()
 
     kaldi_format = True if args.type == 'kaldi' else False
     plda = TwoCovPLDA.load_model(args.model_path, kaldi_format)
     plda.eval_sv(args.enroll_scp_path, args.utt2spk, args.test_scp_path,
-                 args.trial, args.score_path, args.indomain_scp_path)
+                 args.trial, args.score_path, args.multisession_avg,
+                 args.indomain_scp_path)
