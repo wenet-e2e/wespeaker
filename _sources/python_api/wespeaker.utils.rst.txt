@@ -13,6 +13,7 @@ Submodules
    :maxdepth: 2
 
    wespeaker.utils.checkpoint
+   wespeaker.utils.embedding_processing
    wespeaker.utils.executor
    wespeaker.utils.executor_deprecated
    wespeaker.utils.file_utils

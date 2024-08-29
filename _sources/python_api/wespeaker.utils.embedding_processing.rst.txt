@@ -1,0 +1,7 @@
+wespeaker.utils.embedding\_processing module
+============================================
+
+.. automodule:: wespeaker.utils.embedding_processing
+   :members:
+   :undoc-members:
+   :show-inheritance:
