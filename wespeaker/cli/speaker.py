@@ -17,7 +17,7 @@ import os
 import sys
 
 import numpy as np
-from silero_vad import SileroVAD
+from silero_vad import load_silero_vad, read_audio, get_speech_timestamps
 import torch
 import torchaudio
 import torchaudio.compliance.kaldi as kaldi
@@ -29,7 +29,7 @@ from wespeaker.cli.hub import Hub
 from wespeaker.cli.utils import get_args
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.utils.checkpoint import load_checkpoint
-from wespeaker.diar.spectral_clusterer import cluster
+from wespeaker.diar.umap_clusterer import cluster
 from wespeaker.diar.extract_emb import subsegment
 from wespeaker.diar.make_rttm import merge_segments
 from wespeaker.utils.utils import set_seed
@@ -47,7 +47,8 @@ class Speaker:
         self.model = get_speaker_model(
             configs['model'])(**configs['model_args'])
         load_checkpoint(self.model, model_path)
-        self.vad = SileroVAD()
+        self.model.eval()
+        self.vad = load_silero_vad()
         self.table = {}
         self.resample_rate = 16000
         self.apply_vad = False
@@ -55,9 +56,6 @@ class Speaker:
         self.wavform_norm = False
 
         # diarization parmas
-        self.diar_num_spks = None
-        self.diar_min_num_spks = 1
-        self.diar_max_num_spks = 20
         self.diar_min_duration = 0.255
         self.diar_window_secs = 1.5
         self.diar_period_secs = 0.75
@@ -74,27 +72,17 @@ class Speaker:
     def set_vad(self, apply_vad: bool):
         self.apply_vad = apply_vad
 
-    def set_gpu(self, device_id: int):
-        if device_id >= 0:
-            device = 'cuda:{}'.format(device_id)
-        else:
-            device = 'cpu'
+    def set_device(self, device: str):
         self.device = torch.device(device)
         self.model = self.model.to(self.device)
 
     def set_diarization_params(self,
-                               num_spks=None,
-                               min_num_spks=1,
-                               max_num_spks=20,
                                min_duration: float = 0.255,
                                window_secs: float = 1.5,
                                period_secs: float = 0.75,
                                frame_shift: int = 10,
                                batch_size: int = 32,
                                subseg_cmn: bool = True):
-        self.diar_num_spks = num_spks
-        self.diar_min_num_spks = min_num_spks
-        self.diar_max_num_spks = max_num_spks
         self.diar_min_duration = min_duration
         self.diar_window_secs = window_secs
         self.diar_period_secs = period_secs
@@ -127,10 +115,10 @@ class Speaker:
         fbanks_array = torch.from_numpy(fbanks_array).to(self.device)
         for i in tqdm(range(0, fbanks_array.shape[0], batch_size)):
             batch_feats = fbanks_array[i:i + batch_size]
-            # _, batch_embs = self.model(batch_feats)
-            batch_embs = self.model(batch_feats)
-            batch_embs = batch_embs[-1] if isinstance(batch_embs,
-                                                      tuple) else batch_embs
+            with torch.no_grad():
+                batch_embs = self.model(batch_feats)
+                batch_embs = batch_embs[-1] if isinstance(batch_embs,
+                                                          tuple) else batch_embs
             embeddings.append(batch_embs.detach().cpu().numpy())
         embeddings = np.vstack(embeddings)
         return embeddings
@@ -141,8 +129,8 @@ class Speaker:
         if self.apply_vad:
             # TODO(Binbin Zhang): Refine the segments logic, here we just
             # suppose there is only silence at the start/end of the speech
-            segments = self.vad.get_speech_timestamps(audio_path,
-                                                      return_seconds=True)
+            wav = read_audio(audio_path)
+            segments = get_speech_timestamps(wav, self.vad, return_seconds=True)
             pcmTotal = torch.Tensor()
             if len(segments) > 0:  # remove all the silence
                 for segment in segments:
@@ -162,7 +150,7 @@ class Speaker:
                                    cmn=True)
         feats = feats.unsqueeze(0)
         feats = feats.to(self.device)
-        self.model.eval()
+
         with torch.no_grad():
             outputs = self.model(feats)
             outputs = outputs[-1] if isinstance(outputs, tuple) else outputs
@@ -217,8 +205,8 @@ class Speaker:
 
         pcm, sample_rate = torchaudio.load(audio_path, normalize=False)
         # 1. vad
-        vad_segments = self.vad.get_speech_timestamps(audio_path,
-                                                      return_seconds=True)
+        wav = read_audio(audio_path)
+        vad_segments = get_speech_timestamps(wav, self.vad, return_seconds=True)
 
         # 2. extact fbanks
         subsegs, subseg_fbanks = [], []
@@ -251,10 +239,7 @@ class Speaker:
 
         # 4. cluster
         subseg2label = []
-        labels = cluster(embeddings,
-                         num_spks=self.diar_num_spks,
-                         min_num_spks=self.diar_min_num_spks,
-                         max_num_spks=self.diar_max_num_spks)
+        labels = cluster(embeddings)
         for (_subseg, _label) in zip(subsegs, labels):
             # b, e = process_seg_id(_subseg, frame_shift=self.diar_frame_shift)
             # subseg2label.append([b, e, _label])
@@ -315,11 +300,8 @@ def main():
         model = load_model_local(args.pretrain)
     model.set_resample_rate(args.resample_rate)
     model.set_vad(args.vad)
-    model.set_gpu(args.gpu)
-    model.set_diarization_params(num_spks=args.diar_num_spks,
-                                 min_num_spks=args.diar_min_num_spks,
-                                 max_num_spks=args.diar_max_num_spks,
-                                 min_duration=args.diar_min_duration,
+    model.set_device(args.device)
+    model.set_diarization_params(min_duration=args.diar_min_duration,
                                  window_secs=args.diar_window_secs,
                                  period_secs=args.diar_period_secs,
                                  frame_shift=args.diar_frame_shift,

@@ -32,8 +32,8 @@ import copy
 import wespeaker.models.pooling_layers as pooling_layers
 
 optional_groupwise_layers = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26]
-g2_map = {l: 2 for l in optional_groupwise_layers}
-g4_map = {l: 4 for l in optional_groupwise_layers}
+g2_map = dict.fromkeys(optional_groupwise_layers, 2)
+g4_map = dict.fromkeys(optional_groupwise_layers, 4)
 
 
 class SEBlock_2D(torch.nn.Module):

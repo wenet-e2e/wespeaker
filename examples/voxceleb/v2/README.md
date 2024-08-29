@@ -70,3 +70,25 @@ The results on ResNet34 (large margin, no asnorm) are:
 |:--------------:|:------------:|:------------:|:------------:|
 |      PLDA      |    1.207     |    1.350     |    2.528     |
 
+
+## WavLM results
+
+* Pre-trained frontend: the [WavLM](https://arxiv.org/abs/2110.13900) Large model, multilayer features are used
+* Speaker model: ECAPA_TDNN_GLOB_c512-ASTP-emb192
+* Training strategy: Frozen => Joint ft => Joint lmft
+
+```bash
+bash run_wavlm.sh --stage 3 --stop_stage 9
+```
+
+| Training strategy | AS-Norm | QMF | vox1-O-clean | vox1-E-clean | vox1-H-clean |
+|:------------------|:-------:|:---:|:------------:|:------------:|:------------:|
+| Frozen            | × | × | 0.595 | 0.719 | 1.501 |
+|                   | √ | × | 0.548 | 0.656 | 1.355 |
+|                   | √ | √ | 0.489 | 0.619 | 1.224 |
+| Frozen => Joint ft | × | × | 0.542 | 0.635 | 1.355 |
+|                    | √ | × | 0.521 | 0.594 | 1.237 |
+|                    | √ | √ | 0.494 | 0.576 | 1.205 |
+| Frozen => Joint ft => Joint lmft | × | × | 0.521 | 0.626 | 1.344 |
+|                                  | √ | × | 0.495 | 0.588 | 1.247 |
+|                                  | √ | √ | **0.415** | **0.551** | **1.118** |
