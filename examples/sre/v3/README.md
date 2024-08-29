@@ -1,5 +1,5 @@
 ### Main differences from ../v2
-* The training data is the CTS superset plus voxceleb with GSM codec
+* The training data is the CTS superset plus VoxCeleb with GSM codec
 * The test data is SRE16, SRE18, and SRE21
 * Preprocessing of embeddings before backend/scoring is supported
 
