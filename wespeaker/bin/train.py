@@ -109,18 +109,17 @@ def train(config='conf/config.yaml', **kwargs):
     logger.info("<== Model ==>")
     # frontend: fbank or s3prl
     frontend_type = configs['dataset_args'].get('frontend', 'fbank')
-    if frontend_type == 's3prl':
+    if frontend_type != "fbank":
         frontend_args = frontend_type + "_args"
         frontend = frontend_class_dict[frontend_type](
             **configs['dataset_args'][frontend_args],
             sample_rate=configs['dataset_args']['resample_rate'])
-        # speaker model
         configs['model_args']['feat_dim'] = frontend.output_size()
         model = get_speaker_model(configs['model'])(**configs['model_args'])
         model.add_module("frontend", frontend)
-    else:  # == 'fbank'
-        # speaker model
+    else:
         model = get_speaker_model(configs['model'])(**configs['model_args'])
+
     if rank == 0:
         num_params = sum(param.numel() for param in model.parameters())
         logger.info('speaker_model size: {}'.format(num_params))

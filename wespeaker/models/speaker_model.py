@@ -20,7 +20,9 @@ import wespeaker.models.campplus as campplus
 import wespeaker.models.eres2net as eres2net
 import wespeaker.models.gemini_dfresnet as gemini
 import wespeaker.models.res2net as res2net
+import wespeaker.models.whisper_PMFA as whisper_PMFA
 import wespeaker.models.redimnet as redimnet
+
 
 
 def get_speaker_model(model_name: str):
@@ -40,6 +42,8 @@ def get_speaker_model(model_name: str):
         return getattr(res2net, model_name)
     elif model_name.startswith("Gemini"):
         return getattr(gemini, model_name)
+    elif model_name.startswith("whisper_PMFA"):
+        return getattr(whisper_PMFA, model_name)
     elif model_name.startswith("ReDimNet"):
         return getattr(redimnet, model_name)
     else:  # model_name error !!!
