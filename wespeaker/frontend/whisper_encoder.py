@@ -80,14 +80,15 @@ class MultiHeadAttention(nn.Module):
         q = self.query(x)
 
         if kv_cache is None or xa is None or self.key not in kv_cache:
-            # hooks, if installed (i.e. kv_cache is not None), will prepend the cached kv tensors;
-            # otherwise, perform key/value projections for self- or
+            # hooks, if installed (i.e. kv_cache is not None),
+            # will prepend the cached kv tensors; otherwise,
+            # perform key/value projections for self- or
             # cross-attention as usual.
             k = self.key(x if xa is None else xa)
             v = self.value(x if xa is None else xa)
         else:
-            # for cross-attention, calculate keys and values once and reuse in
-            # subsequent calls.
+            # for cross-attention, calculate keys and values once
+            # and reuse in subsequent calls.
             k = kv_cache[self.key]
             v = kv_cache[self.value]
 
@@ -192,9 +193,9 @@ class AudioEncoder(nn.Module):
         x = F.gelu(self.conv2(x))
         x = x.permute(0, 2, 1)
 
-        # assert x.shape[1:] == self.positional_embedding.shape, "incorrect audio shape"
-        # ----------------------Change:Tailor the positional_embedding----------
-        assert x.shape[2:] == self.positional_embedding.shape[1:], "incorrect audio shape"
+        # ------------Change:Tailor the positional_embedding----------
+        assert x.shape[2:] == self.positional_embedding.shape[1:], \
+            "incorrect audio shape"
         if self.positional_embedding.shape[0] > x.shape[1]:
             temp_positional_embedding = self.positional_embedding[:x.shape[1], :]
         elif self.positional_embedding.shape[0] < x.shape[1]:
@@ -266,7 +267,9 @@ class whisper_encoder(torch.nn.Module):
             os.makedirs(download_dir)
         if not os.path.isfile(model_path):
             print("Downloading large-v2.pt ...")
-            url = 'https://openaipublic.azureedge.net/main/whisper/models/81f7c96c852ee8fc832187b0132e569d6c3065a3252ed18e56effd0b6a73e524/large-v2.pt'
+            url = 'https://openaipublic.azureedge.net/main/whisper/models/' \
+                '81f7c96c852ee8fc832187b0132e569d6c3065a3252ed18e56effd0b6a73e524/' \
+                'large-v2.pt'
 
             urllib.request.urlretrieve(url, model_path)
 
