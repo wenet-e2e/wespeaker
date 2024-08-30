@@ -13,3 +13,4 @@ Submodules
    :maxdepth: 2
 
    wespeaker.frontend.s3prl
+   wespeaker.frontend.whisper_encoder

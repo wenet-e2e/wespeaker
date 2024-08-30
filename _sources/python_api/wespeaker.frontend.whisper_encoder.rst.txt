@@ -1,0 +1,7 @@
+wespeaker.frontend.whisper\_encoder module
+==========================================
+
+.. automodule:: wespeaker.frontend.whisper_encoder
+   :members:
+   :undoc-members:
+   :show-inheritance:

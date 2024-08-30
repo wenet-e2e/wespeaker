@@ -25,3 +25,4 @@ Submodules
    wespeaker.models.resnet
    wespeaker.models.speaker_model
    wespeaker.models.tdnn
+   wespeaker.models.whisper_PMFA

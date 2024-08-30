@@ -1,0 +1,7 @@
+wespeaker.models.whisper\_PMFA module
+=====================================
+
+.. automodule:: wespeaker.models.whisper_PMFA
+   :members:
+   :undoc-members:
+   :show-inheritance:
