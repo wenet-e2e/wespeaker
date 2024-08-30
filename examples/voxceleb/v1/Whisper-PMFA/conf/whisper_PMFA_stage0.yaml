@@ -1,8 +1,8 @@
 ### train configuraton
 
-exp_dir: exp/test
+exp_dir: exp/Whisper_PMFA_large_v2_voxceleb1_mel_5s
 gpus: "[0,1]"
-num_avg: 10
+num_avg: 1
 enable_amp: False # whether enable automatic mixed precision training
 
 seed: 42
@@ -57,7 +57,7 @@ margin_update:
   initial_margin: 0.2
   final_margin: 0.2
   increase_start_epoch: 0
-  fix_start_epoch: 30
+  fix_start_epoch: 4
   update_margin: True
   increase_type: "exp" # exp, linear
 

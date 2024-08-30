@@ -57,7 +57,7 @@ if [ $stage -le 3 ] && [ $stop_stage -ge 3 ]; then
   for x in ${trials}; do
     scores_dir=${exp_dir}/scores
     python wespeaker/bin/compute_metrics.py \
-      --p_target 0.01 \
+      --p_target 0.05 \
       --c_fa 1 \
       --c_miss 1 \
       ${scores_dir}/${output_name}_${x}.score \
