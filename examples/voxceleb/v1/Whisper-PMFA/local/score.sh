@@ -44,7 +44,7 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
   scores_dir=${exp_dir}/scores
   for x in $trials; do
     python wespeaker/bin/compute_metrics.py \
-        --p_target 0.01 \
+        --p_target 0.05 \
         --c_fa 1 \
         --c_miss 1 \
         ${scores_dir}/${x}.score \

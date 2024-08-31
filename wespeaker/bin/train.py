@@ -107,7 +107,6 @@ def train(config='conf/config.yaml', **kwargs):
 
     # model: frontend (optional) => speaker model => projection layer
     logger.info("<== Model ==>")
-    # frontend: fbank or s3prl
     frontend_type = configs['dataset_args'].get('frontend', 'fbank')
     if frontend_type != "fbank":
         frontend_args = frontend_type + "_args"
@@ -119,7 +118,6 @@ def train(config='conf/config.yaml', **kwargs):
         model.add_module("frontend", frontend)
     else:
         model = get_speaker_model(configs['model'])(**configs['model_args'])
-
     if rank == 0:
         num_params = sum(param.numel() for param in model.parameters())
         logger.info('speaker_model size: {}'.format(num_params))

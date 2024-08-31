@@ -20,5 +20,5 @@
 |                                      | √       | 6.63M  |     1.88     |
 | Whisper-PMFA                         | ×       | 478.7M |     1.62     |
 |                                      | √       | 478.7M |   **1.42**   |
-| Whisper-PMFA with LoRa (Coming soon) | √       | 10.9M  |     1.62     |
+| Whisper-PMFA with LoRA (Coming soon) | √       | 10.9M  |     1.62     |
 

@@ -1,22 +1,20 @@
 #!/bin/bash
 
-# Copyright 2022 Hongji Wang (jijijiang77@gmail.com)
-#           2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
-#           2022 Zhengyang Chen (chenzhengyang117@gmail.com)
+# Copyright 2024 Yiyang Zhao (zhaoyy22@mails.tsinghua.edu.cn)
+#           2024 Hongji Wang (jijijiang77@gmail.com)
 
 . ./path.sh || exit 1
 
-stage=3
-stop_stage=3
+stage=-1
+stop_stage=-1
 
 data=data
 data_type="raw"  # shard/raw
 model=whisper_PMFA_large_v2
 
 exp_dir=exp/Whisper_PMFA_large_v2_voxceleb1_mel_5s
-
-gpus="[0]"
-num_avg=10
+gpus="[0,1]"
+num_avg=1
 checkpoint=
 
 trials="vox1_O_cleaned.kaldi"
@@ -25,6 +23,9 @@ score_norm_method="asnorm"  # asnorm/snorm
 top_n=300
 
 . tools/parse_options.sh || exit 1
+if ! pip show openai-whisper > /dev/null 2>&1; then
+    pip install openai-whisper==20231117
+fi
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
   echo "Preparing datasets ..."
