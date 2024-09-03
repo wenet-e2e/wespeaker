@@ -1,5 +1,6 @@
 # Copyright (c) 2024 https://github.com/IDRnD/ReDimNet
 #               2024 Shuai Wang (wsstriving@gmail.com)
+#               2024 Zhengyang Chen (chenzhengyang117@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -829,11 +830,22 @@ class ReDimNet(nn.Module):
             self.seg_bn_1 = nn.Identity()
             self.seg_2 = nn.Identity()
 
-    def forward(self, x):
-        # x = self.spec(x).unsqueeze(1)
+    def __get_frame_level_feat(self, x):
+        # for inner class usage
         x = x.permute(0, 2, 1)  # (B,F,T) => (B,T,F)
         x = x.unsqueeze_(1)
         out = self.backbone(x)
+
+        return out
+
+    def get_frame_level_feat(self, x):
+        # for outer interface 
+        out = self.__get_frame_level_feat(x).permute(0, 2, 1)
+
+        return out # (B, T, D)
+
+    def forward(self, x):
+        out = self.__get_frame_level_feat(x)
 
         stats = self.pool(out)
         embed_a = self.seg_1(stats)
