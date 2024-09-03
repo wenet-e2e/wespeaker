@@ -43,3 +43,4 @@ tensorboard
 external_tools
 pretrained_models
 s3prl_hub
+whisper_hub

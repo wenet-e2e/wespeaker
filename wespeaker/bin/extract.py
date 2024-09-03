@@ -47,7 +47,7 @@ def extract(config='conf/config.yaml', **kwargs):
     # model: frontend (optional) => speaker model
     model = get_speaker_model(configs['model'])(**configs['model_args'])
     frontend_type = test_conf.get('frontend', 'fbank')
-    if frontend_type == 's3prl':
+    if frontend_type != 'fbank':
         frontend_args = frontend_type + "_args"
         print('Initializing frontend model (this could take some time) ...')
         frontend = frontend_class_dict[frontend_type](

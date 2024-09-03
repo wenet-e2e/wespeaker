@@ -1,5 +1,6 @@
 # Copyright (c) 2024 Shuai Wang (wsstriving@gmail.com)
 #               2024 Tianchi Liu (tianchi_liu@u.nus.edu)
+#               2024 Zhengyang Chen (chenzhengyang117@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -101,7 +102,8 @@ class Gemini_DF_ResNet(nn.Module):
             self.seg_bn_1 = nn.Identity()
             self.seg_2 = nn.Identity()
 
-    def forward(self, x):
+    def __get_frame_level_feat(self, x):
+        # for inner class usage
         x = x.permute(0, 2, 1)  # (B,T,F) => (B,F,T)
         x = x.unsqueeze_(1)
         out = self.downsample_layers[0](x)
@@ -114,6 +116,19 @@ class Gemini_DF_ResNet(nn.Module):
         out = self.downsample_layers[4](out)
         out = self.stages[3](out)
 
+        return out
+
+    def get_frame_level_feat(self, x):
+        # for outer interface 
+        out = self.__get_frame_level_feat(x)
+        out = out.transpose(1, 3)
+        out = torch.flatten(out, 2, -1)
+
+        return out  # (B, T, D)
+
+    def forward(self, x):
+
+        out = self.__get_frame_level_feat(x)
         stats = self.pool(out)
 
         embed_a = self.seg_1(stats)

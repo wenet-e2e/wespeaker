@@ -1,4 +1,5 @@
 # Copyright (c) 2024 Hongji Wang (jijijiang77@gmail.com)
+#               2024 Zhengyang Chen (chenzhengyang117@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -350,7 +351,8 @@ class ERes2Net(nn.Module):
             self.in_planes = planes * self.expansion
         return nn.Sequential(*layers)
 
-    def forward(self, x):
+    def __get_frame_level_feat(self, x):
+        # for inner class usage
         x = x.permute(0, 2, 1)  # (B,T,F) => (B,F,T)
         x = x.unsqueeze_(1)
         out = F.relu(self.bn1(self.conv1(x)))
@@ -364,6 +366,19 @@ class ERes2Net(nn.Module):
         out4 = self.layer4(out3)
         fuse_out123_downsample = self.layer3_downsample(fuse_out123)
         fuse_out1234 = self.fuse_mode1234(out4, fuse_out123_downsample)
+
+        return fuse_out1234
+
+    def get_frame_level_feat(self, x):
+        # for outer interface
+        out = self.__get_frame_level_feat(x)
+        out = out.transpose(1, 3)
+        out = torch.flatten(out, 2, -1)
+
+        return out  # (B, T, D)
+
+    def forward(self, x):
+        fuse_out1234 = self.__get_frame_level_feat(x)
         stats = self.pool(fuse_out1234)
 
         embed_a = self.seg_1(stats)
