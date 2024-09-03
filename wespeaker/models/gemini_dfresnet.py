@@ -124,7 +124,7 @@ class Gemini_DF_ResNet(nn.Module):
         out = out.transpose(1, 3)
         out = torch.flatten(out, 2, -1)
 
-        return out # (B, T, D)
+        return out  # (B, T, D)
 
     def forward(self, x):
 
