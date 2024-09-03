@@ -23,6 +23,7 @@ Submodules
    wespeaker.models.repvgg
    wespeaker.models.res2net
    wespeaker.models.resnet
+   wespeaker.models.samresnet
    wespeaker.models.speaker_model
    wespeaker.models.tdnn
    wespeaker.models.whisper_PMFA

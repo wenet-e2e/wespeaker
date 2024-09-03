@@ -1,0 +1,7 @@
+wespeaker.models.samresnet module
+=================================
+
+.. automodule:: wespeaker.models.samresnet
+   :members:
+   :undoc-members:
+   :show-inheritance:
