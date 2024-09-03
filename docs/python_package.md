@@ -40,6 +40,8 @@ You can specify the following parameters. (use `-h` for details)
   use [`campplus_cn_common_200k` of damo](https://www.modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary)
 * `--eres2net`:
   use [`res2net_cn_common_200k` of damo](https://www.modelscope.cn/models/iic/speech_eres2net_sv_zh-cn_16k-common/summary)
+* `--vblinkp`: use the sam_resnet34 model pretrained on VoxBlink2
+* `--vblinkf`: use the sam_resnet34 model pretrained on VoxBlink2 and finetuned on VoxCeleb2
 * `--audio_file`: input audio file path
 * `--audio_file2`: input audio file2 path, specifically for the similarity task
 * `--wav_scp`: input wav.scp file in kaldi format (each line: key wav_path)
