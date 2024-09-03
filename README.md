@@ -99,6 +99,16 @@ We also created a WeChat group for better discussion and quicker response. Pleas
 ## Citations
 If you find wespeaker useful, please cite it as
 ```bibtex
+@article{wang2024advancing,
+  title={Advancing speaker embedding learning: Wespeaker toolkit for research and production},
+  author={Wang, Shuai and Chen, Zhengyang and Han, Bing and Wang, Hongji and Liang, Chengdong and Zhang, Binbin and Xiang, Xu and Ding, Wen and Rohdin, Johan and Silnova, Anna and others},
+  journal={Speech Communication},
+  volume={162},
+  pages={103104},
+  year={2024},
+  publisher={Elsevier}
+}
+
 @inproceedings{wang2023wespeaker,
   title={Wespeaker: A research and production oriented speaker embedding learning toolkit},
   author={Wang, Hongji and Liang, Chengdong and Wang, Shuai and Chen, Zhengyang and Zhang, Binbin and Xiang, Xu and Deng, Yanlei and Qian, Yanmin},

@@ -74,6 +74,8 @@ class Hub(object):
         "english": "voxceleb_resnet221_LM.tar.gz",
         "campplus": "campplus_cn_common_200k.tar.gz",
         "eres2net": "eres2net_cn_commom_200k.tar.gz",
+        "vblinkp": "voxblink2_samresnet34.tar.gz",
+        "vblinkf": "voxblink2_voxceleb_samresnet34.tar.gz",
     }
 
     def __init__(self) -> None:

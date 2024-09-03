@@ -47,6 +47,17 @@ def get_args():
         action='store_true',
         help='whether to use the damo/speech_eres2net_sv_zh-cn_16k-common model'
     )
+    parser.add_argument(
+        '--vblinkp',
+        action='store_true',
+        help='whether to use the samresnet34 model pretrained on voxblink2'
+    )
+    parser.add_argument(
+        '--vblinkf',
+        action='store_true',
+        help="whether to use the samresnet34 model pretrained on voxblink2 and"
+             "fintuned on voxceleb2"
+    )
     parser.add_argument('-p',
                         '--pretrain',
                         type=str,
