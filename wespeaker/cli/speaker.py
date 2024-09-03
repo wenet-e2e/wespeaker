@@ -294,6 +294,10 @@ def main():
         elif args.eres2net:
             model = load_model("eres2net")
             model.set_wavform_norm(True)
+        elif args.vblinkp:
+            model = load_model("vblinkp")
+        elif args.vblinkf:
+            model = load_model("vblinkf")
         else:
             model = load_model(args.language)
     else:

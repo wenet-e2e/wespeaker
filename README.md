@@ -60,6 +60,8 @@ pre-commit install  # for clean and tidy code
 ```
 
 ## 🔥 News
+
+* 2024.09.03: Support the SimAM_ResNet and the model pretrained on VoxBlink2, check [Pretrained Models](docs/pretrained.md) for the pretrained model, [VoxCeleb Recipe](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxceleb/v2) for the super performance, and [python usage](docs/python_package.md) for the command line usage!
 * 2024.08.30: We support whisper_encoder based frontend and propose the [Whisper-PMFA](https://arxiv.org/pdf/2408.15585) framework, check [#356](https://github.com/wenet-e2e/wespeaker/pull/356).
 * 2024.08.20: Update diarization recipe for VoxConverse dataset by leveraging umap dimensionality reduction and hdbscan clustering, see [#347](https://github.com/wenet-e2e/wespeaker/pull/347) and [#352](https://github.com/wenet-e2e/wespeaker/pull/352).
 * 2024.08.18: Support using ssl pre-trained models as the frontend. The [WavLM recipe](https://github.com/wenet-e2e/wespeaker/blob/master/examples/voxceleb/v2/run_wavlm.sh) is also provided, see [#344](https://github.com/wenet-e2e/wespeaker/pull/344).
@@ -100,6 +102,16 @@ We also created a WeChat group for better discussion and quicker response. Pleas
 ## Citations
 If you find wespeaker useful, please cite it as
 ```bibtex
+@article{wang2024advancing,
+  title={Advancing speaker embedding learning: Wespeaker toolkit for research and production},
+  author={Wang, Shuai and Chen, Zhengyang and Han, Bing and Wang, Hongji and Liang, Chengdong and Zhang, Binbin and Xiang, Xu and Ding, Wen and Rohdin, Johan and Silnova, Anna and others},
+  journal={Speech Communication},
+  volume={162},
+  pages={103104},
+  year={2024},
+  publisher={Elsevier}
+}
+
 @inproceedings{wang2023wespeaker,
   title={Wespeaker: A research and production oriented speaker embedding learning toolkit},
   author={Wang, Hongji and Liang, Chengdong and Wang, Shuai and Chen, Zhengyang and Zhang, Binbin and Xiang, Xu and Deng, Yanlei and Qian, Yanmin},

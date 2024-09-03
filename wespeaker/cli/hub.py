@@ -1,5 +1,6 @@
 # Copyright (c) 2022  Mddct(hamddct@gmail.com)
 #               2023  Binbin Zhang(binbzha@qq.com)
+#               2024  Shuai Wang(wsstriving@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,16 +19,16 @@ import requests
 import sys
 from pathlib import Path
 import tarfile
+import zipfile
 from urllib.request import urlretrieve
 
 import tqdm
 
 
 def download(url: str, dest: str, only_child=True):
-    """ download from url to dest
-    """
+    """download from url to dest"""
     assert os.path.exists(dest)
-    print('Downloading {} to {}'.format(url, dest))
+    print("Downloading {} to {}".format(url, dest))
 
     def progress_hook(t):
         last_b = [0]
@@ -42,30 +43,45 @@ def download(url: str, dest: str, only_child=True):
         return update_to
 
     # *.tar.gz
-    name = url.split('?')[0].split('/')[-1]
-    tar_path = os.path.join(dest, name)
-    with tqdm.tqdm(unit='B',
-                   unit_scale=True,
-                   unit_divisor=1024,
-                   miniters=1,
-                   desc=(name)) as t:
-        urlretrieve(url,
-                    filename=tar_path,
-                    reporthook=progress_hook(t),
-                    data=None)
+    name = url.split("?")[0].split("/")[-1]
+    file_path = os.path.join(dest, name)
+    with tqdm.tqdm(
+        unit="B", unit_scale=True, unit_divisor=1024, miniters=1, desc=(name)
+    ) as t:
+        urlretrieve(
+            url, filename=file_path, reporthook=progress_hook(t), data=None
+        )
         t.total = t.n
 
-    with tarfile.open(tar_path) as f:
-        if not only_child:
-            f.extractall(dest)
-        else:
-            for tarinfo in f:
-                if "/" not in tarinfo.name:
-                    continue
-                name = os.path.basename(tarinfo.name)
-                fileobj = f.extractfile(tarinfo)
-                with open(os.path.join(dest, name), "wb") as writer:
-                    writer.write(fileobj.read())
+    if name.endswith((".tar.gz", ".tar")):
+        with tarfile.open(file_path) as f:
+            if not only_child:
+                f.extractall(dest)
+            else:
+                for tarinfo in f:
+                    if "/" not in tarinfo.name:
+                        continue
+                    name = os.path.basename(tarinfo.name)
+                    fileobj = f.extractfile(tarinfo)
+                    with open(os.path.join(dest, name), "wb") as writer:
+                        writer.write(fileobj.read())
+
+    elif name.endswith(".zip"):
+        with zipfile.ZipFile(file_path, "r") as zip_ref:
+            if not only_child:
+                zip_ref.extractall(dest)
+            else:
+                for member in zip_ref.namelist():
+                    member_path = os.path.relpath(
+                        member, start=os.path.commonpath(zip_ref.namelist())
+                    )
+                    if "/" not in member_path:
+                        continue
+                    name = os.path.basename(member_path)
+                    with zip_ref.open(member_path) as source, open(
+                        os.path.join(dest, name), "wb"
+                    ) as target:
+                        target.write(source.read())
 
 
 class Hub(object):
@@ -74,6 +90,8 @@ class Hub(object):
         "english": "voxceleb_resnet221_LM.tar.gz",
         "campplus": "campplus_cn_common_200k.tar.gz",
         "eres2net": "eres2net_cn_commom_200k.tar.gz",
+        "vblinkp": "voxblink2_samresnet34.zip",
+        "vblinkf": "voxblink2_samresnet34_ft.zip",
     }
 
     def __init__(self) -> None:
@@ -82,21 +100,25 @@ class Hub(object):
     @staticmethod
     def get_model(lang: str) -> str:
         if lang not in Hub.Assets.keys():
-            print('ERROR: Unsupported lang {} !!!'.format(lang))
+            print("ERROR: Unsupported lang {} !!!".format(lang))
             sys.exit(1)
         model = Hub.Assets[lang]
         model_dir = os.path.join(Path.home(), ".wespeaker", lang)
         if not os.path.exists(model_dir):
             os.makedirs(model_dir)
-        if set(["avg_model.pt",
-                "config.yaml"]).issubset(set(os.listdir(model_dir))):
+        if set(["avg_model.pt", "config.yaml"]).issubset(
+            set(os.listdir(model_dir))
+        ):
             return model_dir
         else:
             response = requests.get(
                 "https://modelscope.cn/api/v1/datasets/wenet/wespeaker_pretrained_models/oss/tree"  # noqa
             )
-            model_info = next(data for data in response.json()["Data"]
-                              if data["Key"] == model)
-            model_url = model_info['Url']
+            model_info = next(
+                data
+                for data in response.json()["Data"]
+                if data["Key"] == model
+            )
+            model_url = model_info["Url"]
             download(model_url, model_dir)
             return model_dir

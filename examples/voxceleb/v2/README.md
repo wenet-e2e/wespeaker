@@ -3,8 +3,9 @@
 * Setup: fbank80, num_frms200, epoch150, ArcMargin, aug_prob0.6, speed_perturb (no spec_aug)
 * Scoring: cosine (sub mean of vox2_dev), AS-Norm, [QMF](https://arxiv.org/pdf/2010.11255)
 * Metric: EER(%)
-
-* 🔥 UPDATE 2022.07.19: We apply the same setups as the winning system of CNSRC 2022 (see [cnceleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/cnceleb/v2) recipe for details), and obtain significant performance improvement.
+* 🔥 UPDATE 2024.09.03: We support the SimAM_ResNet pretrained on VoxBlink2 and Finetuned on Voxceleb2!
+* 🔥 UPDATE 2024.08.27: We support SSL models as the feature front-end, take a look at the WavLM recipe!
+* UPDATE 2022.07.19: We apply the same setups as the winning system of CNSRC 2022 (see [cnceleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/cnceleb/v2) recipe for details), and obtain significant performance improvement.
     * LR scheduler warmup from 0
     * Remove one embedding layer in ResNet models
     * Add large margin fine-tuning strategy (LM)
@@ -55,6 +56,12 @@
 |                      |       |       | × | √ | × | 0.707 | 0.889 | 1.546 |
 |                      |       |       | √ | x | × | 0.771 | 0.906 | 1.599 |
 |                      |       |       | √ | √ | × | 0.638 | 0.839 | 1.427 |
+| SimAM_ResNet34 (VoxBlink2 Pretrain)        | 25.2M |       | √ | x | × | 0.415 | 0.615 | 1.121 |
+|                      |       |       | √ | √ | × | 0.372 | 0.581 | 1.049 |
+|                      |       |       | √ | √ | √ | 0.372 | 0.559 | 0.997 |
+| SimAM_ResNet100 (VoxBlink2 Pretrain)       | 50.2M |       | √ | x | × | 0.229 | 0.458 | 0.868 |
+|                      |       |       | √ | √ | × | 0.207 | 0.424 | 0.804 |
+|                      |       |       | √ | √ | √ | 0.202 | 0.421 | 0.795 |
 
 
 ## PLDA results
