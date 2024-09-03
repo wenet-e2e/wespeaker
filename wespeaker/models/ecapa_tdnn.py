@@ -220,9 +220,9 @@ class ECAPA_TDNN(nn.Module):
         return out
 
     def get_frame_level_feat(self, x):
-        # for outer interface 
+        # for outer interface
         out = self.__get_frame_level_feat(x).permute(0, 2, 1)
-        return out # (B, T, D)
+        return out  # (B, T, D)
 
     def forward(self, x):
         out = F.relu(self.__get_frame_level_feat(x))

@@ -168,12 +168,12 @@ class Res2Net(nn.Module):
         return out
 
     def get_frame_level_feat(self, x):
-        # for outer interface 
+        # for outer interface
         out = self.__get_frame_level_feat(x)
         out = out.transpose(1, 3)
         out = torch.flatten(out, 2, -1)
 
-        return out # (B, T, D)
+        return out  # (B, T, D)
 
     def forward(self, x):
         out = self.__get_frame_level_feat(x)

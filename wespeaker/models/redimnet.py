@@ -39,13 +39,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import wespeaker.models.pooling_layers as pooling_layers
 
-
 MaxPoolNd = {1: nn.MaxPool1d, 2: nn.MaxPool2d}
 ConvNd = {1: nn.Conv1d, 2: nn.Conv2d}
 BatchNormNd = {1: nn.BatchNorm1d, 2: nn.BatchNorm2d}
 
 
 class to1d(nn.Module):
+
     def forward(self, x):
         size = x.size()
         bs, c, f, t = tuple(size)
@@ -53,18 +53,11 @@ class to1d(nn.Module):
 
 
 class NewGELUActivation(nn.Module):
+
     def forward(self, input):
-        return (
-            0.5
-            * input
-            * (
-                1.0
-                + torch.tanh(
-                    math.sqrt(2.0 / math.pi)
-                    * (input + 0.044715 * torch.pow(input, 3.0))
-                )
-            )
-        )
+        return (0.5 * input * (1.0 + torch.tanh(
+            math.sqrt(2.0 / math.pi) *
+            (input + 0.044715 * torch.pow(input, 3.0)))))
 
 
 class LayerNorm(nn.Module):
@@ -83,7 +76,7 @@ class LayerNorm(nn.Module):
         self.data_format = data_format
         if self.data_format not in ["channels_last", "channels_first"]:
             raise NotImplementedError
-        self.C = (C,)
+        self.C = (C, )
 
     def forward(self, x):
         if self.data_format == "channels_last":
@@ -102,19 +95,17 @@ class LayerNorm(nn.Module):
             return x
 
     def extra_repr(self) -> str:
-        return ", ".join(
-            [
-                f"{k}={v}"
-                for k, v in {
-                    "C": self.C,
-                    "data_format": self.data_format,
-                    "eps": self.eps,
-                }.items()
-            ]
-        )
+        return ", ".join([
+            f"{k}={v}" for k, v in {
+                "C": self.C,
+                "data_format": self.data_format,
+                "eps": self.eps,
+            }.items()
+        ])
 
 
 class GRU(nn.Module):
+
     def __init__(self, *args, **kwargs):
         super(GRU, self).__init__()
         self.gru = nn.GRU(*args, **kwargs)
@@ -125,12 +116,15 @@ class GRU(nn.Module):
 
 
 class PosEncConv(nn.Module):
+
     def __init__(self, C, ks, groups=None):
         super().__init__()
         assert ks % 2 == 1
-        self.conv = nn.Conv1d(
-            C, C, ks, padding=ks // 2, groups=C if groups is None else groups
-        )
+        self.conv = nn.Conv1d(C,
+                              C,
+                              ks,
+                              padding=ks // 2,
+                              groups=C if groups is None else groups)
         self.norm = LayerNorm(C, eps=1e-6, data_format="channels_first")
 
     def forward(self, x):
@@ -138,27 +132,25 @@ class PosEncConv(nn.Module):
 
 
 class ConvNeXtLikeBlock(nn.Module):
+
     def __init__(
-        self,
-        C,
-        dim=2,
-        kernel_sizes=((3, 3),),
-        group_divisor=1,
-        padding="same",
+            self,
+            C,
+            dim=2,
+            kernel_sizes=((3, 3), ),
+            group_divisor=1,
+            padding="same",
     ):
         super().__init__()
-        self.dwconvs = nn.ModuleList(
-            modules=[
-                ConvNd[dim](
-                    C,
-                    C,
-                    kernel_size=ks,
-                    padding=padding,
-                    groups=C // group_divisor if group_divisor is not None else 1,
-                )
-                for ks in kernel_sizes
-            ]
-        )
+        self.dwconvs = nn.ModuleList(modules=[
+            ConvNd[dim](
+                C,
+                C,
+                kernel_size=ks,
+                padding=padding,
+                groups=C // group_divisor if group_divisor is not None else 1,
+            ) for ks in kernel_sizes
+        ])
         self.norm = BatchNormNd[dim](C * len(kernel_sizes))
         self.gelu = nn.GELU()
         self.pwconv1 = ConvNd[dim](C * len(kernel_sizes), C, 1)
@@ -173,6 +165,7 @@ class ConvNeXtLikeBlock(nn.Module):
 
 
 class ConvBlock2d(nn.Module):
+
     def __init__(self, c, f, block_type="convnext_like", group_divisor=1):
         super().__init__()
         if block_type == "convnext_like":
@@ -239,11 +232,8 @@ class MultiHeadAttention(nn.Module):
         self.out_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
 
     def _shape(self, tensor: torch.Tensor, seq_len, bsz):
-        return (
-            tensor.view(bsz, seq_len, self.num_heads, self.head_dim)
-            .transpose(1, 2)
-            .contiguous()
-        )
+        return (tensor.view(bsz, seq_len, self.num_heads,
+                            self.head_dim).transpose(1, 2).contiguous())
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
         """Input shape: Batch x Time x Channel"""
@@ -256,18 +246,22 @@ class MultiHeadAttention(nn.Module):
         value_states = self._shape(self.v_proj(hidden_states), -1, bsz)
 
         proj_shape = (bsz * self.num_heads, -1, self.head_dim)
-        query_states = self._shape(query_states, tgt_len, bsz).view(*proj_shape)
+        query_states = self._shape(query_states, tgt_len,
+                                   bsz).view(*proj_shape)
         key_states = key_states.view(*proj_shape)
         value_states = value_states.view(*proj_shape)
 
         attn_weights = torch.bmm(query_states, key_states.transpose(1, 2))
         attn_weights = F.softmax(attn_weights, dim=-1)
 
-        attn_probs = F.dropout(attn_weights, p=self.dropout, training=self.training)
+        attn_probs = F.dropout(attn_weights,
+                               p=self.dropout,
+                               training=self.training)
 
         attn_output = torch.bmm(attn_probs, value_states)
 
-        attn_output = attn_output.view(bsz, self.num_heads, tgt_len, self.head_dim)
+        attn_output = attn_output.view(bsz, self.num_heads, tgt_len,
+                                       self.head_dim)
         attn_output = attn_output.transpose(1, 2)
 
         # Use the `embed_dim` from the config (stored in the class)
@@ -280,6 +274,7 @@ class MultiHeadAttention(nn.Module):
 
 
 class TransformerEncoderLayer(nn.Module):
+
     def __init__(
         self,
         n_state,
@@ -334,6 +329,7 @@ class TransformerEncoderLayer(nn.Module):
 
 
 class FeedForward(nn.Module):
+
     def __init__(
         self,
         hidden_size,
@@ -379,7 +375,8 @@ class BasicBlock(nn.Module):
             stride=stride,
             padding=1,
             bias=False,
-            groups=in_planes // group_divisor if group_divisor is not None else 1,
+            groups=in_planes //
+            group_divisor if group_divisor is not None else 1,
         )
 
         # If using group convolution, add point-wise conv to reshape
@@ -409,7 +406,11 @@ class BasicBlock(nn.Module):
 
         if planes != in_planes:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_planes, planes, kernel_size=1, stride=stride, bias=False),
+                nn.Conv2d(in_planes,
+                          planes,
+                          kernel_size=1,
+                          stride=stride,
+                          bias=False),
                 nn.BatchNorm2d(planes),
             )
         else:
@@ -458,6 +459,7 @@ class fwSEBlock(nn.Module):
 
 
 class ResBasicBlock(nn.Module):
+
     def __init__(
         self,
         in_planes,
@@ -476,7 +478,8 @@ class ResBasicBlock(nn.Module):
             stride=stride,
             padding=1,
             bias=False,
-            groups=in_planes // group_divisor if group_divisor is not None else 1,
+            groups=in_planes //
+            group_divisor if group_divisor is not None else 1,
         )
         if group_divisor is not None:
             self.conv1pw = nn.Conv2d(in_planes, planes, 1)
@@ -508,7 +511,11 @@ class ResBasicBlock(nn.Module):
 
         if planes != in_planes:
             self.downsample = nn.Sequential(
-                nn.Conv2d(in_planes, planes, kernel_size=1, stride=stride, bias=False),
+                nn.Conv2d(in_planes,
+                          planes,
+                          kernel_size=1,
+                          stride=stride,
+                          bias=False),
                 nn.BatchNorm2d(planes),
             )
         else:
@@ -544,8 +551,8 @@ class TimeContextBlock1d(nn.Module):
         assert pos_ker_sz
 
         self.red_dim_conv = nn.Sequential(
-            nn.Conv1d(C, hC, 1), LayerNorm(hC, eps=1e-6, data_format="channels_first")
-        )
+            nn.Conv1d(C, hC, 1),
+            LayerNorm(hC, eps=1e-6, data_format="channels_first"))
 
         if block_type == "fc":
             self.tcm = nn.Sequential(
@@ -577,18 +584,26 @@ class TimeContextBlock1d(nn.Module):
         elif block_type == "conv+att":
             # Basic Transformer self-attention encoder block
             self.tcm = nn.Sequential(
-                ConvNeXtLikeBlock(
-                    hC, dim=1, kernel_sizes=[7], group_divisor=1, padding="same"
-                ),
-                ConvNeXtLikeBlock(
-                    hC, dim=1, kernel_sizes=[19], group_divisor=1, padding="same"
-                ),
-                ConvNeXtLikeBlock(
-                    hC, dim=1, kernel_sizes=[31], group_divisor=1, padding="same"
-                ),
-                ConvNeXtLikeBlock(
-                    hC, dim=1, kernel_sizes=[59], group_divisor=1, padding="same"
-                ),
+                ConvNeXtLikeBlock(hC,
+                                  dim=1,
+                                  kernel_sizes=[7],
+                                  group_divisor=1,
+                                  padding="same"),
+                ConvNeXtLikeBlock(hC,
+                                  dim=1,
+                                  kernel_sizes=[19],
+                                  group_divisor=1,
+                                  padding="same"),
+                ConvNeXtLikeBlock(hC,
+                                  dim=1,
+                                  kernel_sizes=[31],
+                                  group_divisor=1,
+                                  padding="same"),
+                ConvNeXtLikeBlock(hC,
+                                  dim=1,
+                                  kernel_sizes=[59],
+                                  group_divisor=1,
+                                  padding="same"),
                 TransformerEncoderLayer(n_state=hC, n_mlp=hC, n_head=4),
             )
         else:
@@ -605,6 +620,7 @@ class TimeContextBlock1d(nn.Module):
 
 
 class ReDimNetBone(nn.Module):
+
     def __init__(
         self,
         F=72,
@@ -642,31 +658,30 @@ class ReDimNetBone(nn.Module):
         # Weighting the inputs
         # TODO: ask authors about the impact of this pre-weighting
         self.inputs_weights = torch.nn.ParameterList(
-            [nn.Parameter(torch.ones(1, 1, 1, 1), requires_grad=False)]
-            + [
+            [nn.Parameter(torch.ones(1, 1, 1, 1), requires_grad=False)] + [
                 nn.Parameter(
                     torch.zeros(1, num_inputs + 1, self.C * self.F, 1),
                     requires_grad=True,
-                )
-                for num_inputs in range(1, len(stages_setup) + 1)
-            ]
-        )
+                ) for num_inputs in range(1,
+                                          len(stages_setup) + 1)
+            ])
 
         self.stem = nn.Sequential(
             nn.Conv2d(1, int(cur_c), kernel_size=3, stride=1, padding="same"),
             LayerNorm(int(cur_c), eps=1e-6, data_format="channels_first"),
         )
 
-        Block1d = functools.partial(TimeContextBlock1d, block_type=self.block_1d_type)
+        Block1d = functools.partial(TimeContextBlock1d,
+                                    block_type=self.block_1d_type)
         Block2d = functools.partial(ConvBlock2d, block_type=self.block_2d_type)
 
         self.stages_cfs = []
         for stage_ind, (
-            stride,
-            num_blocks,
-            conv_exp,
-            kernel_sizes,  # TODO: Why the kernel_sizes are not used?
-            att_block_red,
+                stride,
+                num_blocks,
+                conv_exp,
+                kernel_sizes,  # TODO: Why the kernel_sizes are not used?
+                att_block_red,
         ) in enumerate(stages_setup):
             assert stride in [1, 2, 3]
             # Pool frequencies & expand channels if needed
@@ -690,10 +705,9 @@ class ReDimNetBone(nn.Module):
             for _ in range(num_blocks):
                 # ConvBlock2d(f, c, block_type="convnext_like", group_divisor=1)
                 layers.append(
-                    Block2d(
-                        c=int(cur_c * conv_exp), f=cur_f, group_divisor=group_divisor
-                    )
-                )
+                    Block2d(c=int(cur_c * conv_exp),
+                            f=cur_f,
+                            group_divisor=group_divisor))
 
             if conv_exp != 1:
                 # Squeeze back channels to align with ReDimNet c+f reshaping:
@@ -708,11 +722,8 @@ class ReDimNetBone(nn.Module):
                             kernel_size=(3, 3),
                             stride=1,
                             padding="same",
-                            groups=(
-                                cur_c // _group_divisor
-                                if _group_divisor is not None
-                                else 1
-                            ),
+                            groups=(cur_c // _group_divisor
+                                    if _group_divisor is not None else 1),
                         ),
                         nn.BatchNorm2d(
                             cur_c,
@@ -720,22 +731,24 @@ class ReDimNetBone(nn.Module):
                         ),
                         nn.GELU(),
                         nn.Conv2d(cur_c, cur_c, 1),
-                    )
-                )
+                    ))
 
             layers.append(to1d())
 
             # reduce block?
             if att_block_red is not None:
                 layers.append(
-                    Block1d(self.C * self.F, hC=(self.C * self.F) // att_block_red)
-                )
+                    Block1d(self.C * self.F,
+                            hC=(self.C * self.F) // att_block_red))
 
             setattr(self, f"stage{stage_ind}", nn.Sequential(*layers))
 
         if out_channels is not None:
             self.mfa = nn.Sequential(
-                nn.Conv1d(self.F * self.C, out_channels, kernel_size=1, padding="same"),
+                nn.Conv1d(self.F * self.C,
+                          out_channels,
+                          kernel_size=1,
+                          padding="same"),
                 nn.BatchNorm1d(out_channels, affine=True),
             )
         else:
@@ -777,6 +790,7 @@ class ReDimNetBone(nn.Module):
 
 
 class ReDimNet(nn.Module):
+
     def __init__(
         self,
         feat_dim=72,
@@ -818,8 +832,7 @@ class ReDimNet(nn.Module):
             out_channels = C * feat_dim
 
         self.pool = getattr(pooling_layers, pooling_func)(
-            in_dim=out_channels, global_context_att=global_context_att
-        )
+            in_dim=out_channels, global_context_att=global_context_att)
 
         self.pool_out_dim = self.pool.get_out_dim()
         self.seg_1 = nn.Linear(self.pool_out_dim, embed_dim)
@@ -839,10 +852,10 @@ class ReDimNet(nn.Module):
         return out
 
     def get_frame_level_feat(self, x):
-        # for outer interface 
+        # for outer interface
         out = self.__get_frame_level_feat(x).permute(0, 2, 1)
 
-        return out # (B, T, D)
+        return out  # (B, T, D)
 
     def forward(self, x):
         out = self.__get_frame_level_feat(x)
@@ -858,7 +871,10 @@ class ReDimNet(nn.Module):
             return torch.tensor(0.0), embed_a
 
 
-def ReDimNetB0(feat_dim=60, embed_dim=192, pooling_func="ASTP", two_emb_layer=False):
+def ReDimNetB0(feat_dim=60,
+               embed_dim=192,
+               pooling_func="ASTP",
+               two_emb_layer=False):
     return ReDimNet(
         feat_dim=feat_dim,
         C=10,
@@ -880,7 +896,10 @@ def ReDimNetB0(feat_dim=60, embed_dim=192, pooling_func="ASTP", two_emb_layer=Fa
     )
 
 
-def ReDimNetB1(feat_dim=72, embed_dim=192, pooling_func="ASTP", two_emb_layer=False):
+def ReDimNetB1(feat_dim=72,
+               embed_dim=192,
+               pooling_func="ASTP",
+               two_emb_layer=False):
     return ReDimNet(
         feat_dim=feat_dim,
         C=12,
@@ -902,7 +921,10 @@ def ReDimNetB1(feat_dim=72, embed_dim=192, pooling_func="ASTP", two_emb_layer=Fa
     )
 
 
-def ReDimNetB2(feat_dim=72, embed_dim=192, pooling_func="ASTP", two_emb_layer=False):
+def ReDimNetB2(feat_dim=72,
+               embed_dim=192,
+               pooling_func="ASTP",
+               two_emb_layer=False):
     return ReDimNet(
         feat_dim=feat_dim,
         C=16,
@@ -925,7 +947,10 @@ def ReDimNetB2(feat_dim=72, embed_dim=192, pooling_func="ASTP", two_emb_layer=Fa
     )
 
 
-def ReDimNetB3(feat_dim=72, embed_dim=192, pooling_func="ASTP", two_emb_layer=False):
+def ReDimNetB3(feat_dim=72,
+               embed_dim=192,
+               pooling_func="ASTP",
+               two_emb_layer=False):
     return ReDimNet(
         feat_dim=feat_dim,
         C=16,
@@ -948,7 +973,10 @@ def ReDimNetB3(feat_dim=72, embed_dim=192, pooling_func="ASTP", two_emb_layer=Fa
     )
 
 
-def ReDimNetB4(feat_dim=72, embed_dim=192, pooling_func="ASTP", two_emb_layer=False):
+def ReDimNetB4(feat_dim=72,
+               embed_dim=192,
+               pooling_func="ASTP",
+               two_emb_layer=False):
     return ReDimNet(
         feat_dim=feat_dim,
         C=32,
@@ -971,7 +999,10 @@ def ReDimNetB4(feat_dim=72, embed_dim=192, pooling_func="ASTP", two_emb_layer=Fa
     )
 
 
-def ReDimNetB5(feat_dim=72, embed_dim=192, pooling_func="ASTP", two_emb_layer=False):
+def ReDimNetB5(feat_dim=72,
+               embed_dim=192,
+               pooling_func="ASTP",
+               two_emb_layer=False):
     return ReDimNet(
         feat_dim=feat_dim,
         C=32,
@@ -994,7 +1025,10 @@ def ReDimNetB5(feat_dim=72, embed_dim=192, pooling_func="ASTP", two_emb_layer=Fa
     )
 
 
-def ReDimNetB6(feat_dim=72, embed_dim=192, pooling_func="ASTP", two_emb_layer=False):
+def ReDimNetB6(feat_dim=72,
+               embed_dim=192,
+               pooling_func="ASTP",
+               two_emb_layer=False):
     return ReDimNet(
         feat_dim=feat_dim,
         C=32,

@@ -350,6 +350,7 @@ class ERes2Net(nn.Module):
                       expansion))
             self.in_planes = planes * self.expansion
         return nn.Sequential(*layers)
+
     def __get_frame_level_feat(self, x):
         # for inner class usage
         x = x.permute(0, 2, 1)  # (B,T,F) => (B,F,T)
@@ -369,12 +370,12 @@ class ERes2Net(nn.Module):
         return fuse_out1234
 
     def get_frame_level_feat(self, x):
-        # for outer interface 
+        # for outer interface
         out = self.__get_frame_level_feat(x)
         out = out.transpose(1, 3)
         out = torch.flatten(out, 2, -1)
 
-        return out # (B, T, D)
+        return out  # (B, T, D)
 
     def forward(self, x):
         fuse_out1234 = self.__get_frame_level_feat(x)
