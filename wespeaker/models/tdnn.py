@@ -1,4 +1,5 @@
 # Copyright (c) 2021 Shuai Wang (wsstriving@gmail.com)
+#               2024 Zhengyang Chen (chenzhengyang117@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -85,7 +86,8 @@ class XVEC(nn.Module):
         self.seg_bn_1 = nn.BatchNorm1d(embed_dim, affine=False)
         self.seg_2 = nn.Linear(embed_dim, embed_dim)
 
-    def forward(self, x):
+    def __get_frame_level_feat(self, x):
+        # for inner class usage
         x = x.permute(0, 2, 1)  # (B,T,F) -> (B,F,T)
 
         out = self.frame_1(x)
@@ -94,6 +96,16 @@ class XVEC(nn.Module):
         out = self.frame_4(out)
         out = self.frame_5(out)
 
+        return out
+
+    def get_frame_level_feat(self, x):
+        # for outer interface
+        out = self.__get_frame_level_feat(x).permute(0, 2, 1)
+
+        return out  # (B, T, D)
+
+    def forward(self, x):
+        out = self.__get_frame_level_feat(x)
         stats = self.pool(out)
         embed_a = self.seg_1(stats)
         out = F.relu(embed_a)

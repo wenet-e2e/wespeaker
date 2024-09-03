@@ -1,6 +1,7 @@
 # Copyright (c) 2021 Zhengyang Chen (chenzhengyang117@gmail.com)
 #               2022 Hongji Wang (jijijiang77@gmail.com)
 #               2023 Bing Han (hanbing97@sjtu.edu.cn)
+#               2024 Zhengyang Chen (chenzhengyang117@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -204,7 +205,8 @@ class ECAPA_TDNN(nn.Module):
         else:
             self.bn2 = nn.Identity()
 
-    def forward(self, x):
+    def __get_frame_level_feat(self, x):
+        # for inner class usage
         x = x.permute(0, 2, 1)  # (B,T,F) -> (B,F,T)
 
         out1 = self.layer1(x)
@@ -213,7 +215,17 @@ class ECAPA_TDNN(nn.Module):
         out4 = self.layer4(out3)
 
         out = torch.cat([out2, out3, out4], dim=1)
-        out = F.relu(self.conv(out))
+        out = self.conv(out)
+
+        return out
+
+    def get_frame_level_feat(self, x):
+        # for outer interface
+        out = self.__get_frame_level_feat(x).permute(0, 2, 1)
+        return out  # (B, T, D)
+
+    def forward(self, x):
+        out = F.relu(self.__get_frame_level_feat(x))
         out = self.bn(self.pool(out))
         out = self.linear(out)
         if self.emb_bn:

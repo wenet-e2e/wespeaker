@@ -1,5 +1,6 @@
 # Copyright (c) 2021 xmuspeech (Author: Leo)
 #               2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
+#               2024 Zhengyang Chen (chenzhengyang117@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -558,7 +559,8 @@ class RepVGG(nn.Module):
     def get_output_planes(self):
         return self.output_planes
 
-    def forward(self, x):
+    def __get_frame_level_feat(self, x):
+        # for inner class usage
         x = x.permute(0, 2, 1)  # (B,T,F) -> (B,F,T)
         x = x.unsqueeze_(1)
         x = self.stage0(x)
@@ -567,6 +569,18 @@ class RepVGG(nn.Module):
         x = self.stage3(x)
         x = self.stage4(x)
 
+        return x
+
+    def get_frame_level_feat(self, x):
+        # for outer interface
+        out = self.__get_frame_level_feat(x)
+        out = out.transpose(1, 3)
+        out = torch.flatten(out, 2, -1)
+
+        return out  # (B, T, D)
+
+    def forward(self, x):
+        x = self.__get_frame_level_feat(x)
         stats = self.pool(x)
         embed = self.seg(stats)
 
