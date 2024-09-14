@@ -126,10 +126,22 @@ class Speaker:
     def extract_embedding(self, audio_path: str):
         pcm, sample_rate = torchaudio.load(audio_path,
                                            normalize=self.wavform_norm)
+        return self.extract_embedding_from_pcm(pcm, sample_rate)
+
+    def extract_embedding_from_pcm(self, pcm: torch.Tensor, sample_rate: int):
         if self.apply_vad:
             # TODO(Binbin Zhang): Refine the segments logic, here we just
             # suppose there is only silence at the start/end of the speech
-            wav = read_audio(audio_path)
+            vad_sample_rate = 16000
+            wav = pcm
+            if wav.size(0) > 1:
+                wav = wav.mean(dim=0, keepdim=True)
+
+            if sample_rate != vad_sample_rate:
+                transform = torchaudio.transforms.Resample(
+                    orig_freq=sample_rate,
+                    new_freq=vad_sample_rate)
+                wav = transform(wav)
             segments = get_speech_timestamps(wav, self.vad, return_seconds=True)
             pcmTotal = torch.Tensor()
             if len(segments) > 0:  # remove all the silence
