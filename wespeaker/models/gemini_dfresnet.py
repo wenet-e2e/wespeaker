@@ -102,7 +102,7 @@ class Gemini_DF_ResNet(nn.Module):
             self.seg_bn_1 = nn.Identity()
             self.seg_2 = nn.Identity()
 
-    def __get_frame_level_feat(self, x):
+    def _get_frame_level_feat(self, x):
         # for inner class usage
         x = x.permute(0, 2, 1)  # (B,T,F) => (B,F,T)
         x = x.unsqueeze_(1)
@@ -120,7 +120,7 @@ class Gemini_DF_ResNet(nn.Module):
 
     def get_frame_level_feat(self, x):
         # for outer interface 
-        out = self.__get_frame_level_feat(x)
+        out = self._get_frame_level_feat(x)
         out = out.transpose(1, 3)
         out = torch.flatten(out, 2, -1)
 
@@ -128,7 +128,7 @@ class Gemini_DF_ResNet(nn.Module):
 
     def forward(self, x):
 
-        out = self.__get_frame_level_feat(x)
+        out = self._get_frame_level_feat(x)
         stats = self.pool(out)
 
         embed_a = self.seg_1(stats)

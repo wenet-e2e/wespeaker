@@ -86,7 +86,7 @@ class XVEC(nn.Module):
         self.seg_bn_1 = nn.BatchNorm1d(embed_dim, affine=False)
         self.seg_2 = nn.Linear(embed_dim, embed_dim)
 
-    def __get_frame_level_feat(self, x):
+    def _get_frame_level_feat(self, x):
         # for inner class usage
         x = x.permute(0, 2, 1)  # (B,T,F) -> (B,F,T)
 
@@ -100,12 +100,12 @@ class XVEC(nn.Module):
 
     def get_frame_level_feat(self, x):
         # for outer interface
-        out = self.__get_frame_level_feat(x).permute(0, 2, 1)
+        out = self._get_frame_level_feat(x).permute(0, 2, 1)
 
         return out  # (B, T, D)
 
     def forward(self, x):
-        out = self.__get_frame_level_feat(x)
+        out = self._get_frame_level_feat(x)
         stats = self.pool(out)
         embed_a = self.seg_1(stats)
         out = F.relu(embed_a)
