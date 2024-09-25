@@ -205,7 +205,7 @@ class ECAPA_TDNN(nn.Module):
         else:
             self.bn2 = nn.Identity()
 
-    def __get_frame_level_feat(self, x):
+    def _get_frame_level_feat(self, x):
         # for inner class usage
         x = x.permute(0, 2, 1)  # (B,T,F) -> (B,F,T)
 
@@ -221,11 +221,11 @@ class ECAPA_TDNN(nn.Module):
 
     def get_frame_level_feat(self, x):
         # for outer interface
-        out = self.__get_frame_level_feat(x).permute(0, 2, 1)
+        out = self._get_frame_level_feat(x).permute(0, 2, 1)
         return out  # (B, T, D)
 
     def forward(self, x):
-        out = F.relu(self.__get_frame_level_feat(x))
+        out = F.relu(self._get_frame_level_feat(x))
         out = self.bn(self.pool(out))
         out = self.linear(out)
         if self.emb_bn:

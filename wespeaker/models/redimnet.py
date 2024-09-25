@@ -843,7 +843,7 @@ class ReDimNet(nn.Module):
             self.seg_bn_1 = nn.Identity()
             self.seg_2 = nn.Identity()
 
-    def __get_frame_level_feat(self, x):
+    def _get_frame_level_feat(self, x):
         # for inner class usage
         x = x.permute(0, 2, 1)  # (B,F,T) => (B,T,F)
         x = x.unsqueeze_(1)
@@ -853,12 +853,12 @@ class ReDimNet(nn.Module):
 
     def get_frame_level_feat(self, x):
         # for outer interface
-        out = self.__get_frame_level_feat(x).permute(0, 2, 1)
+        out = self._get_frame_level_feat(x).permute(0, 2, 1)
 
         return out  # (B, T, D)
 
     def forward(self, x):
-        out = self.__get_frame_level_feat(x)
+        out = self._get_frame_level_feat(x)
 
         stats = self.pool(out)
         embed_a = self.seg_1(stats)

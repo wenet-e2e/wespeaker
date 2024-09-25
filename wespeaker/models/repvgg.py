@@ -559,7 +559,7 @@ class RepVGG(nn.Module):
     def get_output_planes(self):
         return self.output_planes
 
-    def __get_frame_level_feat(self, x):
+    def _get_frame_level_feat(self, x):
         # for inner class usage
         x = x.permute(0, 2, 1)  # (B,T,F) -> (B,F,T)
         x = x.unsqueeze_(1)
@@ -573,14 +573,14 @@ class RepVGG(nn.Module):
 
     def get_frame_level_feat(self, x):
         # for outer interface
-        out = self.__get_frame_level_feat(x)
+        out = self._get_frame_level_feat(x)
         out = out.transpose(1, 3)
         out = torch.flatten(out, 2, -1)
 
         return out  # (B, T, D)
 
     def forward(self, x):
-        x = self.__get_frame_level_feat(x)
+        x = self._get_frame_level_feat(x)
         stats = self.pool(x)
         embed = self.seg(stats)
 
