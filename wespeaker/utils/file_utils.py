@@ -25,7 +25,7 @@ def read_scp(scp_file):
     return key_value_list
 
 
-def read_lists(list_file):
+def read_lists(list_file) -> list[str]:
     """ list_file: only 1 column
     """
     lists = []

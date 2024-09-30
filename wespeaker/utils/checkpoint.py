@@ -18,7 +18,10 @@ import torch
 
 def load_checkpoint(model: torch.nn.Module, path: str):
     checkpoint = torch.load(path, map_location='cpu')
-    model.load_state_dict(checkpoint, strict=False)
+    if "model" in checkpoint:
+        model.load_state_dict(checkpoint["model"], strict=False)
+    else:
+        model.load_state_dict(checkpoint, strict=False)
 
 
 def save_checkpoint(model: torch.nn.Module, path: str):
