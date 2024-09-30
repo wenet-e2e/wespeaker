@@ -147,7 +147,7 @@ def extract(
     print("WARN: Setting utt_chunk =", utt_chunk)
 
     # NOTE: We are processing single utterances but we are using the Dataset to handle the processing
-    input_wav_json = json.dumps({"key": "-", "wav": str(input_wav_file), "spk": "-"})
+    input_wav_json = json.dumps({"key": Path(input_wav_file).name, "wav": str(input_wav_file), "spk": "-"})
     dataset = Dataset(
         configs["data_type"],
         [input_wav_json],  # TODO: Change this to List[str]
