@@ -18,11 +18,8 @@ output_embedding_path="output.csv" # NOTE: TODO
 . tools/parse_options.sh
 set -e
 
-model_basename=$(basename $model_path)
-input_wav_basename=$(basename $input_wav_file)
-
-echo "Extract embedding for: ${input_wav_basename}"
-echo "With model: ${model_basename} ..."
+echo "Extract embedding for: ${input_wav_file}"
+echo "With model: ${model_path} ..."
 
 python wespeaker/bin/extract_single_V2.py \
   --input_wav_file ${input_wav_file} \

@@ -177,7 +177,7 @@ def extract(
         i, batch = next(dataloader_iterator)
 
         utts = batch["key"]
-        print(f"[{i}] Proccesing utts: {utts}", flush=True)
+        print(f"[{i}] Proccesing utts: {utts[0]}", flush=True)
 
         features = batch["feat"]
         features = features.float().to(device)  # (B,T,F)
@@ -195,6 +195,7 @@ def extract(
     # Saving the extracted embed
     if not Path(output_embedding_path).exists() or overwrite:
         np.savetxt(fname=output_embedding_path, X=embed, delimiter=",")
+        print("Embedding saved to:", output_embedding_path)
 
     subregion_key, subregion_name = list(SUBREGIONS.items())[int(embed.argmax())]
     print(
