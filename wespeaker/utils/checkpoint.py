@@ -17,7 +17,7 @@ import torch
 
 
 def load_checkpoint(model: torch.nn.Module, path: str):
-    checkpoint = torch.load(path, map_location='cpu')
+    checkpoint = torch.load(path, map_location='cpu', weights_only=False)
     if "model" in checkpoint:
         model.load_state_dict(checkpoint["model"], strict=False)
     else:

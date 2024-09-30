@@ -26,6 +26,7 @@ from wespeaker.models.projections import get_projection
 
 from pathlib import Path
 
+
 ## Podoblasti
 SUBREGIONS = {
     "1-1": "Severovýchodočeská",
@@ -64,8 +65,8 @@ def extract(
     output_embedding_path: str,
     model_path: str,
     overwrite: bool = True,
-    config: str="conf/config.yaml",
-    device_type: str="cpu",
+    config: str = "conf/config.yaml",
+    device_type: str = "cpu",
     **kwargs,
 ):
     """Extracts single embedding from the wav file.
@@ -88,7 +89,7 @@ def extract(
     assert Path(config).exists(), f"File config {config} does not exist!"
     assert device_type in ["cpu", "cuda"], f"Invalid device_type {device_type}!"
 
-    # parse configs first and set the pre-defined device and data_type for embedding extraction 
+    # parse configs first and set the pre-defined device and data_type for embedding extraction
     configs = parse_config_or_kwargs(config, **kwargs)
     configs["model_args"]["device"] = device_type
     configs["data_type"] = "raw"
@@ -147,7 +148,9 @@ def extract(
     print("WARN: Setting utt_chunk =", utt_chunk)
 
     # NOTE: We are processing single utterances but we are using the Dataset to handle the processing
-    input_wav_json = json.dumps({"key": Path(input_wav_file).name, "wav": str(input_wav_file), "spk": "-"})
+    input_wav_json = json.dumps(
+        {"key": Path(input_wav_file).name, "wav": str(input_wav_file), "spk": "-"}
+    )
     dataset = Dataset(
         configs["data_type"],
         [input_wav_json],  # TODO: Change this to List[str]
