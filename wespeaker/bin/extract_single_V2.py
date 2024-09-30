@@ -94,7 +94,6 @@ def extract(
     configs["model_args"]["device"] = device_type
     configs["data_type"] = "raw"
 
-    # configs["model_args"]["model_path"] = "/home/ondra/Documents/Stay@FIT/Speech/models/WavLM-Base+.pt"  # TODO: Remove this line
     configs["model_args"]["model_path"] = model_path
 
     batch_size = configs.get("batch_size", 1)
