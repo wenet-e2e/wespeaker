@@ -80,7 +80,7 @@ jobs:
       - name: Run cpplint
         run: |
           set -eux
-          pip install cpplint
+          pip install cpplint==1.6.1
           cpplint --version
           cpplint --recursive .
           if [ $? != 0 ]; then exit 1; fi
