@@ -54,7 +54,8 @@ def run_epoch(dataloader, epoch_iter, model, criterion, optimizer, scheduler,
                     features, **configs['dataset_args'].get('cmvn_args', {}))
             # spec augmentation
             if configs['dataset_args'].get('spec_aug', False):
-                features = spec_aug(features, **configs['spec_aug_args'])
+                features = spec_aug(features,
+                                    **configs['dataset_args']['spec_aug_args'])
 
         with torch.cuda.amp.autocast(enabled=configs['enable_amp']):
             outputs = model(features)  # (embed_a,embed_b) in most cases
