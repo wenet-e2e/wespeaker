@@ -57,7 +57,6 @@ def run_epoch(dataloader, epoch_iter, model, criterion, optimizer, scheduler,
                 features = spec_aug(features,
                                     **configs['dataset_args']['spec_aug_args'])
 
-        with torch.cuda.amp.autocast(enabled=configs['enable_amp']):
             outputs = model(features)  # (embed_a,embed_b) in most cases
             embeds = outputs[-1] if isinstance(outputs, tuple) else outputs
             outputs = model.module.projection(embeds, targets)
