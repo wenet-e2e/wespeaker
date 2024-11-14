@@ -75,10 +75,9 @@ def set_seed(seed=42):
 
 def spk2id(utt_spk_list):
     _, spk_list = zip(*utt_spk_list)
-    spk_list = sorted(list(set(spk_list)))  # remove overlap and sort
+    spk_list = sorted(set(spk_list))  # remove overlap and sort
 
     spk2id_dict = {}
-    spk_list.sort()
     for i, spk in enumerate(spk_list):
         spk2id_dict[spk] = i
     return spk2id_dict
