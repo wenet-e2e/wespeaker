@@ -46,9 +46,10 @@ def train(config='conf/config.yaml', **kwargs):
     configs = parse_config_or_kwargs(config, **kwargs)
     checkpoint = configs.get('checkpoint', None)
     # dist configs
-    rank = int(os.environ['RANK'])
+    local_rank = int(os.environ.get('LOCAL_RANK', 0))
+    rank = int(os.environ.get('RANK', 0))
     world_size = int(os.environ['WORLD_SIZE'])
-    gpu = int(configs['gpus'][rank])
+    gpu = int(configs['gpus'][local_rank])
     torch.cuda.set_device(gpu)
     dist.init_process_group(backend='nccl')
 
