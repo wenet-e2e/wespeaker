@@ -22,7 +22,7 @@
 stage=1
 stop_stage=1
 
-HOST_NODE_ADDR="localhost:0"
+HOST_NODE_ADDR="localhost:29400"
 num_nodes=1
 job_id=2024
 
