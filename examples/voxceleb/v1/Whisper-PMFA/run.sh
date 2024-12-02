@@ -8,6 +8,10 @@
 stage=-1
 stop_stage=-1
 
+HOST_NODE_ADDR="localhost:29400"
+num_nodes=1
+job_id=2024
+
 data=data
 data_type="raw"  # shard/raw
 model=whisper_PMFA_large_v2
@@ -57,7 +61,9 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   echo "Start training with frozen whisper parameter..."
   config=conf/whisper_PMFA_stage0.yaml
   num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
-  torchrun --standalone --nnodes=1 --nproc_per_node=$num_gpus \
+  echo "$0: num_nodes is $num_nodes, proc_per_node is $num_gpus"
+  torchrun --nnodes=$num_nodes --nproc_per_node=$num_gpus \
+           --rdzv_id=$job_id --rdzv_backend="c10d" --rdzv_endpoint=$HOST_NODE_ADDR \
     wespeaker/bin/train.py --config $config \
       --exp_dir ${exp_dir} \
       --gpus $gpus \
@@ -84,7 +90,9 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
   config=conf/whisper_PMFA_stage1.yaml
   num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
   checkpoint=${exp_dir}/models/model_4.pt
-  torchrun --standalone --nnodes=1 --nproc_per_node=$num_gpus \
+  echo "$0: num_nodes is $num_nodes, proc_per_node is $num_gpus"
+  torchrun --nnodes=$num_nodes --nproc_per_node=$num_gpus \
+           --rdzv_id=$job_id --rdzv_backend="c10d" --rdzv_endpoint=$HOST_NODE_ADDR \
     wespeaker/bin/train.py --config $config \
       --exp_dir ${exp_dir} \
       --gpus $gpus \

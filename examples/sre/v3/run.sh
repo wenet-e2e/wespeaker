@@ -22,6 +22,10 @@
 stage=1
 stop_stage=1
 
+HOST_NODE_ADDR="localhost:29400"
+num_nodes=1
+job_id=2024
+
 data=data
 data_type="shard"  # shard/raw
 
@@ -194,9 +198,9 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   else
       num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
   fi
-  echo "Using $num_gpus_train GPUs: $gpus"
-  #torchrun --standalone --nnodes=1 --nproc_per_node=$num_gpus_train \  # The below is to prevent problems if many jobs run on the same machine
-  torchrun --rdzv_backend=c10d --rdzv_endpoint=$(hostname):$((RANDOM)) --nnodes=1 --nproc_per_node=$num_gpus_train \
+  echo "$0: num_nodes is $num_nodes, proc_per_node is $num_gpus"
+  torchrun --nnodes=$num_nodes --nproc_per_node=$num_gpus \
+           --rdzv_id=$job_id --rdzv_backend="c10d" --rdzv_endpoint=$HOST_NODE_ADDR \
       wespeaker/bin/train.py --config $config \
       --exp_dir ${exp_dir} \
       --gpus $gpus \
