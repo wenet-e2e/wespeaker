@@ -77,7 +77,7 @@ def tar_file_and_group(data):
     """
     for sample in data:
         assert 'stream' in sample
-        stream = tarfile.open(fileobj=sample['stream'], mode="r|*")
+        stream = tarfile.open(fileobj=sample['stream'], mode="r:*")
         prev_prefix = None
         example = {}
         valid = True
