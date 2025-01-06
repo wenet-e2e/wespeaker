@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Runtime for Wespeaker &mdash; wespeaker 1.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
@@ -232,8 +232,8 @@ python3 wespeaker/bin/export_onnx.py --config=${exp_dir}/config.yaml --checkpoin
 </div>
 <p>Here we get an engine which has maximum sequence length of 3000 and minimum length of 200. Since the frame stride is 10ms, 200 and 3000 corresponds to 2.02 seconds and 30.02 seconds respectively(kaldi feature extractor). Notice these numbers will differ and depend on your feature extractor parameters. Notice we’ve added <code class="docutils literal notranslate"><span class="pre">--fp16</span></code> and in pratice, we found this option will not affect the final accuracy and improve the perf at the same time.</p>
 <p>You may set these numbers by your production requirements. If you only know the seconds of audio you will use and have no idea of how many frames it will generate, you may try the below script:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torchaudio.compliance.kaldi</span> <span class="k">as</span> <span class="nn">kaldi</span>
-<span class="kn">import</span> <span class="nn">torch</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torchaudio.compliance.kaldi</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">kaldi</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="n">audio_dur_in_seconds</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="n">feat_dim</span> <span class="o">=</span> <span class="mi">80</span>  <span class="c1"># please check config.yaml if you dont know</span>
 <span class="n">sample_rate</span> <span class="o">=</span> <span class="mi">16000</span>
