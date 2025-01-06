@@ -55,7 +55,14 @@ class Speaker:
         self.device = torch.device('cpu')
         self.wavform_norm = False
 
-        # diarization parmas
+        # dataset params
+        self.dither = configs["dataset_args"]["fbank_args"]["dither"]
+        self.frame_length = configs["dataset_args"]["fbank_args"]["frame_length"]
+        self.frame_shift = configs["dataset_args"]["fbank_args"]["frame_shift"]
+        self.num_mel_bins = configs["dataset_args"]["fbank_args"]["num_mel_bins"]
+
+
+        # diarization params
         self.diar_min_duration = 0.255
         self.diar_window_secs = 1.5
         self.diar_period_secs = 0.75
@@ -96,12 +103,16 @@ class Speaker:
                       num_mel_bins=80,
                       frame_length=25,
                       frame_shift=10,
+                      dither=1.0,
                       cmn=True):
         feat = kaldi.fbank(wavform,
                            num_mel_bins=num_mel_bins,
                            frame_length=frame_length,
                            frame_shift=frame_shift,
-                           sample_frequency=sample_rate)
+                           dither=dither,
+                           sample_frequency=sample_rate,
+                           window_type="hamming",
+                           use_energy=False)
         if cmn:
             feat = feat - torch.mean(feat, 0)
         return feat
@@ -159,7 +170,11 @@ class Speaker:
                 orig_freq=sample_rate, new_freq=self.resample_rate)(pcm)
         feats = self.compute_fbank(pcm,
                                    sample_rate=self.resample_rate,
-                                   cmn=True)
+                                   num_mel_bins=self.num_mel_bins,
+                                   frame_length=self.frame_length,
+                                   frame_shift=self.frame_shift,
+                                   dither=self.dither,
+                                   cmn=False)
         feats = feats.unsqueeze(0)
         feats = feats.to(self.device)
 
@@ -220,7 +235,7 @@ class Speaker:
         wav = read_audio(audio_path)
         vad_segments = get_speech_timestamps(wav, self.vad, return_seconds=True)
 
-        # 2. extact fbanks
+        # 2. extract fbanks
         subsegs, subseg_fbanks = [], []
         window_fs = int(self.diar_window_secs * 1000) // self.diar_frame_shift
         period_fs = int(self.diar_period_secs * 1000) // self.diar_frame_shift
@@ -233,6 +248,10 @@ class Speaker:
                     torch.float)
                 fbank = self.compute_fbank(tmp_wavform,
                                            sample_rate=sample_rate,
+                                           num_mel_bins=self.num_mel_bins,
+                                           frame_length=self.frame_length,
+                                           frame_shift=self.frame_shift,
+                                           dither=self.dither,
                                            cmn=False)
                 tmp_subsegs, tmp_subseg_fbanks = subsegment(
                     fbank=fbank,
