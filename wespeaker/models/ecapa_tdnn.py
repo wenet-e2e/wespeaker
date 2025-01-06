@@ -217,20 +217,21 @@ class ECAPA_TDNN(nn.Module):
         out = torch.cat([out2, out3, out4], dim=1)
         out = self.conv(out)
 
-        return out
+        return out, out4
 
     def get_frame_level_feat(self, x):
         # for outer interface
-        out = self._get_frame_level_feat(x).permute(0, 2, 1)
+        out = self._get_frame_level_feat(x)[0].permute(0, 2, 1)
         return out  # (B, T, D)
 
     def forward(self, x):
-        out = F.relu(self._get_frame_level_feat(x))
+        out, out4 = self._get_frame_level_feat(x)
+        out = F.relu(out)
         out = self.bn(self.pool(out))
         out = self.linear(out)
         if self.emb_bn:
             out = self.bn2(out)
-        return out
+        return out4, out
 
 
 def ECAPA_TDNN_c1024(feat_dim, embed_dim, pooling_func='ASTP', emb_bn=False):
