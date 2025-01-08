@@ -49,13 +49,17 @@ class TSDP(nn.Module):
     Temporal standard deviation pooling, only second-order std is considered
     """
 
-    def __init__(self, in_dim=0, **kwargs):
+    def __init__(self, in_dim=0, ncnn_mode=False, **kwargs):
         super(TSDP, self).__init__()
         self.in_dim = in_dim
+        self.ncnn_mode = ncnn_mode
 
     def forward(self, x):
         # The last dimension is the temporal axis
-        pooling_std = torch.sqrt(torch.var(x, dim=-1) + 1e-7)
+        if not self.ncnn_mode:
+            pooling_std = torch.sqrt(torch.var(x, dim=-1) + 1e-7)
+        else:
+            pooling_std = torch.sqrt(var_wrapper(x, dim=-1) + 1e-7)
         pooling_std = pooling_std.flatten(start_dim=1)
         return pooling_std
 
@@ -71,14 +75,18 @@ class TSTP(nn.Module):
     Comment: simple concatenation can not make full use of both statistics
     """
 
-    def __init__(self, in_dim=0, **kwargs):
+    def __init__(self, in_dim=0, ncnn_mode=False, **kwargs):
         super(TSTP, self).__init__()
         self.in_dim = in_dim
+        self.ncnn_mode = ncnn_mode
 
     def forward(self, x):
         # The last dimension is the temporal axis
         pooling_mean = x.mean(dim=-1)
-        pooling_std = torch.sqrt(torch.var(x, dim=-1) + 1e-7)
+        if not self.ncnn_mode:
+            pooling_std = torch.sqrt(torch.var(x, dim=-1) + 1e-7)
+        else:
+            pooling_std = torch.sqrt(var_wrapper(x, dim=-1) + 1e-7)
         pooling_mean = pooling_mean.flatten(start_dim=1)
         pooling_std = pooling_std.flatten(start_dim=1)
         stats = torch.cat((pooling_mean, pooling_std), 1)
@@ -98,10 +106,12 @@ class ASTP(nn.Module):
                  in_dim,
                  bottleneck_dim=128,
                  global_context_att=False,
+                 ncnn_mode=False,
                  **kwargs):
         super(ASTP, self).__init__()
         self.in_dim = in_dim
         self.global_context_att = global_context_att
+        self.ncnn_mode = ncnn_mode
 
         # Use Conv1d with stride == 1 rather than Linear, then we don't
         # need to transpose inputs.
@@ -127,9 +137,18 @@ class ASTP(nn.Module):
         assert len(x.shape) == 3
 
         if self.global_context_att:
-            context_mean = torch.mean(x, dim=-1, keepdim=True).expand_as(x)
-            context_std = torch.sqrt(
-                torch.var(x, dim=-1, keepdim=True) + 1e-7).expand_as(x)
+            if not self.ncnn_mode:
+                context_mean = torch.mean(x, dim=-1, keepdim=True).expand_as(x)
+                context_std = torch.sqrt(
+                    torch.var(x, dim=-1, keepdim=True) + 1e-7).expand_as(x)
+            else:
+                context_mean_tmp = torch.mean(x, dim=-1, keepdim=True)
+                context_mean = context_mean_tmp + torch.zeros_like(
+                    x, dtype=x.dtype).to(x.device)
+                context_std_tmp = torch.sqrt(
+                    var_wrapper(x, dim=-1, keepdim=True) + 1e-7)
+                context_std = context_std_tmp + torch.zeros_like(
+                    x, dtype=x.dtype).to(x.device)
             x_in = torch.cat((x, context_mean, context_std), dim=1)
         else:
             x_in = x
@@ -310,6 +329,24 @@ class MQMHASTP(torch.nn.Module):
         return self.out_dim
 
 
+def var_wrapper(x,
+                dim: int = -1,
+                unbiased: bool = True,
+                keepdim: bool = False):
+    """Compute the variance of a tensor x along the specified dimension.
+    Args:
+        x (Tensor): the input tensor.
+        dim (int): the dimension or dimensions to reduce.
+        unbiased (bool): whether to use Bessel’s correction
+        keepdim (bool): whether the output tensor has dim retained or not.
+    """
+    x_mean = torch.mean(x, dim=dim, keepdim=True)
+    x_var = torch.mean((x - x_mean)**2, dim=dim, keepdim=keepdim)
+    if unbiased:
+        x_var *= x.size(dim) / (x.size(dim) - 1)
+    return x_var
+
+
 if __name__ == '__main__':
     data = torch.randn(16, 512, 10, 35)
     # model = StatisticsPooling()
@@ -321,3 +358,22 @@ if __name__ == '__main__':
     out = model(data)
     print(out.shape)
     print(model.get_out_dim())
+
+    torch.testing.assert_close(torch.var(data, dim=-1),
+                               var_wrapper(data, dim=-1),
+                               rtol=1e-5,
+                               atol=1e-3)
+    # check the ASTP
+    astp = ASTP(512 * 10)
+    state_dict = {}
+    for name, param in astp.named_parameters():
+        state_dict[name] = param
+    out_astp = astp(data)
+    astp_ncnn = ASTP(512 * 10, ncnn_mode=True)
+    astp_ncnn.load_state_dict(state_dict)
+    out_astp_ncnn = astp_ncnn(data)
+
+    torch.testing.assert_close(out_astp.detach().numpy(),
+                               out_astp_ncnn.detach().numpy(),
+                               rtol=1e-5,
+                               atol=1e-3)
