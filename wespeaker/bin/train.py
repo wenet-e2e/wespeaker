@@ -53,6 +53,7 @@ def train(config='conf/config.yaml', **kwargs):
     gpu = int(configs['gpus'][local_rank])
     torch.cuda.set_device(gpu)
     dist.init_process_group(backend='nccl')
+    
     model_dir = os.path.join(configs['exp_dir'], "models")
     dist.barrier(device_ids=[gpu])  # let the rank 0 mkdir first
 
