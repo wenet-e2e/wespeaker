@@ -310,6 +310,77 @@ class MQMHASTP(torch.nn.Module):
         return self.out_dim
 
 
+class XI(torch.nn.Module):
+    def __init__(self, in_dim, hidden_size=256, stddev=False,
+                 train_mean=True, train_prec=True, **kwargs):
+        super(XI, self).__init__()
+        self.input_dim = in_dim
+        self.stddev = stddev
+        if self.stddev:
+            self.output_dim = 2 * self.input_dim
+        else:
+            self.output_dim = self.input_dim
+        self.prior_mean = torch.nn.Parameter(torch.zeros(1, self.input_dim),
+                                             requires_grad=train_mean)
+        self.prior_logprec = torch.nn.Parameter(torch.zeros(1, self.input_dim),
+                                                requires_grad=train_prec)
+        self.softmax = torch.nn.Softmax(dim=2)
+
+        # Log-precision estimator
+        self.lin1_relu_bn = nn.Sequential(
+            nn.Conv1d(self.input_dim, hidden_size,
+                      kernel_size=1, stride=1, bias=True),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm1d(hidden_size))
+        self.lin2 = nn.Conv1d(hidden_size, self.input_dim, kernel_size=1,
+                              stride=1, bias=True)
+        self.softplus2 = torch.nn.Softplus(beta=1, threshold=20)
+
+    def forward(self, inputs):
+        """
+        @inputs: a 3-dimensional tensor (a batch),
+        including [samples-index, frames-dim-index, frames-index]
+        """
+        assert len(inputs.shape) == 3
+        assert inputs.shape[1] == self.input_dim
+        feat = inputs
+        # Log-precision estimator
+        # frame precision estimate
+        logprec = self.softplus2(self.lin2(self.lin1_relu_bn(feat)))
+
+        # Square and take log before softmax
+        logprec = 2.0 * torch.log(logprec)
+        # Gaussian Posterior Inference
+        # Option 1: a_o (prior_mean-phi) included in variance
+        weight_attn = self.softmax(
+            torch.cat(
+                (logprec,
+                 self.prior_logprec.repeat(
+                     logprec.shape[0], 1).unsqueeze(dim=2)), 2))
+        # Posterior precision
+        Ls = torch.sum(torch.exp(torch.cat(
+            (logprec, self.prior_logprec.repeat(
+                logprec.shape[0], 1).unsqueeze(dim=2)), 2)), dim=2)
+        # Posterior mean
+        phi = torch.sum(torch.cat(
+            (feat, self.prior_mean.repeat(
+                feat.shape[0], 1).unsqueeze(dim=2)), 2) * weight_attn, dim=2)
+
+        if self.stddev:
+            sigma2 = torch.sum(torch.cat((
+                feat, self.prior_mean.repeat(
+                    feat.shape[0], 1).unsqueeze(dim=2)), 2).pow(2) * weight_attn, dim=2)
+            sigma = torch.sqrt(torch.clamp(sigma2 - phi ** 2, min=1.0e-12))
+            return torch.cat((phi, sigma), dim=1).unsqueeze(dim=2)
+        else:
+            return phi
+
+    def get_out_dim(self):
+        return self.output_dim
+
+    def get_prior(self):
+        return self.prior_mean, self.prior_logprec
+
 if __name__ == '__main__':
     data = torch.randn(16, 512, 10, 35)
     # model = StatisticsPooling()
