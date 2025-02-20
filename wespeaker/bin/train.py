@@ -33,8 +33,9 @@ from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
 from wespeaker.utils.executor import run_epoch
 from wespeaker.utils.file_utils import read_table
 from wespeaker.utils.utils import get_logger, parse_config_or_kwargs, set_seed, \
-    spk2id
+    spk2id, setup_logger
 
+MAX_NUM_log_files=100
 
 def train(config='conf/config.yaml', **kwargs):
     """Trains a model on the given features and spk labels.
@@ -52,19 +53,10 @@ def train(config='conf/config.yaml', **kwargs):
     gpu = int(configs['gpus'][local_rank])
     torch.cuda.set_device(gpu)
     dist.init_process_group(backend='nccl')
-
     model_dir = os.path.join(configs['exp_dir'], "models")
-    if rank == 0:
-        try:
-            os.makedirs(model_dir)
-        except IOError:
-            print("[warning] " + model_dir + " already exists !!!")
-            if checkpoint is None:
-                print("[error] checkpoint is null !")
-                exit(1)
     dist.barrier(device_ids=[gpu])  # let the rank 0 mkdir first
 
-    logger = get_logger(configs['exp_dir'], 'train.log')
+    logger = setup_logger(rank, configs["exp_dir"], MAX_NUM_log_files)
     if world_size > 1:
         logger.info('training on multiple gpus, this gpu {}'.format(gpu))
 
