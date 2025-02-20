@@ -311,7 +311,7 @@ class MQMHASTP(torch.nn.Module):
 
 
 class XI(torch.nn.Module):
-    def __init__(self, in_dim, hidden_size=256, stddev=False, 
+    def __init__(self, in_dim, hidden_size=256, stddev=False,
                  train_mean=True, train_prec=True, **kwargs):
         super(XI, self).__init__()
         self.input_dim = in_dim
@@ -319,10 +319,10 @@ class XI(torch.nn.Module):
         if self.stddev:
             self.output_dim = 2 * self.input_dim
         else:
-            self.output_dim = self.input_dim    
-        self.prior_mean = torch.nn.Parameter(torch.zeros(1, self.input_dim), 
+            self.output_dim = self.input_dim
+        self.prior_mean = torch.nn.Parameter(torch.zeros(1, self.input_dim),
                                              requires_grad=train_mean)
-        self.prior_logprec = torch.nn.Parameter(torch.zeros(1, self.input_dim), 
+        self.prior_logprec = torch.nn.Parameter(torch.zeros(1, self.input_dim),
                                                 requires_grad=train_prec)
         self.softmax = torch.nn.Softmax(dim=2)
 
@@ -332,13 +332,13 @@ class XI(torch.nn.Module):
                       kernel_size=1, stride=1, bias=True),
             nn.ReLU(inplace=True),
             nn.BatchNorm1d(hidden_size))
-        self.lin2 = nn.Conv1d(hidden_size, self.input_dim, kernel_size=1, 
+        self.lin2 = nn.Conv1d(hidden_size, self.input_dim, kernel_size=1,
                               stride=1, bias=True)
         self.softplus2 = torch.nn.Softplus(beta=1, threshold=20)
 
     def forward(self, inputs):
         """
-        @inputs: a 3-dimensional tensor (a batch), 
+        @inputs: a 3-dimensional tensor (a batch),
         including [samples-index, frames-dim-index, frames-index]
         """
         assert len(inputs.shape) == 3
@@ -354,7 +354,7 @@ class XI(torch.nn.Module):
         # Option 1: a_o (prior_mean-phi) included in variance
         weight_attn = self.softmax(
             torch.cat(
-                (logprec, 
+                (logprec,
                  self.prior_logprec.repeat(
                      logprec.shape[0], 1).unsqueeze(dim=2)), 2))
         # Posterior precision
