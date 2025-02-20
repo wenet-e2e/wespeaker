@@ -9,7 +9,7 @@ for speaker recognition. IEEE Signal Processing Letters, 28, 1385-1389.
 
 import torch
 import wespeaker.models.ecapa_tdnn as ecapa_tdnn
-import wespeaker.models.tdnn as tdnn 
+import wespeaker.models.tdnn as tdnn
 
 
 
