@@ -19,6 +19,12 @@ import random
 import numpy as np
 import torch
 import yaml
+from distutils.util import strtobool
+from pathlib import Path
+import shutil
+import torch.distributed as dist
+
+
 
 
 def get_logger(outdir, fname):
@@ -33,6 +39,27 @@ def get_logger(outdir, fname):
     logger.addHandler(fh)
     return logger
 
+
+def setup_logger(rank, exp_dir, MAX_NUM_LOG_FILES: int = 100):
+    model_dir = os.path.join(exp_dir, "models")
+    file_name = "train.log"
+    if rank == 0:
+        os.makedirs(model_dir, exist_ok=True)
+        for i in range(MAX_NUM_LOG_FILES - 1, -1, -1):
+            if i == 0:
+                p = Path(os.path.join(exp_dir, file_name))
+                pn = p.parent / (p.stem + ".1" + p.suffix)
+            else:
+                _p = Path(os.path.join(exp_dir, file_name))
+                p = _p.parent / (_p.stem + f".{i}" + _p.suffix)
+                pn = _p.parent / (_p.stem + f".{i + 1}" + _p.suffix)
+
+            if p.exists():
+                if i == MAX_NUM_LOG_FILES - 1:
+                    p.unlink()
+                else:
+                    shutil.move(p, pn)
+    return get_logger(exp_dir, file_name)
 
 def parse_config_or_kwargs(config_file, **kwargs):
     """parse_config_or_kwargs
