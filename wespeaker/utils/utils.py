@@ -19,7 +19,6 @@ import random
 import numpy as np
 import torch
 import yaml
-from distutils.util import strtobool
 from pathlib import Path
 import shutil
 
