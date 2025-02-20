@@ -16,18 +16,18 @@ import wespeaker.models.tdnn as tdnn
 
 def XI_VEC_ECAPA_TDNN_c1024(feat_dim, embed_dim, pooling_func='XI', emb_bn=False):
     return ecapa_tdnn.ECAPA_TDNN(channels=1024,
-                      feat_dim=feat_dim,
-                      embed_dim=embed_dim,
-                      pooling_func=pooling_func,
-                      emb_bn=emb_bn)
+                                 feat_dim=feat_dim,
+                                 embed_dim=embed_dim,
+                                 pooling_func=pooling_func,
+                                 emb_bn=emb_bn)
 
 
 def XI_VEC_ECAPA_TDNN_c512(feat_dim, embed_dim, pooling_func='XI', emb_bn=False):
     return ecapa_tdnn.ECAPA_TDNN(channels=512,
-                      feat_dim=feat_dim,
-                      embed_dim=embed_dim,
-                      pooling_func=pooling_func,
-                      emb_bn=emb_bn)
+                                 feat_dim=feat_dim,
+                                 embed_dim=embed_dim,
+                                 pooling_func=pooling_func,
+                                 emb_bn=emb_bn)
 
 
 
