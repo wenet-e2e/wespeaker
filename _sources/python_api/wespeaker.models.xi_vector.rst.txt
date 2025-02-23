@@ -1,0 +1,7 @@
+wespeaker.models.xi\_vector module
+==================================
+
+.. automodule:: wespeaker.models.xi_vector
+   :members:
+   :undoc-members:
+   :show-inheritance:

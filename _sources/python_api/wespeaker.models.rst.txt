@@ -27,3 +27,4 @@ Submodules
    wespeaker.models.speaker_model
    wespeaker.models.tdnn
    wespeaker.models.whisper_PMFA
+   wespeaker.models.xi_vector
