@@ -1,4 +1,18 @@
-
+# Copyright (c) 2025 Shuai Wang (wsstriving@gmail.com)
+#               2025 Junjie LI (junjie98.li@connect.polyu.hk)
+#               2025 Tianchi Liu (tianchi_liu@u.nus.edu)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 '''The implementation of Xi_vector.
 
 Reference:
@@ -44,3 +58,8 @@ if __name__ == '__main__':
 
     num_params = sum(p.numel() for p in model.parameters())
     print("{} M".format(num_params / 1e6))
+
+    from thop import profile
+    x_np = torch.randn(1, 200, 80)
+    flops, params = profile(model, inputs=(x_np, ))
+    print("FLOPs: {} G, Params: {} M".format(flops / 1e9, params / 1e6))
