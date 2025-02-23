@@ -281,7 +281,7 @@ if __name__ == '__main__':
                                  pooling_func='ASTP')
     model.eval()
     out = model(x)
-    print(out.shape)
+    print(out[-1].shape)
 
     num_params = sum(param.numel() for param in model.parameters())
     print("{} M".format(num_params / 1e6))
