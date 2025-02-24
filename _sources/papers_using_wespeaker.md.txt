@@ -57,6 +57,20 @@ Besides the citation of WeSpeaker itself, we highly recommend you to read and ci
 }
 ```
 
+### Xi-vector
+
+```bibtex
+@article{lee2021xi,
+  title={Xi-vector embedding for speaker recognition},
+  author={Lee, Kong Aik and Wang, Qiongqiong and Koshinaka, Takafumi},
+  journal={IEEE Signal Processing Letters},
+  volume={28},
+  pages={1385--1389},
+  year={2021},
+  publisher={IEEE}
+}
+```
+
 ### ResNet
 
 The Current ResNet implementation is based on our system for VoxSRC2019, it's also the default speaker model in Pyannote.audio diarization pipeline (https://huggingface.co/pyannote/wespeaker-voxceleb-resnet34-LM)
