@@ -101,7 +101,8 @@ class Speaker:
                            num_mel_bins=num_mel_bins,
                            frame_length=frame_length,
                            frame_shift=frame_shift,
-                           sample_frequency=sample_rate)
+                           sample_frequency=sample_rate,
+                           windown_type='hamming')
         if cmn:
             feat = feat - torch.mean(feat, 0)
         return feat
@@ -117,8 +118,8 @@ class Speaker:
             batch_feats = fbanks_array[i:i + batch_size]
             with torch.no_grad():
                 batch_embs = self.model(batch_feats)
-                batch_embs = batch_embs[-1] if isinstance(batch_embs,
-                                                          tuple) else batch_embs
+                batch_embs = batch_embs[-1] if isinstance(
+                    batch_embs, tuple) else batch_embs
             embeddings.append(batch_embs.detach().cpu().numpy())
         embeddings = np.vstack(embeddings)
         return embeddings
@@ -139,10 +140,11 @@ class Speaker:
 
             if sample_rate != vad_sample_rate:
                 transform = torchaudio.transforms.Resample(
-                    orig_freq=sample_rate,
-                    new_freq=vad_sample_rate)
+                    orig_freq=sample_rate, new_freq=vad_sample_rate)
                 wav = transform(wav)
-            segments = get_speech_timestamps(wav, self.vad, return_seconds=True)
+            segments = get_speech_timestamps(wav,
+                                             self.vad,
+                                             return_seconds=True)
             pcmTotal = torch.Tensor()
             if len(segments) > 0:  # remove all the silence
                 for segment in segments:
@@ -218,7 +220,9 @@ class Speaker:
         pcm, sample_rate = torchaudio.load(audio_path, normalize=False)
         # 1. vad
         wav = read_audio(audio_path)
-        vad_segments = get_speech_timestamps(wav, self.vad, return_seconds=True)
+        vad_segments = get_speech_timestamps(wav,
+                                             self.vad,
+                                             return_seconds=True)
 
         # 2. extact fbanks
         subsegs, subseg_fbanks = [], []
