@@ -168,6 +168,7 @@ float SpeakerEngine::CosineSimilarity(const std::vector<float>& emb1,
       std::inner_product(emb2.begin(), emb2.end(), emb2.begin(), 0.0);
   dot /= std::max(std::sqrt(emb1_sum) * std::sqrt(emb2_sum),
                   std::numeric_limits<float>::epsilon());
+  dot = (dot + 1.0) / 2.0;  // normalize: [-1, 1] => [0, 1]
   return dot;
 }
 
