@@ -102,7 +102,7 @@ class Speaker:
                            frame_length=frame_length,
                            frame_shift=frame_shift,
                            sample_frequency=sample_rate,
-                           windown_type='hamming')
+                           window_type='hamming')
         if cmn:
             feat = feat - torch.mean(feat, 0)
         return feat
