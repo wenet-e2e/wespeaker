@@ -223,7 +223,8 @@ class Speaker:
         vad_segments = get_speech_timestamps(wav,
                                              self.vad,
                                              return_seconds=True)
-
+        if not vad_segments:
+            return []
         # 2. extact fbanks
         subsegs, subseg_fbanks = [], []
         window_fs = int(self.diar_window_secs * 1000) // self.diar_frame_shift
