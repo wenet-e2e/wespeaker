@@ -40,17 +40,17 @@ wav_scp=your_test_wav_scp
 onnx_dir=your_model_dir
 embed_out=your_embedding_txt
 ./build/bin/extract_emb_main \
-  --wav_list $wav_scp \
+  --wav_scp $wav_scp \
   --result $embed_out \
   --speaker_model_path $onnx_dir/final.onnx \
   --embedding_size 256 \
-  --SamplesPerChunk  80000  # 5s
+  --samples_per_chunk  80000  # 5s
 
 ```
 
-> NOTE: SamplesPerChunk: samples of one chunk. SamplesPerChunk = sample_rate * duration
+> NOTE: samples_per_chunk: samples of one chunk. samples_per_chunk = sample_rate * duration
 >
-> If SamplesPerChunk = -1, compute the embedding of whole sentence;
+> If samples_per_chunk = -1, compute the embedding of whole sentence;
 > else compute embedding with chunk by chunk, and then average embeddings of chunk.
 
 2. Calculate the similarity of two speech.
@@ -70,39 +70,41 @@ onnx_dir=your_model_dir
 1. RTF
 > num_threads = 1
 >
-> SamplesPerChunk = 80000
+> samples_per_chunk = 80000
 >
 > CPU: Intel(R) Xeon(R) Platinum 8160 CPU @ 2.10GHz
 
-| Model               | Params  | RTF      |
-| ------------------- | ------- | -------- |
-| ECAPA-TDNN (C=512)  | 6.19 M  | 0.018351 |
-| ECAPA-TDNN (C=1024) | 14.65 M | 0.041724 |
-| RepVGG-TINY-A0      | 6.26 M  | 0.055117 |
-| ResNet-34           | 6.63 M  | 0.060735 |
-| ResNet-152          | 19.88 M | 0.179379 |
-| ResNet-221          | 23.86 M | 0.267511 |
-| ResNet-293          | 28.69 M | 0.364011 |
-| CAM++               | 7.18 M  | 0.022978 |
+| Model               | Params  | FLOPs    | RTF      |
+| :------------------ | :------ | :------- | :------- |
+| ECAPA-TDNN (C=512)  | 6.19 M  | 1.04 G   | 0.018351 |
+| ECAPA-TDNN (C=1024) | 14.65 M | 2.65 G   | 0.041724 |
+| RepVGG-TINY-A0      | 6.26 M  | 4.65 G   | 0.055117 |
+| ResNet-34           | 6.63 M  | 4.55 G   | 0.060735 |
+| ResNet-50           | 11.13 M | 5.17 G   | 0.073231 |
+| ResNet-101          | 15.89 M | 9.96 G   | 0.124613 |
+| ResNet-152          | 19.81 M | 14.76 G  | 0.179379 |
+| ResNet-221          | 23.79 M | 21.29 G  | 0.267511 |
+| ResNet-293          | 28.62 M | 28.10 G  | 0.364011 |
+| CAM++               | 7.18 M  | 1.15 G   | 0.022978 |
 
 > num_threads = 1
 >
-> samplesPerChunk = 80000
+> samples_per_chunk = 80000
 >
 > CPU: Intel(R) Xeon(R) Platinum 8160 CPU @ 2.10GHz
 >
 > GPU: NVIDIA 3090
 
-| Model               | Params  | RTF        |
-| ------------------- | ------- | ---------- |
-| ResNet-34           | 6.63 M  | 0.00857436 |
+| Model               | Params  | FLOPs    | RTF        |
+| :------------------ | :------ | :------- | :--------- |
+| ResNet-34           | 6.63 M  | 4.55 G   | 0.00857436 |
 
 2. EER (%)
-> onnxruntime: SamplesPerChunk=-1.
+> onnxruntime: samples_per_chunk=-1.
 >
 > don't use mean normalization for evaluation embeddings.
 
 | Model          | vox-O | vox-E | vox-H |
-| -------------- | ----- | ----- | ----- |
+| :------------- | ----- | ----- | ----- |
 | ResNet-34-pt   | 0.814 | 0.933 | 1.679 |
 | ResNet-34-onnx | 0.814 | 0.933 | 1.679 |

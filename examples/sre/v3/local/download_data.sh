@@ -1,0 +1,1 @@
+../../../voxceleb/v2/local/download_data.sh

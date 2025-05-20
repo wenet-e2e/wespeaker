@@ -4,107 +4,93 @@
 [![Python-Version](https://img.shields.io/badge/Python-3.8%7C3.9-brightgreen)](https://github.com/wenet-e2e/wespeaker)
 
 [**Roadmap**](ROADMAP.md)
+| [**Docs**](http://wenet.org.cn/wespeaker)
 | [**Paper**](https://arxiv.org/abs/2210.17016)
 | [**Runtime**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime)
-| [**Python binding**](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/binding/python)
 | [**Pretrained Models**](docs/pretrained.md)
 | [**Huggingface Demo**](https://huggingface.co/spaces/wenet/wespeaker_demo)
+| [**Modelscope Demo**](https://www.modelscope.cn/studios/wenet/Speaker_Verification_in_WeSpeaker/summary)
 
 
-WeSpeaker mainly focuses on speaker embedding learning, with application to the speaker verification task. We support
+WeSpeaker mainly focuses on [**speaker embedding learning**](https://wsstriving.github.io/talk/ncmmsc_slides_shuai.pdf), with application to the speaker verification task. We support
 online feature extraction or loading pre-extracted features in kaldi-format.
 
 ## Installation
 
+### Install python package
+``` sh
+pip install git+https://github.com/wenet-e2e/wespeaker.git
+```
+**Command-line usage** (use `-h` for parameters):
+
+``` sh
+$ wespeaker --task embedding --audio_file audio.wav --output_file embedding.txt
+$ wespeaker --task embedding_kaldi --wav_scp wav.scp --output_file /path/to/embedding
+$ wespeaker --task similarity --audio_file audio.wav --audio_file2 audio2.wav
+$ wespeaker --task diarization --audio_file audio.wav
+```
+
+**Python programming usage**:
+
+``` python
+import wespeaker
+
+model = wespeaker.load_model('chinese')
+embedding = model.extract_embedding('audio.wav')
+utt_names, embeddings = model.extract_embedding_list('wav.scp')
+similarity = model.compute_similarity('audio1.wav', 'audio2.wav')
+diar_result = model.diarize('audio.wav')
+```
+
+Please refer to [python usage](docs/python_package.md) for more command line and python programming usage.
+
+### Install for development & deployment
 * Clone this repo
 ``` sh
 git clone https://github.com/wenet-e2e/wespeaker.git
 ```
 
-* Create conda env: pytorch version >= 1.10.0 is required !!!
+* Create conda env: pytorch version >= 1.12.1 is recommended !!!
 ``` sh
 conda create -n wespeaker python=3.9
 conda activate wespeaker
 conda install pytorch=1.12.1 torchaudio=0.12.1 cudatoolkit=11.3 -c pytorch -c conda-forge
 pip install -r requirements.txt
-```
-
-* If you just want to use the pretrained model, try the [python binding](https://github.com/wenet-e2e/wespeaker/tree/master/runtime/binding/python)!
-```shell
-pip3 install wespeakerruntime
+pre-commit install  # for clean and tidy code
 ```
 
 ## 🔥 News
+* 2025.02.23: Add support for the Xi-vector, see [#404](https://github.com/wenet-e2e/wespeaker/pull/404).
+* 2024.09.03: Support the SimAM_ResNet and the model pretrained on VoxBlink2, check [Pretrained Models](docs/pretrained.md) for the pretrained model, [VoxCeleb Recipe](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxceleb/v2) for the super performance, and [python usage](docs/python_package.md) for the command line usage!
+* 2024.08.30: We support whisper_encoder based frontend and propose the [Whisper-PMFA](https://arxiv.org/pdf/2408.15585) framework, check [#356](https://github.com/wenet-e2e/wespeaker/pull/356).
+* 2024.08.20: Update diarization recipe for VoxConverse dataset by leveraging umap dimensionality reduction and hdbscan clustering, see [#347](https://github.com/wenet-e2e/wespeaker/pull/347) and [#352](https://github.com/wenet-e2e/wespeaker/pull/352).
+* 2024.08.18: Support using ssl pre-trained models as the frontend. The [WavLM recipe](https://github.com/wenet-e2e/wespeaker/blob/master/examples/voxceleb/v2/run_wavlm.sh) is also provided, see [#344](https://github.com/wenet-e2e/wespeaker/pull/344).
+* 2024.05.15: Add support for [quality-aware score calibration](https://arxiv.org/pdf/2211.00815), see [#320](https://github.com/wenet-e2e/wespeaker/pull/320).
+* 2024.04.25: Add support for the gemini-dfresnet model, see [#291](https://github.com/wenet-e2e/wespeaker/pull/291).
+* 2024.04.23: Support MNN inference engine in runtime, see [#310](https://github.com/wenet-e2e/wespeaker/pull/310).
+* 2024.04.02: Release [Wespeaker document](http://wenet.org.cn/wespeaker) with detailed model-training tutorials, introduction of various runtime platforms, etc.
+* 2024.03.04: Support the [eres2net-cn-common-200k](https://www.modelscope.cn/models/iic/speech_eres2net_sv_zh-cn_16k-common/summary) and [campplus-cn-common-200k](https://www.modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary) of damo [#281](https://github.com/wenet-e2e/wespeaker/pull/281), check [python usage](https://github.com/wenet-e2e/wespeaker/blob/master/docs/python_package.md) for details.
+* 2024.02.05: Support the ERes2Net [#272](https://github.com/wenet-e2e/wespeaker/pull/272) and Res2Net [#273](https://github.com/wenet-e2e/wespeaker/pull/273) models.
+* 2023.11.13: Support CLI usage of wespeaker, check [python usage](https://github.com/wenet-e2e/wespeaker/blob/master/docs/python_package.md) for details.
 * 2023.07.18: Support the kaldi-compatible PLDA and unsupervised adaptation, see [#186](https://github.com/wenet-e2e/wespeaker/pull/186).
 * 2023.07.14: Support the [NIST SRE16 recipe](https://www.nist.gov/itl/iad/mig/speaker-recognition-evaluation-2016), see [#177](https://github.com/wenet-e2e/wespeaker/pull/177).
-* 2023.07.10: Support the [Self-Supervised Learning recipe](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxceleb/v3) on Voxceleb, including [DINO](https://openaccess.thecvf.com/content/ICCV2021/papers/Caron_Emerging_Properties_in_Self-Supervised_Vision_Transformers_ICCV_2021_paper.pdf), [MoCo](https://openaccess.thecvf.com/content_CVPR_2020/papers/He_Momentum_Contrast_for_Unsupervised_Visual_Representation_Learning_CVPR_2020_paper.pdf) and [SimCLR](http://proceedings.mlr.press/v119/chen20j/chen20j.pdf), see [#180](https://github.com/wenet-e2e/wespeaker/pull/180).
-
-* 2023.06.30: Support the [SphereFace2](https://ieeexplore.ieee.org/abstract/document/10094954) loss function, with better performance and noisy robust in comparison with the ArcMargin Softmax, see [#173](https://github.com/wenet-e2e/wespeaker/pull/173).
-
-* 2023.04.27: Support the [CAM++](https://arxiv.org/abs/2303.00332) model, with better performance and single-thread inference rtf in comparison with the ResNet34 model, see [#153](https://github.com/wenet-e2e/wespeaker/pull/153).
 
 ## Recipes
 
 * [VoxCeleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxceleb): Speaker Verification recipe on the [VoxCeleb dataset](https://www.robots.ox.ac.uk/~vgg/data/voxceleb/)
+    * 🔥 UPDATE 2024.05.15: We support score calibration for Voxceleb and achieve better performance!
     * 🔥 UPDATE 2023.07.10: We support self-supervised learning recipe on Voxceleb! Achieving **2.627%** (ECAPA_TDNN_GLOB_c1024) EER on vox1-O-clean test set without any labels.
     * 🔥 UPDATE 2022.10.31: We support deep r-vector up to the 293-layer version! Achieving **0.447%/0.043** EER/mindcf on vox1-O-clean test set
     * 🔥 UPDATE 2022.07.19: We apply the same setups as the CNCeleb recipe, and obtain SOTA performance considering the open-source systems
       - EER/minDCF on vox1-O-clean test set are **0.723%/0.069** (ResNet34) and **0.728%/0.099** (ECAPA_TDNN_GLOB_c1024), after LM fine-tuning and AS-Norm
 * [CNCeleb](https://github.com/wenet-e2e/wespeaker/tree/master/examples/cnceleb/v2): Speaker Verification recipe on the [CnCeleb dataset](http://cnceleb.org/)
+    * 🔥 UPDATE 2024.05.16: We support score calibration for Cnceleb and achieve better EER.
     * 🔥 UPDATE 2022.10.31: 221-layer ResNet achieves **5.655%/0.330**  EER/minDCF
     * 🔥 UPDATE 2022.07.12: We migrate the winner system of CNSRC 2022 [report](https://aishell-cnsrc.oss-cn-hangzhou.aliyuncs.com/T082.pdf) [slides](https://aishell-cnsrc.oss-cn-hangzhou.aliyuncs.com/T082-ZhengyangChen.pdf)
       - EER/minDCF reduction from 8.426%/0.487 to **6.492%/0.354** after large margin fine-tuning and AS-Norm
 * [NIST SRE16](https://github.com/wenet-e2e/wespeaker/tree/master/examples/sre/v2): Speaker Verification recipe for the [2016 NIST Speaker Recognition Evaluation Plan](https://www.nist.gov/itl/iad/mig/speaker-recognition-evaluation-2016). Similar recipe can be found in [Kaldi](https://github.com/kaldi-asr/kaldi/tree/master/egs/sre16).
    * 🔥 UPDATE 2023.07.14: We support NIST SRE16 recipe. After PLDA adaptation, we achieved 6.608%, 10.01%, and 2.974% EER on trial Pooled, Tagalog, and Cantonese, respectively.
 * [VoxConverse](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxconverse): Diarization recipe on the [VoxConverse dataset](https://www.robots.ox.ac.uk/~vgg/data/voxconverse/)
-
-## Support List:
-
-* Model (SOTA Models)
-    - [x] [Standard X-vector](http://www.danielpovey.com/files/2017_interspeech_embeddings.pdf)
-    - [x] [ResNet](https://arxiv.org/pdf/1512.03385.pdf)
-    - [x] [ECAPA_TDNN](https://arxiv.org/pdf/2005.07143.pdf)
-    - [x] [RepVGG](https://arxiv.org/pdf/2101.03697.pdf)
-    - [x] [CAM++](https://arxiv.org/pdf/2303.00332.pdf)
-* Pooling Functions
-    - [x] TAP(mean) / TSDP(std) / TSTP(mean+std)
-        - Comparison of mean/std pooling can be found in [shuai_iscslp](https://x-lance.sjtu.edu.cn/en/papers/2021/iscslp21_shuai_1_.pdf), [anna_arxiv](https://arxiv.org/pdf/2203.10300.pdf)
-    - [x] Attentive Statistics Pooling (ASTP)
-        - Mainly for ECAPA_TDNN
-    - [x] Multi-Query and Multi-Head Attentive Statistics Pooling (MQMHASTP)
-        - Details can be found in [MQMHASTP](https://arxiv.org/pdf/2110.05042.pdf)
-* Criteria
-    - [x] Softmax
-    - [x] [Sphere (A-Softmax)](https://www.researchgate.net/publication/327389164)
-    - [x] [Add_Margin (AM-Softmax)](https://arxiv.org/pdf/1801.05599.pdf)
-    - [x] [Arc_Margin (AAM-Softmax)](https://arxiv.org/pdf/1801.07698v1.pdf)
-    - [x] [Arc_Margin+Inter-topk+Sub-center](https://arxiv.org/pdf/2110.05042.pdf)
-    - [x] [SphereFace2](https://ieeexplore.ieee.org/abstract/document/10094954)
-* Scoring
-    - [x] Cosine
-    - [x] PLDA
-    - [x] Score Normalization (AS-Norm)
-* Metric
-    - [x] EER
-    - [x] minDCF
-* Online Augmentation
-    - [x] Noise && RIR
-    - [x] Speed Perturb
-    - [x] SpecAug
-* Training Strategy
-    - [x] Well-designed Learning Rate and Margin Schedulers
-    - [x] Large Margin Fine-tuning
-    - [x] Automatic Mixed Precision (AMP) Training
-* Runtime
-    - [x] Python Binding
-    - [x] Triton Inference Server on verification && diarization in GPU deployment
-    - [x] C++ Onnxruntime
-* Self-Supervised Learning (SSL)
-    - [x] [DINO](https://openaccess.thecvf.com/content/ICCV2021/papers/Caron_Emerging_Properties_in_Self-Supervised_Vision_Transformers_ICCV_2021_paper.pdf)
-    - [x] [MoCo](https://openaccess.thecvf.com/content_CVPR_2020/papers/He_Momentum_Contrast_for_Unsupervised_Visual_Representation_Learning_CVPR_2020_paper.pdf)
-    - [x] [SimCLR](http://proceedings.mlr.press/v119/chen20j/chen20j.pdf)
-* Literature
-    - [x] [Awesome Speaker Papers](docs/speaker_recognition_papers.md)
 
 ## Discussion
 
@@ -116,11 +102,23 @@ We also created a WeChat group for better discussion and quicker response. Pleas
 ## Citations
 If you find wespeaker useful, please cite it as
 ```bibtex
-@article{wang2022wespeaker,
-  title={Wespeaker: A Research and Production oriented Speaker Embedding Learning Toolkit},
+@article{wang2024advancing,
+  title={Advancing speaker embedding learning: Wespeaker toolkit for research and production},
+  author={Wang, Shuai and Chen, Zhengyang and Han, Bing and Wang, Hongji and Liang, Chengdong and Zhang, Binbin and Xiang, Xu and Ding, Wen and Rohdin, Johan and Silnova, Anna and others},
+  journal={Speech Communication},
+  volume={162},
+  pages={103104},
+  year={2024},
+  publisher={Elsevier}
+}
+
+@inproceedings{wang2023wespeaker,
+  title={Wespeaker: A research and production oriented speaker embedding learning toolkit},
   author={Wang, Hongji and Liang, Chengdong and Wang, Shuai and Chen, Zhengyang and Zhang, Binbin and Xiang, Xu and Deng, Yanlei and Qian, Yanmin},
-  journal={arXiv preprint arXiv:2210.17016},
-  year={2022}
+  booktitle={IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+  pages={1--5},
+  year={2023},
+  organization={IEEE}
 }
 ```
 ## Looking for contributors

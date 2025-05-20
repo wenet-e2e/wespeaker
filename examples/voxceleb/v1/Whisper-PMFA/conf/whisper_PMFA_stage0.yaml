@@ -1,0 +1,78 @@
+### train configuraton
+
+exp_dir: exp/Whisper_PMFA_large_v2_voxceleb1_mel_5s
+gpus: "[0,1]"
+num_avg: 1
+enable_amp: False # whether enable automatic mixed precision training
+
+seed: 42
+num_epochs: 4
+save_epoch_interval: 1 # save model every 5 epochs
+log_batch_interval: 100 # log every 100 batchs
+
+dataloader_args:
+  batch_size: 70
+  num_workers: 12
+  pin_memory: False
+  prefetch_factor: 8
+  drop_last: True
+
+dataset_args:
+  shuffle: True
+  shuffle_args:
+    shuffle_size: 2500
+  resample_rate: 16000
+  speed_perturb: True
+  num_frms: 500
+  aug_prob: 0.6 # prob to add reverb & noise aug per sample
+  frontend: whisper_encoder
+  whisper_encoder_args:
+    frozen: True
+    n_mels: 80
+    num_blocks: 24
+    output_size: 1280
+    n_head: 20
+    layer_st: 16
+    layer_ed: 23
+    model_path: whisper_hub/large-v2.pt
+  spec_aug: False
+  spec_aug_args:
+    num_t_mask: 1
+    num_f_mask: 1
+    max_t: 10
+    max_f: 8
+    prob: 0.6
+
+model: Whisper_PMFA_large_v2
+model_init: null
+model_args:
+  embed_dim: 192
+projection_args:
+  project_type: "arc_margin" # add_margin, arc_margin, sphere, softmax
+  scale: 32.0
+  easy_margin: False
+
+margin_scheduler: MarginScheduler
+margin_update:
+  initial_margin: 0.2
+  final_margin: 0.2
+  increase_start_epoch: 0
+  fix_start_epoch: 4
+  update_margin: True
+  increase_type: "exp" # exp, linear
+
+loss: CrossEntropyLoss
+loss_args: {}
+
+optimizer: SGD
+optimizer_args:
+  momentum: 0.9
+  nesterov: True
+  weight_decay: 0.0001
+
+scheduler: ExponentialDecrease
+scheduler_args:
+  initial_lr: 0.0025
+  final_lr: 0.00113
+  warm_up_epoch: 0
+  warm_from_zero: False

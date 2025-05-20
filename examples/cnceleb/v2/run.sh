@@ -3,11 +3,19 @@
 # Copyright 2022 Hongji Wang (jijijiang77@gmail.com)
 #           2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
 #           2022 Zhengyang Chen (chenzhengyang117@gmail.com)
+#           2024 Bing Han (hanbing97@sjtu.edu.cn)
 
 . ./path.sh || exit 1
 
+# multi-node + multi-gpus:
+#   bash run.sh --stage 3 --stop-stage 3 --HOST_NODE_ADDR "xxx.xxx.xxx.xxx:port" --num_nodes num_node
+
 stage=-1
 stop_stage=-1
+
+HOST_NODE_ADDR="localhost:29400"
+num_nodes=1
+job_id=2024
 
 data=data
 data_type="shard"  # shard/raw
@@ -56,7 +64,9 @@ fi
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   echo "Start training ..."
   num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
-  torchrun --standalone --nnodes=1 --nproc_per_node=$num_gpus \
+  echo "$0: num_nodes is $num_nodes, proc_per_node is $num_gpus"
+  torchrun --nnodes=$num_nodes --nproc_per_node=$num_gpus \
+           --rdzv_id=$job_id --rdzv_backend="c10d" --rdzv_endpoint=$HOST_NODE_ADDR \
     wespeaker/bin/train.py --config $config \
       --exp_dir ${exp_dir} \
       --gpus $gpus \
@@ -114,7 +124,25 @@ if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
     --trials "$trials"
 fi
 
+# ================== Score Calibration ==================
+# It shoule be noted that the score calibration is optio-
+# nal. For CN-Celeb, it will improve the EER but degrade
+# minDCF.
+
 if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
+  echo "Score calibration ..."
+  local/score_calibration.sh \
+    --stage 1 --stop-stage 5 \
+    --score_norm_method $score_norm_method \
+    --calibration_trial "cn_dev_cali.kaldi" \
+    --cohort_set cnceleb_train \
+    --top_n $top_n \
+    --exp_dir $exp_dir \
+    --data ${data} \
+    --trials "$trials"
+fi
+
+if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
   echo "Export the best model ..."
   python wespeaker/bin/export_jit.py \
     --config $exp_dir/config.yaml \
@@ -130,13 +158,13 @@ fi
 # proces will take longer segment as input and will take
 # up more gpu memory.
 
-if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
+if [ ${stage} -le 9 ] && [ ${stop_stage} -ge 9 ]; then
   echo "Large margin fine-tuning ..."
   lm_exp_dir=${exp_dir}-LM
   mkdir -p ${lm_exp_dir}/models
   # Use the pre-trained average model to initialize the LM training
   cp ${exp_dir}/models/avg_model.pt ${lm_exp_dir}/models/model_0.pt
-  bash run.sh --stage 3 --stop_stage 7 \
+  bash run.sh --stage 3 --stop_stage 8 \
       --data ${data} \
       --data_type ${data_type} \
       --config ${lm_config} \

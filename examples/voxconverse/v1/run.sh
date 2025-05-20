@@ -16,9 +16,9 @@
 
 stage=-1
 stop_stage=-1
-sad_type="system"
+sad_type="oracle"
 
-. ../../../tools/parse_options.sh
+. tools/parse_options.sh
 
 # Prerequisite
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
@@ -29,8 +29,8 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     unzip -o external_tools/SCTK-v2.4.12.zip -d external_tools
 
     # [2] Download voice activity detection model pretrained by Silero Team
-    wget -c https://github.com/snakers4/silero-vad/archive/refs/tags/v3.1.zip -O external_tools/silero-vad-v3.1.zip
-    unzip -o external_tools/silero-vad-v3.1.zip -d external_tools
+    #wget -c https://github.com/snakers4/silero-vad/archive/refs/tags/v3.1.zip -O external_tools/silero-vad-v3.1.zip
+    #unzip -o external_tools/silero-vad-v3.1.zip -d external_tools
 
     # [3] Download ResNet34 speaker model pretrained by WeSpeaker Team
     mkdir -p pretrained_models
@@ -70,7 +70,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
     if [[ "x${sad_type}" == "xoracle" ]]; then
         # Oracle SAD: handling overlapping or too short regions in ground truth RTTM
         while read -r utt wav_path; do
-            python3 sad/make_oracle_sad.py \
+            python3 wespeaker/diar/make_oracle_sad.py \
                     --rttm data/voxconverse-master/dev/${utt}.rttm \
                     --min-duration $min_duration
         done < data/dev/wav.scp > data/dev/oracle_sad
@@ -78,8 +78,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
 
     if [[ "x${sad_type}" == "xsystem" ]]; then
        # System SAD: applying 'silero' VAD
-       python3 sad/make_system_sad.py \
-               --repo-path external_tools/silero-vad-3.1 \
+       python3 wespeaker/diar/make_system_sad.py \
                --scp data/dev/wav.scp \
                --min-duration $min_duration > data/dev/system_sad
     fi
@@ -99,7 +98,7 @@ fi
 
 # Convert labels to RTTMs
 if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
-    python3 diar/make_rttm.py \
+    python3 wespeaker/diar/make_rttm.py \
             --labels data/dev/${sad_type}_sad_labels \
             --channel 1 > data/dev/${sad_type}_sad_rttm
 fi

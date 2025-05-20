@@ -26,6 +26,7 @@ from torch.utils.data import DataLoader
 
 import wespeaker.utils.schedulers as schedulers
 from wespeaker.dataset.dataset import Dataset
+from wespeaker.frontend import *
 from wespeaker.models.projections import get_projection
 from wespeaker.models.speaker_model import get_speaker_model
 from wespeaker.utils.checkpoint import load_checkpoint, save_checkpoint
@@ -47,9 +48,10 @@ def train(config='conf/config.yaml', **kwargs):
     configs = parse_config_or_kwargs(config, **kwargs)
     checkpoint = configs.get('checkpoint', None)
     # dist configs
-    rank = int(os.environ['RANK'])
+    local_rank = int(os.environ.get('LOCAL_RANK', 0))
+    rank = int(os.environ.get('RANK', 0))
     world_size = int(os.environ['WORLD_SIZE'])
-    gpu = int(configs['gpus'][rank])
+    gpu = int(configs['gpus'][local_rank])
     torch.cuda.set_device(gpu)
     dist.init_process_group(backend='nccl')
 
@@ -58,8 +60,9 @@ def train(config='conf/config.yaml', **kwargs):
         try:
             os.makedirs(model_dir)
         except IOError:
-            print(model_dir + " already exists !!!")
+            print("[warning] " + model_dir + " already exists !!!")
             if checkpoint is None:
+                print("[error] checkpoint is null !")
                 exit(1)
     dist.barrier(device_ids=[gpu])  # let the rank 0 mkdir first
 
@@ -105,19 +108,31 @@ def train(config='conf/config.yaml', **kwargs):
         logger.info("train dataloaders created")
         logger.info('epoch iteration number: {}'.format(epoch_iter))
 
-    # model
+    # model: frontend (optional) => speaker model => projection layer
     logger.info("<== Model ==>")
-    model = get_speaker_model(configs['model'])(**configs['model_args'])
-    num_params = sum(param.numel() for param in model.parameters())
+    frontend_type = configs['dataset_args'].get('frontend', 'fbank')
+    if frontend_type != "fbank":
+        frontend_args = frontend_type + "_args"
+        frontend = frontend_class_dict[frontend_type](
+            **configs['dataset_args'][frontend_args],
+            sample_rate=configs['dataset_args']['resample_rate'])
+        configs['model_args']['feat_dim'] = frontend.output_size()
+        model = get_speaker_model(configs['model'])(**configs['model_args'])
+        model.add_module("frontend", frontend)
+    else:
+        model = get_speaker_model(configs['model'])(**configs['model_args'])
     if rank == 0:
+        num_params = sum(param.numel() for param in model.parameters())
         logger.info('speaker_model size: {}'.format(num_params))
+    # For model_init, only frontend and speaker model are needed !!!
     if configs['model_init'] is not None:
         logger.info('Load initial model from {}'.format(configs['model_init']))
         load_checkpoint(model, configs['model_init'])
     elif checkpoint is None:
         logger.info('Train model from scratch ...')
     # projection layer
-    configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
+    configs['projection_args']['embed_dim'] = configs['model_args'][
+        'embed_dim']
     configs['projection_args']['num_class'] = len(spk2id_dict)
     configs['projection_args']['do_lm'] = configs.get('do_lm', False)
     if configs['data_type'] != 'feat' and configs['dataset_args'][
@@ -125,7 +140,8 @@ def train(config='conf/config.yaml', **kwargs):
         # diff speed is regarded as diff spk
         configs['projection_args']['num_class'] *= 3
         if configs.get('do_lm', False):
-            logger.info('No speed perturb while doing large margin fine-tuning')
+            logger.info(
+                'No speed perturb while doing large margin fine-tuning')
             configs['dataset_args']['speed_perturb'] = False
     projection = get_projection(configs['projection_args'])
     model.add_module("projection", projection)
@@ -136,10 +152,13 @@ def train(config='conf/config.yaml', **kwargs):
         # !!!IMPORTANT!!!
         # Try to export the model by script, if fails, we should refine
         # the code to satisfy the script export requirements
-        script_model = torch.jit.script(model)
-        script_model.save(os.path.join(model_dir, 'init.zip'))
+        if frontend_type == 'fbank':
+            script_model = torch.jit.script(model)
+            script_model.save(os.path.join(model_dir, 'init.zip'))
 
     # If specify checkpoint, load some info from checkpoint.
+    # For checkpoint, frontend, speaker model, and projection layer
+    # are all needed !!!
     if checkpoint is not None:
         load_checkpoint(model, checkpoint)
         start_epoch = int(re.findall(r"(?<=model_)\d*(?=.pt)",
@@ -218,12 +237,11 @@ def train(config='conf/config.yaml', **kwargs):
                   epoch,
                   logger,
                   scaler,
-                  enable_amp=configs['enable_amp'],
-                  log_batch_interval=configs['log_batch_interval'],
-                  device=device)
+                  device=device,
+                  configs=configs)
 
         if rank == 0:
-            if epoch % configs['save_epoch_interval'] == 0 or epoch >= configs[
+            if epoch % configs['save_epoch_interval'] == 0 or epoch > configs[
                     'num_epochs'] - configs['num_avg']:
                 save_checkpoint(
                     model, os.path.join(model_dir,

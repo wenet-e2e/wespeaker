@@ -57,8 +57,12 @@ class TritonPythonModel:
         self.output0_dtype = pb_utils.triton_string_to_numpy(
             output0_config['data_type'])
 
-    def cluster_gpu(self, embeddings, p=.01, num_spks=None,
-                    min_num_spks=1, max_num_spks=20):
+    def cluster_gpu(self,
+                    embeddings,
+                    p=.01,
+                    num_spks=None,
+                    min_num_spks=1,
+                    max_num_spks=20):
         # Define utility functions
         def cosine_similarity(M):
             M = M / cp.linalg.norm(M, axis=1, keepdims=True)

@@ -1,6 +1,7 @@
 # Copyright (c) 2021 Zhengyang Chen (chenzhengyang117@gmail.com)
 #               2022 Hongji Wang (jijijiang77@gmail.com)
 #               2023 Bing Han (hanbing97@sjtu.edu.cn)
+#               2024 Zhengyang Chen (chenzhengyang117@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +14,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 ''' This implementation is adapted from github repo:
     https://github.com/lawlict/ECAPA-TDNN.
 '''
@@ -22,16 +22,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import wespeaker.models.pooling_layers as pooling_layers
-
-
-
 ''' Res2Conv1d + BatchNorm1d + ReLU
 '''
+
 
 class Res2Conv1dReluBn(nn.Module):
     """
     in_channels == out_channels == channels
     """
+
     def __init__(self,
                  channels,
                  kernel_size=1,
@@ -79,11 +78,12 @@ class Res2Conv1dReluBn(nn.Module):
         return out
 
 
-
 ''' Conv1d + BatchNorm1d + ReLU
 '''
 
+
 class Conv1dReluBn(nn.Module):
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -106,11 +106,12 @@ class Conv1dReluBn(nn.Module):
         return self.bn(F.relu(self.conv(x)))
 
 
-
 ''' The SE connection of 1D case.
 '''
 
+
 class SE_Connect(nn.Module):
+
     def __init__(self, channels, se_bottleneck_dim=128):
         super().__init__()
         self.linear1 = nn.Linear(channels, se_bottleneck_dim)
@@ -125,11 +126,12 @@ class SE_Connect(nn.Module):
         return out
 
 
-
 ''' SE-Res2Block of the ECAPA-TDNN architecture.
 '''
 
+
 class SE_Res2Block(nn.Module):
+
     def __init__(self, channels, kernel_size, stride, padding, dilation,
                  scale):
         super().__init__()
@@ -149,15 +151,14 @@ class SE_Res2Block(nn.Module):
                          channels,
                          kernel_size=1,
                          stride=1,
-                         padding=0),
-            SE_Connect(channels))
+                         padding=0), SE_Connect(channels))
 
     def forward(self, x):
         return x + self.se_res2block(x)
 
 
-
 class ECAPA_TDNN(nn.Module):
+
     def __init__(self,
                  channels=512,
                  feat_dim=80,
@@ -204,7 +205,8 @@ class ECAPA_TDNN(nn.Module):
         else:
             self.bn2 = nn.Identity()
 
-    def forward(self, x):
+    def _get_frame_level_feat(self, x):
+        # for inner class usage
         x = x.permute(0, 2, 1)  # (B,T,F) -> (B,F,T)
 
         out1 = self.layer1(x)
@@ -213,12 +215,23 @@ class ECAPA_TDNN(nn.Module):
         out4 = self.layer4(out3)
 
         out = torch.cat([out2, out3, out4], dim=1)
-        out = F.relu(self.conv(out))
+        out = self.conv(out)
+
+        return out, out4
+
+    def get_frame_level_feat(self, x):
+        # for outer interface
+        out = self._get_frame_level_feat(x)[0].permute(0, 2, 1)
+        return out  # (B, T, D)
+
+    def forward(self, x):
+        out, out4 = self._get_frame_level_feat(x)
+        out = F.relu(out)
         out = self.bn(self.pool(out))
         out = self.linear(out)
         if self.emb_bn:
             out = self.bn2(out)
-        return out
+        return out4, out
 
 
 def ECAPA_TDNN_c1024(feat_dim, embed_dim, pooling_func='ASTP', emb_bn=False):
@@ -229,7 +242,10 @@ def ECAPA_TDNN_c1024(feat_dim, embed_dim, pooling_func='ASTP', emb_bn=False):
                       emb_bn=emb_bn)
 
 
-def ECAPA_TDNN_GLOB_c1024(feat_dim, embed_dim, pooling_func='ASTP', emb_bn=False):
+def ECAPA_TDNN_GLOB_c1024(feat_dim,
+                          embed_dim,
+                          pooling_func='ASTP',
+                          emb_bn=False):
     return ECAPA_TDNN(channels=1024,
                       feat_dim=feat_dim,
                       embed_dim=embed_dim,
@@ -246,7 +262,10 @@ def ECAPA_TDNN_c512(feat_dim, embed_dim, pooling_func='ASTP', emb_bn=False):
                       emb_bn=emb_bn)
 
 
-def ECAPA_TDNN_GLOB_c512(feat_dim, embed_dim, pooling_func='ASTP', emb_bn=False):
+def ECAPA_TDNN_GLOB_c512(feat_dim,
+                         embed_dim,
+                         pooling_func='ASTP',
+                         emb_bn=False):
     return ECAPA_TDNN(channels=512,
                       feat_dim=feat_dim,
                       embed_dim=embed_dim,
@@ -256,13 +275,18 @@ def ECAPA_TDNN_GLOB_c512(feat_dim, embed_dim, pooling_func='ASTP', emb_bn=False)
 
 
 if __name__ == '__main__':
-    x = torch.zeros(10, 200, 80)
+    x = torch.zeros(1, 200, 80)
     model = ECAPA_TDNN_GLOB_c512(feat_dim=80,
-                                 embed_dim=192,
-                                 pooling_func='MQMHASTP')
+                                 embed_dim=256,
+                                 pooling_func='ASTP')
     model.eval()
     out = model(x)
-    print(out.shape)
+    print(out[-1].shape)
 
     num_params = sum(param.numel() for param in model.parameters())
     print("{} M".format(num_params / 1e6))
+
+    # from thop import profile
+    # x_np = torch.randn(1, 200, 80)
+    # flops, params = profile(model, inputs=(x_np, ))
+    # print("FLOPs: {} G, Params: {} M".format(flops / 1e9, params / 1e6))

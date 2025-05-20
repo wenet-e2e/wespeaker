@@ -22,18 +22,29 @@ if __name__ == '__main__':
                         type=str,
                         default='2cov',
                         help='which type of plda to use, 2cov|kaldi')
-    parser.add_argument('--enroll_scp_path', type=str, help='enroll embeddings')
-    parser.add_argument('--indomain_scp_path', type=str,
+    parser.add_argument('--enroll_scp_path',
+                        type=str,
+                        help='enroll embeddings')
+    parser.add_argument('--indomain_scp_path',
+                        type=str,
                         help='embeddings to compute meanvec')
     parser.add_argument('--test_scp_path', type=str, help='test embeddings')
-    parser.add_argument('--utt2spk', type=str,
+    parser.add_argument('--utt2spk',
+                        type=str,
                         help='utt2spk for the enroll speakers')
     parser.add_argument('--model_path', type=str, help='pretrained plda path')
-    parser.add_argument('--score_path', type=str, help='score file to write to')
+    parser.add_argument('--score_path',
+                        type=str,
+                        help='score file to write to')
     parser.add_argument('--trial', type=str, help='trial file to score upon')
+    parser.add_argument('--multisession_avg', default=False, action="store_true",
+                        help='Whether to score multisession by average instead '
+                        'of by-the-book. Default False.')
+
     args = parser.parse_args()
 
     kaldi_format = True if args.type == 'kaldi' else False
     plda = TwoCovPLDA.load_model(args.model_path, kaldi_format)
     plda.eval_sv(args.enroll_scp_path, args.utt2spk, args.test_scp_path,
-                 args.trial, args.score_path, args.indomain_scp_path)
+                 args.trial, args.score_path, args.multisession_avg,
+                 args.indomain_scp_path)

@@ -1,5 +1,5 @@
 # Copyright (c) 2022 Hongji Wang (jijijiang77@gmail.com)
-#
+#               2024 Shuai Wang (wsstriving@gmail.com)
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -17,6 +17,15 @@ import wespeaker.models.ecapa_tdnn as ecapa_tdnn
 import wespeaker.models.resnet as resnet
 import wespeaker.models.repvgg as repvgg
 import wespeaker.models.campplus as campplus
+import wespeaker.models.eres2net as eres2net
+import wespeaker.models.gemini_dfresnet as gemini
+import wespeaker.models.res2net as res2net
+# import wespeaker.models.whisper_PMFA as whisper_PMFA
+import wespeaker.models.redimnet as redimnet
+import wespeaker.models.samresnet as samresnet
+import wespeaker.models.xi_vector as xi_vector
+
+
 
 import wespeaker.models.Transformer_WavLM as Transformer_WavLM
 
@@ -33,6 +42,20 @@ def get_speaker_model(model_name: str):
         return getattr(campplus, model_name)
     elif model_name.startswith("WavLM_Base_MHFA"):
         return getattr(Transformer_WavLM, model_name)
+    elif model_name.startswith("ERes2Net"):
+        return getattr(eres2net, model_name)
+    elif model_name.startswith("Res2Net"):
+        return getattr(res2net, model_name)
+    elif model_name.startswith("Gemini"):
+        return getattr(gemini, model_name)
+    #elif model_name.startswith("whisper_PMFA"):
+    #    return getattr(whisper_PMFA, model_name)
+    elif model_name.startswith("ReDimNet"):
+        return getattr(redimnet, model_name)
+    elif model_name.startswith("SimAM_ResNet"):
+        return getattr(samresnet, model_name)
+    elif model_name.startswith("XI_VEC"):
+        return getattr(xi_vector, model_name)
     else:  # model_name error !!!
         print(model_name + " not found !!!")
         exit(1)

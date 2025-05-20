@@ -19,7 +19,9 @@ import kaldifeat
 from typing import List
 import json
 
+
 class Fbank(torch.nn.Module):
+
     def __init__(self, opts):
         super(Fbank, self).__init__()
         self.fbank = kaldifeat.Fbank(opts)
@@ -124,7 +126,9 @@ class TritonPythonModel:
         for b in batch_count:
             batch_speech = features[idx:idx + b]
             idx += b
-            out0 = pb_utils.Tensor.from_dlpack("speech", to_dlpack(batch_speech))
-            inference_response = pb_utils.InferenceResponse(output_tensors=[out0])
+            out0 = pb_utils.Tensor.from_dlpack("speech",
+                                               to_dlpack(batch_speech))
+            inference_response = pb_utils.InferenceResponse(
+                output_tensors=[out0])
             responses.append(inference_response)
         return responses

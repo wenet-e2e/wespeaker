@@ -35,7 +35,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.x
+          python-version: 3.9
           architecture: x64
       - name: Fetch Wenet
         uses: actions/checkout@v1
@@ -80,7 +80,7 @@ jobs:
       - name: Run cpplint
         run: |
           set -eux
-          pip install cpplint
+          pip install cpplint==1.6.1
           cpplint --version
           cpplint --recursive .
           if [ $? != 0 ]; then exit 1; fi

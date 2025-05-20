@@ -55,17 +55,12 @@ def compute_vector_mean(spk2utt, xvector_scp, spk_xvector_ark):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='compute the mean of vector')
-    parser.add_argument('--spk2utt',
-                        type=str,
-                        default='',
-                        help='spk2utt file')
+    parser.add_argument('--spk2utt', type=str, default='', help='spk2utt file')
     parser.add_argument('--xvector_scp',
                         type=str,
                         default='',
                         help='xvector file (kaldi format)')
-    parser.add_argument('--spk_xvector_ark',
-                        type=str,
-                        default='')
+    parser.add_argument('--spk_xvector_ark', type=str, default='')
     args = parser.parse_args()
 
     compute_vector_mean(args.spk2utt, args.xvector_scp, args.spk_xvector_ark)

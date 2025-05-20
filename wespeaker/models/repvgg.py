@@ -1,5 +1,6 @@
 # Copyright (c) 2021 xmuspeech (Author: Leo)
 #               2022 Chengdong Liang (liangchengdong@mail.nwpu.edu.cn)
+#               2024 Zhengyang Chen (chenzhengyang117@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,8 +33,8 @@ import copy
 import wespeaker.models.pooling_layers as pooling_layers
 
 optional_groupwise_layers = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26]
-g2_map = {l: 2 for l in optional_groupwise_layers}
-g4_map = {l: 4 for l in optional_groupwise_layers}
+g2_map = dict.fromkeys(optional_groupwise_layers, 2)
+g4_map = dict.fromkeys(optional_groupwise_layers, 4)
 
 
 class SEBlock_2D(torch.nn.Module):
@@ -209,14 +210,12 @@ class RepVGGBlock(nn.Module):
         l2_loss_eq_kernel = (eq_kernel**2 / (t3**2 + t1**2)).sum()
         return l2_loss_eq_kernel + l2_loss_circle
 
-
-#   This func derives the equivalent kernel and bias in a DIFFERENTIABLE way.
-#   You can get the equivalent kernel and bias
-#   at any time and do whatever you want,
-#   for example, apply some penalties or constraints during training,
-#   just like you do to the other models.
-#   May be useful for quantization or pruning.
-
+    #   This func derives the equivalent kernel and bias in a DIFFERENTIABLE way
+    #   You can get the equivalent kernel and bias
+    #   at any time and do whatever you want,
+    #   for example, apply some penalties or constraints during training,
+    #   just like you do to the other models.
+    #   May be useful for quantization or pruning.
 
     def get_equivalent_kernel_bias(self):
         kernel3x3, bias3x3 = self._fuse_bn_tensor(self.rbr_dense)
@@ -560,7 +559,8 @@ class RepVGG(nn.Module):
     def get_output_planes(self):
         return self.output_planes
 
-    def forward(self, x):
+    def _get_frame_level_feat(self, x):
+        # for inner class usage
         x = x.permute(0, 2, 1)  # (B,T,F) -> (B,F,T)
         x = x.unsqueeze_(1)
         x = self.stage0(x)
@@ -569,6 +569,18 @@ class RepVGG(nn.Module):
         x = self.stage3(x)
         x = self.stage4(x)
 
+        return x
+
+    def get_frame_level_feat(self, x):
+        # for outer interface
+        out = self._get_frame_level_feat(x)
+        out = out.transpose(1, 3)
+        out = torch.flatten(out, 2, -1)
+
+        return out  # (B, T, D)
+
+    def forward(self, x):
+        x = self._get_frame_level_feat(x)
         stats = self.pool(x)
         embed = self.seg(stats)
 
@@ -896,13 +908,14 @@ def REPVGG_D2SE(feat_dim,
 
 
 if __name__ == '__main__':
+    x = torch.zeros(1, 200, 80)
     model = REPVGG_TINY_A0(feat_dim=80,
                            embed_dim=256,
-                           pooling_func='TAP',
-                           deploy=False,
+                           pooling_func='TSTP',
+                           deploy=True,
                            use_se=False)
     model.eval()
-    y = model(torch.randn(10, 200, 80))
+    y = model(x)
     print(y.size())
 
     num_params = sum(p.numel() for p in model.parameters())

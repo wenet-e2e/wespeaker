@@ -1,6 +1,7 @@
 #!/bin/bash
 # Copyright (c) 2022-2023 Xu Xiang
 #               2022 Zhengyang Chen (chenzhengyang117@gmail.com)
+#               2024 Hongji Wang (jijijiang77@gmail.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,8 +19,9 @@
 
 stage=-1
 stop_stage=-1
-sad_type="system"
-partition="test"
+sad_type="oracle"       # oracle/system
+partition="dev"         # dev/test
+cluster_type="spectral" # spectral/umap
 
 # do cmn on the sub-segment or on the vad segment
 subseg_cmn=true
@@ -36,18 +38,14 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     wget -c https://github.com/usnistgov/SCTK/archive/refs/tags/v2.4.12.zip -O external_tools/SCTK-v2.4.12.zip
     unzip -o external_tools/SCTK-v2.4.12.zip -d external_tools
 
-    # [2] Download voice activity detection model pretrained by Silero Team
-    wget -c https://github.com/snakers4/silero-vad/archive/refs/tags/v3.1.zip -O external_tools/silero-vad-v3.1.zip
-    unzip -o external_tools/silero-vad-v3.1.zip -d external_tools
-
-    # [3] Download ResNet34 speaker model pretrained by WeSpeaker Team
+    # [2] Download ResNet34 speaker model pretrained by WeSpeaker Team
     mkdir -p pretrained_models
 
     wget -c https://wespeaker-1256283475.cos.ap-shanghai.myqcloud.com/models/voxceleb/voxceleb_resnet34_LM.onnx -O pretrained_models/voxceleb_resnet34_LM.onnx
 fi
 
 
-# Download VoxConverse dev audios and the corresponding annotations
+# Download VoxConverse dev/test audios and the corresponding annotations
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     mkdir -p data
 
@@ -56,11 +54,15 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     unzip -o data/voxconverse_master.zip -d data
 
     # Download annotations from VoxSRC-23 validation toolkit (looks like version 0.0.2)
-    cd data && git clone https://github.com/JaesungHuh/VoxSRC2023.git --recursive && cd -
+    # cd data && git clone https://github.com/JaesungHuh/VoxSRC2023.git --recursive && cd -
 
     # Download dev audios
     mkdir -p data/dev
-    wget -c https://mm.kaist.ac.kr/datasets/voxconverse/data/voxconverse_dev_wav.zip -O data/voxconverse_dev_wav.zip
+
+    #wget --no-check-certificate -c https://mm.kaist.ac.kr/datasets/voxconverse/data/voxconverse_dev_wav.zip -O data/voxconverse_dev_wav.zip
+    # The above url may not be reachable, you can try the link below.
+    # This url is from https://github.com/joonson/voxconverse/blob/master/README.md
+    wget --no-check-certificate -c https://www.robots.ox.ac.uk/~vgg/data/voxconverse/data/voxconverse_dev_wav.zip -O data/voxconverse_dev_wav.zip
     unzip -o data/voxconverse_dev_wav.zip -d data/dev
 
     # Create wav.scp for dev audios
@@ -68,7 +70,11 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
 
     # Test audios
     mkdir -p data/test
-    wget -c https://mm.kaist.ac.kr/datasets/voxconverse/data/voxconverse_test_wav.zip -O data/voxconverse_test_wav.zip
+
+    #wget --no-check-certificate -c https://mm.kaist.ac.kr/datasets/voxconverse/data/voxconverse_test_wav.zip -O data/voxconverse_test_wav.zip
+    # The above url may not be reachable, you can try the link below.
+    # This url is from https://github.com/joonson/voxconverse/blob/master/README.md
+    wget  --no-check-certificate -c https://www.robots.ox.ac.uk/~vgg/data/voxconverse/data/voxconverse_test_wav.zip -O data/voxconverse_test_wav.zip
     unzip -o data/voxconverse_test_wav.zip -d data/test
 
     # Create wav.scp for test audios
@@ -84,7 +90,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
     if [[ "x${sad_type}" == "xoracle" ]]; then
         # Oracle SAD: handling overlapping or too short regions in ground truth RTTM
         while read -r utt wav_path; do
-            python3 sad/make_oracle_sad.py \
+            python3 wespeaker/diar/make_oracle_sad.py \
                     --rttm data/voxconverse-master/${partition}/${utt}.rttm \
                     --min-duration $min_duration
         done < data/${partition}/wav.scp > data/${partition}/oracle_sad
@@ -92,8 +98,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
 
     if [[ "x${sad_type}" == "xsystem" ]]; then
        # System SAD: applying 'silero' VAD
-       python3 sad/make_system_sad.py \
-               --repo-path external_tools/silero-vad-3.1 \
+       python3 wespeaker/diar/make_system_sad.py \
                --scp data/${partition}/wav.scp \
                --min-duration $min_duration > data/${partition}/system_sad
     fi
@@ -107,7 +112,7 @@ if [ ${stage} -le 4 ] && [ ${stop_stage} -ge 4 ]; then
 
     echo "Make Fbank features and store it under exp/${sad_type}_sad_fbank"
     echo "..."
-    bash diar/make_fbank.sh \
+    bash local/make_fbank.sh \
             --scp data/${partition}/wav.scp \
             --segments data/${partition}/${sad_type}_sad \
             --store_dir exp/${partition}_${sad_type}_sad_fbank \
@@ -122,7 +127,7 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
 
     echo "Extract embeddings and store it under exp/${sad_type}_sad_embedding"
     echo "..."
-    bash diar/extract_emb.sh \
+    bash local/extract_emb.sh \
             --scp exp/${partition}_${sad_type}_sad_fbank/fbank.scp \
             --pretrained_model pretrained_models/voxceleb_resnet34_LM.onnx \
             --device cuda \
@@ -136,48 +141,47 @@ if [ ${stage} -le 5 ] && [ ${stop_stage} -ge 5 ]; then
 fi
 
 
-# Applying spectral clustering algorithm
+# Applying spectral or ump+hdbscan clustering algorithm
 if [ ${stage} -le 6 ] && [ ${stop_stage} -ge 6 ]; then
 
-    [ -f "exp/spectral_cluster/${partition}_${sad_type}_sad_labels" ] && rm exp/spectral_cluster/${partition}_${sad_type}_sad_labels
+    [ -f "exp/${cluster_type}_cluster/${partition}_${sad_type}_sad_labels" ] && rm exp/${cluster_type}_cluster/${partition}_${sad_type}_sad_labels
 
-    echo "Doing spectral clustering and store the result in exp/spectral_cluster/${partition}_${sad_type}_sad_labels"
+    echo "Doing ${cluster_type} clustering and store the result in exp/${cluster_type}_cluster/${partition}_${sad_type}_sad_labels"
     echo "..."
-    python3 diar/spectral_clusterer.py \
+    python3 wespeaker/diar/${cluster_type}_clusterer.py \
             --scp exp/${partition}_${sad_type}_sad_embedding/emb.scp \
-            --output exp/spectral_cluster/${partition}_${sad_type}_sad_labels
+            --output exp/${cluster_type}_cluster/${partition}_${sad_type}_sad_labels
 fi
 
 
 # Convert labels to RTTMs
 if [ ${stage} -le 7 ] && [ ${stop_stage} -ge 7 ]; then
-    python3 diar/make_rttm.py \
-            --labels exp/spectral_cluster/${partition}_${sad_type}_sad_labels \
-            --channel 1 > exp/spectral_cluster/${partition}_${sad_type}_sad_rttm
+    python3 wespeaker/diar/make_rttm.py \
+            --labels exp/${cluster_type}_cluster/${partition}_${sad_type}_sad_labels \
+            --channel 1 > exp/${cluster_type}_cluster/${partition}_${sad_type}_sad_rttm
 fi
 
 
 # Evaluate the result
 if [ ${stage} -le 8 ] && [ ${stop_stage} -ge 8 ]; then
-    # ref_dir=data/voxconverse-master/
-    ref_dir=data/VoxSRC2023/voxconverse/
-
+    ref_dir=data/voxconverse-master/
+    #ref_dir=data/VoxSRC2023/voxconverse/
     echo -e "Get the DER results\n..."
     perl external_tools/SCTK-2.4.12/src/md-eval/md-eval.pl \
          -c 0.25 \
          -r <(cat ${ref_dir}/${partition}/*.rttm) \
-         -s exp/spectral_cluster/${partition}_${sad_type}_sad_rttm 2>&1 | tee exp/spectral_cluster/${partition}_${sad_type}_sad_res
+         -s exp/${cluster_type}_cluster/${partition}_${sad_type}_sad_rttm 2>&1 | tee exp/${cluster_type}_cluster/${partition}_${sad_type}_sad_res
 
     if [ ${get_each_file_res} -eq 1 ];then
-        single_file_res_dir=exp/spectral_cluster/${partition}_${sad_type}_single_file_res
+        single_file_res_dir=exp/${cluster_type}_cluster/${partition}_${sad_type}_single_file_res
         mkdir -p $single_file_res_dir
         echo -e "\nGet the DER results for each file and the results will be stored underd ${single_file_res_dir}\n..."
 
-        awk '{print $2}' exp/spectral_cluster/${partition}_${sad_type}_sad_rttm | sort -u  | while read file_name; do
+        awk '{print $2}' exp/${cluster_type}_cluster/${partition}_${sad_type}_sad_rttm | sort -u  | while read file_name; do
             perl external_tools/SCTK-2.4.12/src/md-eval/md-eval.pl \
                  -c 0.25 \
                  -r <(cat ${ref_dir}/${partition}/${file_name}.rttm) \
-                 -s <(grep "${file_name}" exp/spectral_cluster/${partition}_${sad_type}_sad_rttm) > ${single_file_res_dir}/${partition}_${file_name}_res
+                 -s <(grep "${file_name}" exp/${cluster_type}_cluster/${partition}_${sad_type}_sad_rttm) > ${single_file_res_dir}/${partition}_${file_name}_res
         done
         echo "Done!"
     fi

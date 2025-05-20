@@ -17,34 +17,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import argparse
 
 from wespeaker.utils.plda.two_cov_plda import TwoCovPLDA
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--adp_scp', '-ad',
+    parser.add_argument('--adp_scp',
+                        '-ad',
                         type=str,
                         required=True,
                         help='Data for unlabeled adaptation.')
-    parser.add_argument('--across_class_scale', '-as',
+    parser.add_argument('--across_class_scale',
+                        '-as',
                         type=float,
                         help='Scaling factor for across class covariance.',
                         default=0.5)
-    parser.add_argument('--within_class_scale', '-ws',
+    parser.add_argument('--within_class_scale',
+                        '-ws',
                         type=float,
                         help='Scaling factor for withn class covariance.',
                         default=0.5)
-    parser.add_argument('--mdl_org', '-mo',
+    parser.add_argument('--mdl_org',
+                        '-mo',
                         type=str,
                         required=True,
                         help='Original PLDA mdl.')
-    parser.add_argument('--mdl_adp', '-ma',
+    parser.add_argument('--mdl_adp',
+                        '-ma',
                         type=str,
                         required=True,
                         help='Adapted PLDA mdl.')
-    parser.add_argument('--mdl_format', '-mf',
+    parser.add_argument('--mdl_format',
+                        '-mf',
                         type=str,
                         default='wespeaker',
                         help='Format of the model wespeaker/kaldi')

@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <fstream>
-#include <sstream>
-#include <limits>
-#include <vector>
-#include <cmath>
-#include <numeric>
 #include <algorithm>
+#include <cmath>
+#include <fstream>
+#include <limits>
+#include <numeric>
+#include <sstream>
+#include <vector>
 
-#include "utils/utils.h"
 #include "glog/logging.h"
+#include "utils/utils.h"
 
 namespace wespeaker {
 

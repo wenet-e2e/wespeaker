@@ -54,12 +54,11 @@ parser.add_argument(
     "because this script tries to merge utterances from the "
     "same speaker as much as possible, and also needs to produce"
     "an output utt2spk map.")
-parser.add_argument(
-    "utt2dur_in",
-    type=str,
-    metavar="<utt2dur-in>",
-    help="Filename of [input] utterance-to-duration map, with lines like 'utt1 1.23'."
-)
+parser.add_argument("utt2dur_in",
+                    type=str,
+                    metavar="<utt2dur-in>",
+                    help="Filename of [input] utterance-to-duration map, "
+                    "with lines like 'utt1 1.23'.")
 parser.add_argument(
     "utt2utts_out",
     type=str,
@@ -70,9 +69,10 @@ parser.add_argument(
     "utt2spk_out",
     type=str,
     metavar="<utt2spk-out>",
-    help="Filename of [output] utt2spk map, which maps new utterances to original "
-    "speakers.  If utterances were combined across speakers, we map the new "
-    "utterance to the speaker that contributed the most to them.")
+    help="Filename of [output] utt2spk map, which maps new utterances to "
+    "original speakers.  If utterances were combined across speakers, "
+    "we map the new utterance to the speaker that contributed the most to them."
+)
 parser.add_argument(
     "utt2dur_out",
     type=str,

@@ -10,6 +10,10 @@
 stage=-1
 stop_stage=-1
 
+HOST_NODE_ADDR="localhost:29400"
+num_nodes=1
+job_id=2024
+
 data=data
 data_type="shard"  # shard/raw
 
@@ -54,7 +58,9 @@ fi
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
   echo "Start training ..."
   num_gpus=$(echo $gpus | awk -F ',' '{print NF}')
-  torchrun --master_addr=localhost --master_port=16888 --nnodes=1 --nproc_per_node=$num_gpus \
+  echo "$0: num_nodes is $num_nodes, proc_per_node is $num_gpus"
+  torchrun --nnodes=$num_nodes --nproc_per_node=$num_gpus \
+           --rdzv_id=$job_id --rdzv_backend="c10d" --rdzv_endpoint=$HOST_NODE_ADDR \
     wespeaker/ssl/bin/train_contrastive.py --config $config \
       --exp_dir ${exp_dir} \
       --gpus $gpus \

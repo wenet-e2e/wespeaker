@@ -17,17 +17,18 @@
 #define FRONTEND_WAV_H_
 
 #include <assert.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <vector>
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "glog/logging.h"
 #include "gflags/gflags.h"
+#include "glog/logging.h"
 
 DEFINE_int32(pcm_sample_rate, 16000, "pcm data sample rate");
 
@@ -210,7 +211,9 @@ class PcmReader : public AudioReader {
     fseek(fp, 0, SEEK_END);
     int data_size = ftell(fp);
     fseek(fp, 0, SEEK_SET);
-    num_sample_ = data_size / sizeof(int16_t);
+    // If data_size is odd, apply for (data_size + 1) bytes of space.
+    // If data_size is even, apply for data_size bytes of space.
+    num_sample_ = ceil(1.0 * data_size / sizeof(int16_t));
     data_.resize(num_sample_);
     fread(&data_[0], data_size, 1, fp);
     fclose(fp);

@@ -14,14 +14,17 @@
 # limitations under the License.
 
 import torch
+import logging
 
 
 def load_checkpoint(model: torch.nn.Module, path: str):
-    checkpoint = torch.load(path, map_location='cpu', weights_only=False)
-    if "model" in checkpoint:
-        model.load_state_dict(checkpoint["model"], strict=False)
-    else:
-        model.load_state_dict(checkpoint, strict=False)
+    checkpoint = torch.load(path, map_location='cpu')
+    missing_keys, unexpected_keys = model.load_state_dict(checkpoint,
+                                                          strict=False)
+    for key in missing_keys:
+        logging.warning('missing tensor: {}'.format(key))
+    for key in unexpected_keys:
+        logging.warning('unexpected tensor: {}'.format(key))
 
 
 def save_checkpoint(model: torch.nn.Module, path: str):

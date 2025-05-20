@@ -119,7 +119,8 @@ def train(config='conf/config.yaml', **kwargs):
     else:
         logger.info('Train model from scratch...')
     # projection layer
-    configs['projection_args']['embed_dim'] = configs['model_args']['embed_dim']
+    configs['projection_args']['embed_dim'] = configs['model_args'][
+        'embed_dim']
     configs['projection_args']['num_class'] = len(spk2id_dict)
     if configs['feature_args']['raw_wav'] and configs['dataset_args'][
             'speed_perturb']:
@@ -159,8 +160,9 @@ def train(config='conf/config.yaml', **kwargs):
         logger.info("loss criterion is: " + configs['loss'])
 
     configs['optimizer_args']['lr'] = configs['scheduler_args']['initial_lr']
-    optimizer = getattr(torch.optim, configs['optimizer'])(
-        ddp_model.parameters(), **configs['optimizer_args'])
+    optimizer = getattr(torch.optim,
+                        configs['optimizer'])(ddp_model.parameters(),
+                                              **configs['optimizer_args'])
     if rank == 0:
         logger.info("<== Optimizer ==>")
         logger.info("optimizer is: " + configs['optimizer'])
@@ -168,8 +170,9 @@ def train(config='conf/config.yaml', **kwargs):
     # scheduler
     configs['scheduler_args']['num_epochs'] = configs['num_epochs']
     configs['scheduler_args']['epoch_iter'] = len(train_dataloader)
-    scheduler = getattr(schedulers, configs['scheduler'])(
-        optimizer, **configs['scheduler_args'])
+    scheduler = getattr(schedulers,
+                        configs['scheduler'])(optimizer,
+                                              **configs['scheduler_args'])
     if rank == 0:
         logger.info("<== Scheduler ==>")
         logger.info("scheduler is: " + configs['scheduler'])
@@ -215,8 +218,8 @@ def train(config='conf/config.yaml', **kwargs):
             if epoch % configs['save_epoch_interval'] == 0 or epoch >= configs[
                     'num_epochs'] - configs['num_avg']:
                 save_checkpoint(
-                    model,
-                    os.path.join(model_dir, 'model_{}.pt'.format(epoch)))
+                    model, os.path.join(model_dir,
+                                        'model_{}.pt'.format(epoch)))
 
     if rank == 0:
         os.symlink('model_{}.pt'.format(configs['num_epochs']),
