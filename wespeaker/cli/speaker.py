@@ -39,15 +39,7 @@ class Speaker:
 
     def __init__(self, model_dir: str):
         set_seed()
-
-        config_path = os.path.join(model_dir, 'config.yaml')
-        model_path = os.path.join(model_dir, 'avg_model.pt')
-        with open(config_path, 'r') as fin:
-            configs = yaml.load(fin, Loader=yaml.FullLoader)
-        self.model = get_speaker_model(
-            configs['model'])(**configs['model_args'])
-        load_checkpoint(self.model, model_path)
-        self.model.eval()
+        self.model = load_model_pt(model_dir)
         self.vad = load_silero_vad()
         self.table = {}
         self.resample_rate = 16000
@@ -293,13 +285,33 @@ class Speaker:
                            float(end) - float(begin), label))
 
 
-def load_model(language: str) -> Speaker:
-    model_path = Hub.get_model(language)
-    return Speaker(model_path)
-
-
-def load_model_local(model_dir: str) -> Speaker:
+def load_model(
+    model_id: str = None,
+    model_dir: str = None,
+) -> Speaker:
+    if model_dir is None:
+        model_dir = Hub.get_model(model_id)
     return Speaker(model_dir)
+
+
+# Load the pytorch pt model which contains all the details.
+# And we can use the pt model as a third party pytorch nn.Module for training
+def load_model_pt(model_dir: str):
+    """There are the following files in the `model_dir`:
+       - config.yaml: the model config file
+       - avg_model.pt: the pytorch model file
+    """
+    required_files = ['config.yaml', 'avg_model.pt']
+    for file in required_files:
+        if not os.path.exists(os.path.join(model_dir, file)):
+            raise FileNotFoundError(f"{file} not found in {model_dir}")
+    # Read config file
+    with open(os.path.join(model_dir, 'config.yaml'), 'r') as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+    model = get_speaker_model(config['model'])(**config['model_args'])
+    load_checkpoint(model, os.path.join(model_dir, 'avg_model.pt'))
+    model.eval()
+    return model
 
 
 def main():
@@ -318,7 +330,7 @@ def main():
         else:
             model = load_model(args.language)
     else:
-        model = load_model_local(args.pretrain)
+        model = load_model(model_dir=args.pretrain)
     model.set_resample_rate(args.resample_rate)
     model.set_vad(args.vad)
     model.set_device(args.device)
