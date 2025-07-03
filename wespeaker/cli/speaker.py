@@ -54,6 +54,7 @@ class Speaker:
         self.apply_vad = False
         self.device = torch.device('cpu')
         self.wavform_norm = False
+        self.window_type = 'hamming'
 
         # diarization parmas
         self.diar_min_duration = 0.255
@@ -65,6 +66,9 @@ class Speaker:
 
     def set_wavform_norm(self, wavform_norm: bool):
         self.wavform_norm = wavform_norm
+
+    def set_window_type(self, window_type: str):
+        self.window_type = window_type
 
     def set_resample_rate(self, resample_rate: int):
         self.resample_rate = resample_rate
@@ -102,7 +106,7 @@ class Speaker:
                            frame_length=frame_length,
                            frame_shift=frame_shift,
                            sample_frequency=sample_rate,
-                           window_type='hamming')
+                           window_type=self.window_type)
         if cmn:
             feat = feat - torch.mean(feat, 0)
         return feat
@@ -308,9 +312,11 @@ def main():
         if args.campplus:
             model = load_model("campplus")
             model.set_wavform_norm(True)
+            model.set_window_type('povey')
         elif args.eres2net:
             model = load_model("eres2net")
             model.set_wavform_norm(True)
+            model.set_window_type('povey')
         elif args.vblinkp:
             model = load_model("vblinkp")
         elif args.vblinkf:
