@@ -289,22 +289,26 @@ class Speaker:
                            float(end) - float(begin), label))
 
 
-def load_model(
-    model_id: str = None,
-    model_dir: str = None,
-) -> Speaker:
-    if model_dir is None:
-        model_dir = Hub.get_model(model_id)
-    return Speaker(model_dir)
+def load_or_download(model_name_or_path: str):
+    if model_name_or_path in Hub.Assets:
+        model_dir = Hub.get_model(model_name_or_path)
+    else:
+        model_dir = model_name_or_path
+    return model_dir
+
+
+def load_model(model_name_or_path: str) -> Speaker:
+    return Speaker(load_or_download(model_name_or_path))
 
 
 # Load the pytorch pt model which contains all the details.
 # And we can use the pt model as a third party pytorch nn.Module for training
-def load_model_pt(model_dir: str):
+def load_model_pt(model_name_or_path: str):
     """There are the following files in the `model_dir`:
        - config.yaml: the model config file
        - avg_model.pt: the pytorch model file
     """
+    model_dir = load_or_download(model_name_or_path)
     required_files = ['config.yaml', 'avg_model.pt']
     for file in required_files:
         if not os.path.exists(os.path.join(model_dir, file)):
