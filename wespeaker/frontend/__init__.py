@@ -15,8 +15,10 @@
 
 from .s3prl import S3prlFrontend
 from .whisper_encoder import whisper_encoder
+from .w2vbert import W2VBertFrontend
 
 frontend_class_dict = {
     'fbank': None,
     's3prl': S3prlFrontend,
-    'whisper_encoder': whisper_encoder}
+    'whisper_encoder': whisper_encoder,
+    'w2vbert': W2VBertFrontend,}

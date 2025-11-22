@@ -93,6 +93,156 @@ class MarginScheduler:
 
         return margin
 
+class WarmupLR_withStepDecay:
+    """
+    A Wespeaker-compatible class version of WarmupLR_withStepDecay from
+    the W2V codebase. It does not inherit from a base scheduler class
+    and follows a pattern similar to MarginScheduler.
+    """
+
+    def __init__(
+        self,
+        optimizer,
+        num_epochs,
+        epoch_iter,
+        scale_ratio,
+        warmup_step: int,
+        decay_step: int,
+        gamma: float = 0.1,
+    ):
+        self.optimizer = optimizer
+        self.warmup_step = warmup_step
+        self.num_epochs = num_epochs
+        self.gamma = gamma
+        self.epoch_iter = epoch_iter  # number of batches in each epoch
+        self.scale_ratio = scale_ratio
+
+        # Convert decay_step from epochs to batches.
+        # If decay_step <= 0, disable decay and avoid division by zero.
+        self.decay_step_in_batches = (
+            decay_step * epoch_iter if decay_step > 0 else -1
+        )
+
+        # Save base learning rates
+        self.initial_lr_groups = [
+            param_group["lr"]
+            for param_group in self.optimizer.param_groups
+        ]
+        self.current_iter = 0
+
+    def get_lr_factor(self, cur_step):
+        """Learning rate lambda logic from W2V original implementation."""
+        if cur_step < self.warmup_step:
+            return (cur_step + 1) / (self.warmup_step + 1)
+        else:
+            if self.decay_step_in_batches > 0:
+                return self.gamma ** (
+                    (cur_step - self.warmup_step)
+                    // self.decay_step_in_batches
+                )
+            else:
+                return 1.0
+
+    def set_lr_factor(self, factor):
+        """Apply LR factor to all param groups."""
+        for lr_target, param_group in zip(
+            self.initial_lr_groups, self.optimizer.param_groups
+        ):
+            param_group["lr"] = lr_target * factor
+
+    def get_lr(self):
+        """Return the current learning rate."""
+        return self.optimizer.param_groups[0]["lr"]
+
+    def step(self, current_iter=None):
+        """
+        Called at every training iteration.
+        If current_iter is provided by caller (train.py), use it.
+        """
+        if current_iter is not None:
+            self.current_iter = current_iter
+
+        factor = self.get_lr_factor(self.current_iter)
+        self.set_lr_factor(factor)
+
+        if current_iter is None:
+            self.current_iter += 1
+
+class WarmupCosineScheduler:
+    """
+    A Wespeaker-compatible class version of WarmupCosineScheduler from
+    the W2V codebase. It does not inherit a base class and follows a
+    pattern similar to MarginScheduler.
+    """
+
+    def __init__(
+        self,
+        optimizer,
+        num_epochs,
+        epoch_iter,     # corresponds to step_per_epoch in W2V code
+        min_lr,
+        max_lr,
+        warmup_epoch,
+        fix_epoch,
+        scale_ratio,
+    ):
+        self.optimizer = optimizer
+        self.num_epochs = num_epochs
+        assert min_lr <= max_lr
+        self.min_lr = min_lr
+        self.max_lr = max_lr
+        self.step_per_epoch = epoch_iter
+        self.scale_ratio = scale_ratio
+
+        self.warmup_step = warmup_epoch * self.step_per_epoch
+        self.fix_step = int(fix_epoch * self.step_per_epoch)
+        self.current_step = 0.0  # matches behavior in W2V code
+
+    def set_lr(self, new_lr):
+        for param_group in self.optimizer.param_groups:
+            param_group["lr"] = new_lr
+        return new_lr
+
+    def step(self, current_iter=None):
+        """
+        Called every iteration by train.py.
+        Accepts external current_iter for global-step control.
+        """
+        if current_iter is not None:
+            self.current_step = current_iter
+
+        new_lr = self.clr(self.current_step)
+        self.set_lr(new_lr)
+
+        if current_iter is None:
+            self.current_step += 1
+        return new_lr
+
+    def clr(self, step):
+        """Cosine LR schedule with warmup and fixed LR stages."""
+        if step < self.warmup_step:
+            if self.warmup_step == 0:
+                return self.max_lr
+            return self.max_lr * (step / self.warmup_step)
+        elif self.warmup_step <= step < self.fix_step:
+            return (
+                self.min_lr
+                + 0.5 * (self.max_lr - self.min_lr)
+                * (
+                    1
+                    + math.cos(
+                        math.pi
+                        * (step - self.warmup_step)
+                        / (self.fix_step - self.warmup_step)
+                    )
+                )
+            )
+        else:
+            return self.min_lr
+
+    def get_lr(self):
+        """Return current LR (Wespeaker compatibility)."""
+        return self.optimizer.param_groups[0]["lr"]
 
 class BaseClass:
     '''

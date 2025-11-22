@@ -1,0 +1,96 @@
+# Wespeaker config for W2V-BERT + Adapter MFA (Stage 1: LoRA Frozen Encoder)
+# Adapted from s1.yaml
+
+# Training configuration
+exp_dir: exp/W2VBert_AdapterMFA_LoRA_frozen  # Match run script
+gpus: "[0,1,2,3,4,5,6,7]"  # Match run script or adjust
+num_avg: 1  # Average last N models for evaluation
+enable_amp: True
+seed: 24
+
+# Epochs and logging
+num_epochs: 15
+save_epoch_interval: 1  # Save every epoch
+log_batch_interval: 100  # Log every 100 batches
+
+
+# Dataloader arguments
+dataloader_args:
+  batch_size: 64
+  num_workers: 16
+  pin_memory: False  # Often False for raw audio
+  prefetch_factor: 16  # Adjust based on performance
+  drop_last: True
+
+# Dataset arguments
+dataset_args:
+  sample_num_per_epoch: 0  # 0 means use all data in one epoch
+  shuffle: True
+  shuffle_args:
+    shuffle_size: 2500  # Wespeaker default buffer size
+  filter: True  # Apply duration filtering
+  filter_args:
+    min_num_frames: 200  # ~2 seconds for 10ms hop
+    max_num_frames: 300  # ~3 seconds for 10ms hop
+  resample_rate: 16000
+  speed_perturb: True  # Enable speed perturbation
+  num_frms: 300  # ~3 seconds target chunk size
+  aug_prob: 0.6  # Probability for reverb/noise
+  frontend: "w2vbert"  # Use the new frontend
+  w2vbert_args:
+    model_name: "facebook/w2v-bert-2.0"  # Local W2V-BERT path
+    frozen: True  # Freeze the base W2V-BERT model
+    use_lora: True
+    lora_config_args:
+      r: 64
+      lora_alpha: 128
+      target_modules: ["linear_q", "linear_v"]  # Adapter targets
+      lora_dropout: 0.0
+      bias: "none"
+  # Note: w2vbert frontend handles feature extraction, no fbank_args needed
+
+# Model definition
+model: W2VBert_Adapter_MFA  # The new speaker model class
+model_init: null  # Or path to a pretrained model if needed initially
+model_args:
+  feat_dim: 1024  # W2V-BERT Large hidden size
+  embed_dim: 256
+  pooling_func: "ASP"
+  n_mfa_layers: -1  # Use all hidden states
+  adapter_dim: 128
+  dropout: 0.0
+  num_frontend_hidden_layers: 24
+
+# Projection head (classifier)
+projection_args:
+  project_type: "arc_margin"  # ArcFace
+  scale: 32.0
+  margin: 0.2
+  easy_margin: False  # ArcFace default
+
+# Margin scheduler (margin change during training)
+# Using fixed margin for S1
+margin_scheduler: MarginScheduler
+margin_update:
+  initial_margin: 0.2
+  final_margin: 0.2
+  increase_start_epoch: 1  # No change
+  fix_start_epoch: 1  # No change
+  update_margin: False  # Do not update margin during S1
+
+# Loss function
+loss: CrossEntropyLoss  # Standard classification loss
+loss_args: {}
+
+# Optimizer
+optimizer: AdamW
+optimizer_args:
+  lr: 0.0001
+  weight_decay: 0.0001
+
+# Scheduler
+scheduler: WarmupLR_withStepDecay
+scheduler_args:
+  warmup_step: 5
+  decay_step: 5
+  gamma: 0.1
