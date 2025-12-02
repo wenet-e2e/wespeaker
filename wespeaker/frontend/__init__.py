@@ -21,4 +21,4 @@ frontend_class_dict = {
     'fbank': None,
     's3prl': S3prlFrontend,
     'whisper_encoder': whisper_encoder,
-    'w2vbert': W2VBertFrontend,}
+    'w2vbert': W2VBertFrontend, }

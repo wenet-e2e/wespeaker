@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Your Name/Org (your_email@example.com)
+# Copyright (c) 2025 Qituan Shangguan (2369144677@qq.com)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ import os
 import json
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from transformers import (
     Wav2Vec2BertModel,
     Wav2Vec2BertConfig,
@@ -24,7 +23,6 @@ from transformers import (
     AutoFeatureExtractor,
     AutoModel,
 )
-from transformers.modeling_outputs import BaseModelOutput
 from peft import LoraConfig, get_peft_model
 
 
@@ -123,7 +121,7 @@ class W2VBertFrontend(nn.Module):
             raise IOError(
                 "Failed to load feature extractor from "
                 f"{local_model_path}: {e}"
-            )
+            ) from e
 
         bnb_config = (
             create_bnb_config(**(bnb_config_args or {})) if use_bnb else None
@@ -306,7 +304,7 @@ class W2VBertFrontend(nn.Module):
                 delattr(self.encoder, "masked_spec_embed")
                 print("'masked_spec_embed' attribute removed.")
         except Exception as e:
-            raise IOError(f"Failed to load model from {model_path}: {e}")
+            raise IOError(f"Failed to load model from {model_path}:{e}") from e
 
     def _is_peft_parameter(self, param_name):
         return any(

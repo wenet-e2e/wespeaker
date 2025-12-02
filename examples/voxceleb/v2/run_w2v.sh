@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2025 Your Name/Org (your_email@example.com)
+# Copyright 2025 Qituan Shangguan (2369144677@qq.com)
 # Adapted from run_wavlm.sh
 
 . ./path.sh || exit 1

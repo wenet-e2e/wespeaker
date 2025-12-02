@@ -1,5 +1,4 @@
-# Copyright (c) 2025 Your Name/Org
-# (your_email@example.com)
+# Copyright (c) 2025 Qituan Shangguan (2369144677@qq.com)
 # Based on original code from deeplab/3D-Speaker
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +16,6 @@
 import torch
 import torch.nn as nn
 import wespeaker.models.pooling_layers as pooling_layers
-from wespeaker.frontend.w2vbert import W2VBertFrontend
 
 
 class W2VBert_Adapter_MFA(nn.Module):
