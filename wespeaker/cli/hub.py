@@ -103,7 +103,8 @@ class Hub(object):
             print("ERROR: Unsupported lang {} !!!".format(lang))
             sys.exit(1)
         model = Hub.Assets[lang]
-        model_dir = os.path.join(Path.home(), ".wespeaker", lang)
+        wespeaker_home = os.environ.get("WESPEAKER_HOME", Path.home() / ".wespeaker")
+        model_dir = os.path.join(wespeaker_home, lang)
         if not os.path.exists(model_dir):
             os.makedirs(model_dir)
         if set(["avg_model.pt", "config.yaml"]).issubset(
