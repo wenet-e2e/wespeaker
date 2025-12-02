@@ -1,0 +1,7 @@
+wespeaker.models.w2vbert\_adapter\_mfa module
+=============================================
+
+.. automodule:: wespeaker.models.w2vbert_adapter_mfa
+   :members:
+   :undoc-members:
+   :show-inheritance:

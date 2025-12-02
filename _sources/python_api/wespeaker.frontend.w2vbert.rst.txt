@@ -1,0 +1,7 @@
+wespeaker.frontend.w2vbert module
+=================================
+
+.. automodule:: wespeaker.frontend.w2vbert
+   :members:
+   :undoc-members:
+   :show-inheritance:

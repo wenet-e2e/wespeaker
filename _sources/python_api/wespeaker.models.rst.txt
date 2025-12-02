@@ -26,5 +26,6 @@ Submodules
    wespeaker.models.samresnet
    wespeaker.models.speaker_model
    wespeaker.models.tdnn
+   wespeaker.models.w2vbert_adapter_mfa
    wespeaker.models.whisper_PMFA
    wespeaker.models.xi_vector
