@@ -103,3 +103,39 @@ bash run_wavlm.sh --stage 3 --stop_stage 9
 | Frozen => Joint ft => Joint lmft | × | × | 0.521 | 0.626 | 1.344 |
 |                                  | √ | × | 0.495 | 0.588 | 1.247 |
 |                                  | √ | √ | **0.415** | **0.551** | **1.118** |
+
+
+
+
+### W2V-BERT 2.0 Results
+
+* Pre-trained frontend: the [W2V-BERT 2.0](https://arxiv.org/abs/2108.06209) model
+* Speaker model: w2v-bert2-LoRA-adapter-MFA
+* Training strategy: Frozen (LoRA) =\> Joint ft =\> Joint lmft
+
+<!-- end list -->
+
+```bash
+bash run_w2v.sh --stage 3 --stop_stage 9
+```
+
+| Training strategy | AS-Norm | QMF | vox1-O-clean | vox1-E-clean | vox1-H-clean |
+|:------------------|:-------:|:---:|:------------:|:------------:|:------------:|
+| Frozen (LoRA)     | × | × | 0.532 | 0.622 | 1.241 |
+|                   | √ | × | 0.447 | 0.596 | 1.214 |
+|                   | √ | √ | 0.415 | 0.574 | 1.176 |
+| Frozen (LoRA) =\> Joint ft | × | × | 0.494 | 0.587 | 1.208 |
+|                           | √ | × | 0.452 | 0.565 | 1.171 |
+|                           | √ | √ | 0.431 | 0.546 | 1.128 |
+| Frozen (LoRA) =\> Joint ft =\> Joint lmft | × | × | 0.377 | 0.512 | 1.062 |
+|                                         | √ | × | 0.388 | 0.495 | 1.017 |
+|                                         | √ | √ | **0.362** | **0.471** | **0.965** |
+
+> **Note:** The results above are reproduced on **VoxCeleb** only.
+>
+> We also verified our implementation by loading the author's official checkpoint (trained on **VoxCeleb + VoxBlink**) and performing inference. The comparison below confirms that our inference pipeline matches the official performance.
+
+| Source | Strategy | vox1-O-clean | vox1-E-clean | vox1-H-clean |
+|:-------|:--------:|:------------:|:------------:|:------------:|
+| Author's GitHub | LMFT | 0.14 | 0.31 | 0.73 |
+| **This PR** (w/ Author's Ckpt) | LMFT (w/ AS-Norm & QMF) | **0.138** | **0.285** | **0.625** |

@@ -1,0 +1,91 @@
+# Wespeaker config for W2V-BERT + Adapter MFA
+# (Stage 3: Large Margin Fine-tuning)
+# Adapted from s3.yaml
+
+# Training configuration
+exp_dir: exp/W2VBert_AdapterMFA_joint_lmft  # Match run script
+gpus: "[0,1]"
+num_avg: 1  # Average only the last model for LMFT
+enable_amp: True
+seed: 24
+do_lm: True  # Indicate Large Margin stage
+
+# Epochs and logging
+num_epochs: 2  # Short LMFT stage
+save_epoch_interval: 1
+log_batch_interval: 100
+
+# Dataloader arguments (increase batch size if possible with longer segments)
+dataloader_args:
+  batch_size: 32  # Original LMFT batch size
+  num_workers: 4
+  pin_memory: False
+  prefetch_factor: 4
+  drop_last: True
+
+# Dataset arguments (longer segments, no augmentation)
+dataset_args:
+  sample_num_per_epoch: 0
+  shuffle: True
+  shuffle_args:
+    shuffle_size: 2500
+  filter: True
+  filter_args:
+    min_num_frames: 500  # ~5 seconds
+    max_num_frames: 600  # ~6 seconds
+  resample_rate: 16000
+  speed_perturb: False  # No speed perturb in LMFT
+  num_frms: 600  # ~6 seconds target chunk size
+  aug_prob: 0.0  # No augmentation in LMFT
+  frontend: "w2vbert"
+  w2vbert_args:
+    model_name: "facebook/w2v-bert-2.0"
+    frozen: False  # Keep unfrozen
+    use_lora: False
+    lora_config_args: null
+
+# Model definition (load S2 model)
+model: W2VBert_Adapter_MFA
+model_init: null  # Checkpoint loaded via run script
+model_args:
+  feat_dim: 1024
+  embed_dim: 256
+  pooling_func: "ASP"
+  n_mfa_layers: -1
+  adapter_dim: 128
+  dropout: 0.0
+  num_frontend_hidden_layers: 24
+
+# Projection head (increased margin)
+projection_args:
+  project_type: "arc_margin"
+  scale: 32.0
+  margin: 0.5  # Increased margin for LMFT
+  easy_margin: False
+
+# Margin scheduler (fixed large margin)
+margin_scheduler: MarginScheduler
+margin_update:
+  initial_margin: 0.5
+  final_margin: 0.5
+  increase_start_epoch: 1
+  fix_start_epoch: 1
+  update_margin: False
+
+# Loss function
+loss: CrossEntropyLoss
+loss_args: {}
+
+# Optimizer
+optimizer: AdamW
+optimizer_args:
+  lr: 0.00001  # Typically same or slightly lower LR for LMFT
+  weight_decay: 0.0001
+
+# Scheduler
+scheduler: WarmupCosineScheduler
+scheduler_args:
+  min_lr: 0.000005
+  max_lr: 0.00001
+  warmup_epoch: 0
+  fix_epoch: 1

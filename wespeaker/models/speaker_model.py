@@ -24,7 +24,7 @@ import wespeaker.models.whisper_PMFA as whisper_PMFA
 import wespeaker.models.redimnet as redimnet
 import wespeaker.models.samresnet as samresnet
 import wespeaker.models.xi_vector as xi_vector
-
+import wespeaker.models.w2vbert_adapter_mfa as w2vbert_adapter_mfa
 
 
 def get_speaker_model(model_name: str):
@@ -52,6 +52,8 @@ def get_speaker_model(model_name: str):
         return getattr(samresnet, model_name)
     elif model_name.startswith("XI_VEC"):
         return getattr(xi_vector, model_name)
+    elif model_name.startswith("W2VBert_Adapter_MFA"):
+        return getattr(w2vbert_adapter_mfa, model_name)
     else:  # model_name error !!!
         print(model_name + " not found !!!")
         exit(1)

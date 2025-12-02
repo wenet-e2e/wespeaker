@@ -1,0 +1,90 @@
+# Wespeaker config for W2V-BERT + Adapter MFA
+# (Stage 2: Joint Fine-tuning)
+# Adapted from s2.yaml
+
+# Training configuration
+exp_dir: exp/W2VBert_AdapterMFA_joint_ft  # Match run script
+gpus: "[0,1]"
+num_avg: 1  # Average last N models
+enable_amp: True
+seed: 24
+
+# Epochs and logging
+num_epochs: 4  # Reduced epochs for fine-tuning
+save_epoch_interval: 1
+log_batch_interval: 100
+
+# Dataloader arguments
+dataloader_args:
+  batch_size: 64
+  num_workers: 16
+  pin_memory: False
+  prefetch_factor: 16
+  drop_last: True
+
+# Dataset arguments (same duration as S1, can adjust if needed)
+dataset_args:
+  sample_num_per_epoch: 0
+  shuffle: True
+  shuffle_args:
+    shuffle_size: 2500
+  filter: True
+  filter_args:
+    min_num_frames: 200  # ~2 seconds
+    max_num_frames: 300  # ~3 seconds
+  resample_rate: 16000
+  speed_perturb: True
+  num_frms: 300  # ~3 seconds target chunk size
+  aug_prob: 0.6
+  frontend: "w2vbert"
+  w2vbert_args:
+    model_name: "facebook/w2v-bert-2.0"
+    frozen: False  # Unfreeze the base W2V-BERT model
+    use_lora: False  # No LoRA in this stage
+    lora_config_args: null
+
+# Model definition (load S1 model, unfreeze frontend, remove LoRA)
+model: W2VBert_Adapter_MFA
+model_init: null  # Checkpoint will be loaded via run script
+model_args:
+  feat_dim: 1024  # W2V-BERT Large
+  embed_dim: 256
+  pooling_func: "ASP"
+  n_mfa_layers: -1
+  adapter_dim: 128
+  dropout: 0.0
+  num_frontend_hidden_layers: 24
+
+# Projection head (same structure, margin potentially updated)
+projection_args:
+  project_type: "arc_margin"
+  scale: 32.0
+  margin: 0.2  # Initial margin for S2
+  easy_margin: False
+
+# Margin scheduler (fixed margin)
+margin_scheduler: MarginScheduler
+margin_update:
+  initial_margin: 0.2
+  final_margin: 0.2
+  increase_start_epoch: 1
+  fix_start_epoch: 1
+  update_margin: False  # Keep margin fixed
+
+# Loss function
+loss: CrossEntropyLoss
+loss_args: {}
+
+# Optimizer
+optimizer: AdamW
+optimizer_args:
+  lr: 0.00001  # Lower LR for fine-tuning
+  weight_decay: 0.0001
+
+# Scheduler
+scheduler: WarmupCosineScheduler
+scheduler_args:
+  min_lr: 0.000005
+  max_lr: 0.00001
+  warmup_epoch: 0
+  fix_epoch: 2
