@@ -42,6 +42,8 @@ similarity = model.compute_similarity('audio1.wav', 'audio2.wav')
 diar_result = model.diarize('audio.wav')
 ```
 
+You can set the environment variable `WESPEAKER_HOME` to specify the path of downloaded pre-trained models. By default it will be `$HOME/.wespeaker`.
+
 Please refer to [python usage](docs/python_package.md) for more command line and python programming usage.
 
 ### Install for development & deployment
