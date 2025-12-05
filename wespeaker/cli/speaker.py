@@ -87,24 +87,22 @@ class Speaker:
         self.diar_batch_size = batch_size
         self.diar_subseg_cmn = subseg_cmn
 
-    def compute_features(self,
-                         wavform,
-                         sample_rate=16000,
-                         cmn=True):
+    def compute_features(self, wavform, sample_rate=16000, cmn=True):
         if self.model.frontend_type == 'fbank':
             feat = kaldi.fbank(wavform,
                                num_mel_bins=80,
                                frame_length=25,
                                frame_shift=10,
                                sample_frequency=sample_rate,
-                               window_type=self.window_type)   # [T, D]
+                               window_type=self.window_type)  # [T, D]
             if cmn:
                 feat = feat - torch.mean(feat, dim=0)
             feat = feat.unsqueeze(0)  # [1, T, D]
         else:
-            wavform_lens = torch.LongTensor([wavform.shape[1]]).repeat(wavform.shape[0]).to(self.device)
+            wavform_lens = torch.LongTensor([wavform.shape[1]]).repeat(
+                wavform.shape[0]).to(self.device)
             with torch.no_grad():
-                feat, _ = self.model.frontend(wavform, wavform_lens)  # [B, T, D]
+                feat, _ = self.model.frontend(wavform, wavform_lens)
         return feat
 
     def extract_embedding_from_feats(self, fbanks, batch_size, subseg_cmn):
@@ -327,7 +325,8 @@ def load_model_pt(model_name_or_path: str):
         frontend_args = frontend_type + "_args"
         print('Initializing frontend model (this could take some time) ...')
         frontend = frontend_class_dict[frontend_type](
-            **config['dataset_args'][frontend_args], sample_rate=config['dataset_args']['resample_rate'])
+            **config['dataset_args'][frontend_args],
+            sample_rate=config['dataset_args']['resample_rate'])
         model.add_module("frontend", frontend)
     load_checkpoint(model, os.path.join(model_dir, 'avg_model.pt'))
     model.eval()
