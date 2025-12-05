@@ -42,6 +42,7 @@ You can specify the following parameters. (use `-h` for details)
   use [`res2net_cn_common_200k` of damo](https://www.modelscope.cn/models/iic/speech_eres2net_sv_zh-cn_16k-common/summary)
 * `--vblinkp`: use the sam_resnet34 model pretrained on VoxBlink2
 * `--vblinkf`: use the sam_resnet34 model pretrained on VoxBlink2 and finetuned on VoxCeleb2
+* `--w2vbert2_mfa`: use the w2v-bert2 model pretrained, [paper link](https://www.arxiv.org/pdf/2510.04213)
 * `--audio_file`: input audio file path
 * `--audio_file2`: input audio file2 path, specifically for the similarity task
 * `--wav_scp`: input wav.scp file in kaldi format (each line: key wav_path)

@@ -92,6 +92,7 @@ class Hub(object):
         "eres2net": "eres2net_cn_commom_200k.tar.gz",
         "vblinkp": "voxblink2_samresnet34.zip",
         "vblinkf": "voxblink2_samresnet34_ft.zip",
+        "w2vbert2_mfa": "voxceleb_voxblink2_w2v_bert2_lora_adapterMFA_lm.tar.gz",
     }
 
     def __init__(self) -> None:
