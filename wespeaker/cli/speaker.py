@@ -33,6 +33,7 @@ from wespeaker.diar.umap_clusterer import cluster
 from wespeaker.diar.extract_emb import subsegment
 from wespeaker.diar.make_rttm import merge_segments
 from wespeaker.utils.utils import set_seed
+from wespeaker.frontend import frontend_class_dict
 
 
 class Speaker:
@@ -86,24 +87,27 @@ class Speaker:
         self.diar_batch_size = batch_size
         self.diar_subseg_cmn = subseg_cmn
 
-    def compute_fbank(self,
-                      wavform,
-                      sample_rate=16000,
-                      num_mel_bins=80,
-                      frame_length=25,
-                      frame_shift=10,
-                      cmn=True):
-        feat = kaldi.fbank(wavform,
-                           num_mel_bins=num_mel_bins,
-                           frame_length=frame_length,
-                           frame_shift=frame_shift,
-                           sample_frequency=sample_rate,
-                           window_type=self.window_type)
-        if cmn:
-            feat = feat - torch.mean(feat, 0)
+    def compute_features(self,
+                         wavform,
+                         sample_rate=16000,
+                         cmn=True):
+        if self.model.frontend_type == 'fbank':
+            feat = kaldi.fbank(wavform,
+                               num_mel_bins=80,
+                               frame_length=25,
+                               frame_shift=10,
+                               sample_frequency=sample_rate,
+                               window_type=self.window_type)   # [T, D]
+            if cmn:
+                feat = feat - torch.mean(feat, dim=0)
+            feat = feat.unsqueeze(0)  # [1, T, D]
+        else:
+            wavform_lens = torch.LongTensor([wavform.shape[1]]).repeat(wavform.shape[0]).to(self.device)
+            with torch.no_grad():
+                feat, _ = self.model.frontend(wavform, wavform_lens)  # [B, T, D]
         return feat
 
-    def extract_embedding_feats(self, fbanks, batch_size, subseg_cmn):
+    def extract_embedding_from_feats(self, fbanks, batch_size, subseg_cmn):
         fbanks_array = np.stack(fbanks)
         if subseg_cmn:
             fbanks_array = fbanks_array - np.mean(
@@ -155,12 +159,9 @@ class Speaker:
         if sample_rate != self.resample_rate:
             pcm = torchaudio.transforms.Resample(
                 orig_freq=sample_rate, new_freq=self.resample_rate)(pcm)
-        feats = self.compute_fbank(pcm,
-                                   sample_rate=self.resample_rate,
-                                   cmn=True)
-        feats = feats.unsqueeze(0)
-        feats = feats.to(self.device)
-
+        feats = self.compute_features(pcm,
+                                      sample_rate=self.resample_rate,
+                                      cmn=True)
         with torch.no_grad():
             outputs = self.model(feats)
             outputs = outputs[-1] if isinstance(outputs, tuple) else outputs
@@ -212,7 +213,7 @@ class Speaker:
         return result
 
     def diarize(self, audio_path: str, utt: str = "unk"):
-
+        assert self.model.frontend_type == 'fbank', "Diarization only supports fbank frontend"
         pcm, sample_rate = torchaudio.load(audio_path, normalize=False)
         # 1. vad
         wav = read_audio(audio_path)
@@ -232,9 +233,9 @@ class Speaker:
                 end_idx = int(end * sample_rate)
                 tmp_wavform = pcm[0, begin_idx:end_idx].unsqueeze(0).to(
                     torch.float)
-                fbank = self.compute_fbank(tmp_wavform,
-                                           sample_rate=sample_rate,
-                                           cmn=False)
+                fbank = self.compute_features(tmp_wavform,
+                                              sample_rate=sample_rate,
+                                              cmn=False)
                 tmp_subsegs, tmp_subseg_fbanks = subsegment(
                     fbank=fbank,
                     seg_id="{:08d}-{:08d}".format(int(begin * 1000),
@@ -246,9 +247,9 @@ class Speaker:
                 subseg_fbanks.extend(tmp_subseg_fbanks)
 
         # 3. extract embedding
-        embeddings = self.extract_embedding_feats(subseg_fbanks,
-                                                  self.diar_batch_size,
-                                                  self.diar_subseg_cmn)
+        embeddings = self.extract_embedding_from_feats(subseg_fbanks,
+                                                       self.diar_batch_size,
+                                                       self.diar_subseg_cmn)
 
         # 4. cluster
         subseg2label = []
@@ -316,9 +317,21 @@ def load_model_pt(model_name_or_path: str):
     # Read config file
     with open(os.path.join(model_dir, 'config.yaml'), 'r') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
+    # load model
     model = get_speaker_model(config['model'])(**config['model_args'])
+    frontend_type = 'fbank'
+    if 'dataset_args' in config and 'frontend' in config['dataset_args']:
+        frontend_type = config['dataset_args']['frontend']
+    print(config)
+    if frontend_type != 'fbank':
+        frontend_args = frontend_type + "_args"
+        print('Initializing frontend model (this could take some time) ...')
+        frontend = frontend_class_dict[frontend_type](
+            **config['dataset_args'][frontend_args], sample_rate=config['dataset_args']['resample_rate'])
+        model.add_module("frontend", frontend)
     load_checkpoint(model, os.path.join(model_dir, 'avg_model.pt'))
     model.eval()
+    model.frontend_type = frontend_type
     return model
 
 
@@ -340,7 +353,7 @@ def main():
         else:
             model = load_model(args.language)
     else:
-        model = load_model(model_dir=args.pretrain)
+        model = load_model(args.pretrain)
     model.set_resample_rate(args.resample_rate)
     model.set_vad(args.vad)
     model.set_device(args.device)
