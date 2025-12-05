@@ -211,7 +211,8 @@ class Speaker:
         return result
 
     def diarize(self, audio_path: str, utt: str = "unk"):
-        assert self.model.frontend_type == 'fbank', "Diarization only supports fbank frontend"
+        assert self.model.frontend_type == 'fbank', \
+            "Diarization only supports fbank frontend"
         pcm, sample_rate = torchaudio.load(audio_path, normalize=False)
         # 1. vad
         wav = read_audio(audio_path)
