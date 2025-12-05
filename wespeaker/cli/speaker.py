@@ -350,6 +350,8 @@ def main():
             model = load_model("vblinkp")
         elif args.vblinkf:
             model = load_model("vblinkf")
+        elif args.w2vbert2_mfa:
+            model = load_model("w2vbert2_mfa")
         else:
             model = load_model(args.language)
     else:
