@@ -58,6 +58,12 @@ def get_args():
         help="whether to use the samresnet34 model pretrained on voxblink2 and"
              "fintuned on voxceleb2"
     )
+    parser.add_argument(
+        '--w2vbert2_mfa',
+        action='store_true',
+        help="whether to use the w2v-bert2 model, "
+             "the paper link: https://www.arxiv.org/pdf/2510.04213"
+    )
     parser.add_argument('-p',
                         '--pretrain',
                         type=str,
