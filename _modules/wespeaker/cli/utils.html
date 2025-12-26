@@ -135,6 +135,12 @@
         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;whether to use the samresnet34 model pretrained on voxblink2 and&quot;</span>
              <span class="s2">&quot;fintuned on voxceleb2&quot;</span>
     <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s1">&#39;--w2vbert2_mfa&#39;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;whether to use the w2v-bert2 model, &quot;</span>
+             <span class="s2">&quot;the paper link: https://www.arxiv.org/pdf/2510.04213&quot;</span>
+    <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span>
                         <span class="s1">&#39;--pretrain&#39;</span><span class="p">,</span>
                         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
