@@ -176,7 +176,9 @@ def train(config='conf/config.yaml', **kwargs):
         logger.info("<== Loss ==>")
         logger.info("loss criterion is: " + configs['loss'])
 
-    configs['optimizer_args']['lr'] = configs['scheduler_args']['initial_lr']
+    if 'initial_lr' in configs['scheduler_args']:
+        configs['optimizer_args']['lr'] = configs['scheduler_args'].pop(
+            'initial_lr')
     optimizer = getattr(torch.optim,
                         configs['optimizer'])(ddp_model.parameters(),
                                               **configs['optimizer_args'])
