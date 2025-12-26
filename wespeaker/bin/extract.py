@@ -103,7 +103,7 @@ def extract(config='conf/config.yaml', **kwargs):
                     features, _ = model.frontend(wavs, wavs_len)
 
                 # apply cmvn
-                if test_conf.get('cmvn', True):
+                if test_conf.get('cmvn', False):
                     features = apply_cmvn(features,
                                           **test_conf.get('cmvn_args', {}))
                 # spec augmentation
