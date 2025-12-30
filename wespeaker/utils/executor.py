@@ -49,7 +49,7 @@ def run_epoch(dataloader, epoch_iter, model, criterion, optimizer, scheduler,
 
         with torch.cuda.amp.autocast(enabled=configs['enable_amp']):
             # apply cmvn
-            if configs['dataset_args'].get('cmvn', False):
+            if configs['dataset_args'].get('cmvn', True):
                 features = apply_cmvn(
                     features, **configs['dataset_args'].get('cmvn_args', {}))
             # spec augmentation
