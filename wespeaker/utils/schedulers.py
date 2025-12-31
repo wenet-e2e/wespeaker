@@ -111,7 +111,7 @@ class WarmupLR_withStepDecay:
         gamma: float = 0.1,
     ):
         self.optimizer = optimizer
-        self.warmup_step = warmup_step
+        self.warmup_step = warmup_step * epoch_iter
         self.num_epochs = num_epochs
         self.gamma = gamma
         self.epoch_iter = epoch_iter  # number of batches in each epoch

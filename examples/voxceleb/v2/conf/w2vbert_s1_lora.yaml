@@ -48,6 +48,14 @@ dataset_args:
       lora_dropout: 0.0
       bias: "none"
   # Note: w2vbert frontend handles feature extraction, no fbank_args needed
+  cmvn: False
+  spec_aug: False
+  spec_aug_args:
+    num_t_mask: 1
+    num_f_mask: 1
+    max_t: 10
+    max_f: 8
+    prob: 0.6
 
 # Model definition
 model: W2VBert_Adapter_MFA  # The new speaker model class

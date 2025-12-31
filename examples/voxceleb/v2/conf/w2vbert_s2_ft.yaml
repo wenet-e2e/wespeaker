@@ -42,6 +42,14 @@ dataset_args:
     frozen: False  # Unfreeze the base W2V-BERT model
     use_lora: False  # No LoRA in this stage
     lora_config_args: null
+  cmvn: False
+  spec_aug: False
+  spec_aug_args:
+    num_t_mask: 1
+    num_f_mask: 1
+    max_t: 10
+    max_f: 8
+    prob: 0.6
 
 # Model definition (load S1 model, unfreeze frontend, remove LoRA)
 model: W2VBert_Adapter_MFA
