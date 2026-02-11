@@ -381,6 +381,9 @@ class XI(torch.nn.Module):
 
         # Square and take log before softmax
         logprec = 2.0 * torch.log(logprec)
+        CLAMP_MIN = -15.0
+        CLAMP_MAX = 15.0
+        logprec = logprec.clamp(min=CLAMP_MIN, max=CLAMP_MAX)
         # Gaussian Posterior Inference
         # Option 1: a_o (prior_mean-phi) included in variance
         weight_attn = self.softmax(
