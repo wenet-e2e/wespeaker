@@ -44,3 +44,7 @@ external_tools
 pretrained_models
 s3prl_hub
 whisper_hub
+
+voxceleb_resnet34/
+dataset/
+*.pt
