@@ -38,6 +38,9 @@ data
 raw_wav
 tensorboard
 **/*build*
+dist/
+*.egg-info/
+*.egg
 
 *.onnx
 external_tools
