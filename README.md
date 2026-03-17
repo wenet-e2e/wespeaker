@@ -58,6 +58,8 @@ conda create -n wespeaker python=3.9
 conda activate wespeaker
 conda install pytorch=1.12.1 torchaudio=0.12.1 cudatoolkit=11.3 -c pytorch -c conda-forge
 pip install -r requirements.txt
+# visdom (dep of torchnet) needs pkg_resources at build time, bypass pip build isolation to use the existing setuptools
+pip install --no-build-isolation torchnet==0.0.4
 pre-commit install  # for clean and tidy code
 ```
 
