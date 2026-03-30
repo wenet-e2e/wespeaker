@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 参考 WeNet 社区常见视觉：深蓝主色 + 青绿辅色，见 https://wenet.org.cn/ -->
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- 主色：深海蓝 -->
+    <color name="wenet_primary">#1565C0</color>
+    <color name="wenet_primary_dark">#0D47A1</color>
+    <color name="wenet_primary_light">#42A5F5</color>
+    <color name="wenet_on_primary">#FFFFFF</color>
+    <color name="wenet_primary_container">#E3F2FD</color>
+    <color name="wenet_on_primary_container">#0D47A1</color>
+
+    <!-- 辅色：青绿（与官网蓝绿渐变气质一致） -->
+    <color name="wenet_secondary">#00897B</color>
+    <color name="wenet_secondary_dark">#00695C</color>
+    <color name="wenet_on_secondary">#FFFFFF</color>
+    <color name="wenet_secondary_container">#E0F2F1</color>
+    <color name="wenet_on_secondary_container">#004D40</color>
+
+    <!-- 表面与文字 -->
+    <color name="wenet_background">#F0F4F8</color>
+    <color name="wenet_surface">#FFFFFF</color>
+    <color name="wenet_surface_variant">#ECEFF1</color>
+    <color name="wenet_on_background">#1C2833</color>
+    <color name="wenet_on_surface">#1C2833</color>
+    <color name="wenet_on_surface_variant">#546E7A</color>
+    <color name="wenet_outline">#CFD8DC</color>
+
+    <!-- 结果强调 -->
+    <color name="wenet_success">#2E7D32</color>
+    <color name="wenet_result_card">#FAFCFE</color>
+
+    <!-- 兼容旧引用（主题已迁移至 wenet_*） -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">@color/wenet_primary</color>
+    <color name="purple_700">@color/wenet_primary_dark</color>
+    <color name="teal_200">@color/wenet_secondary_container</color>
+    <color name="teal_700">@color/wenet_secondary</color>
+</resources>

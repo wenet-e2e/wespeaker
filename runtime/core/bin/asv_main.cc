@@ -27,8 +27,8 @@ DEFINE_double(threshold, 0.5, "Threshold");
 DEFINE_string(speaker_model_path, "", "path of speaker model");
 DEFINE_int32(fbank_dim, 80, "fbank feature dimension");
 DEFINE_int32(sample_rate, 16000, "sample rate");
-DEFINE_int32(embedding_size, 256, "embedding size");
-DEFINE_int32(SamplesPerChunk, 32000, "samples of one chunk");
+DEFINE_int32(SamplesPerChunk, -1,
+             "<=0 whole utterance; >0 chunk size in samples (then average)");
 
 int main(int argc, char* argv[]) {
   gflags::ParseCommandLineFlags(&argc, &argv, false);

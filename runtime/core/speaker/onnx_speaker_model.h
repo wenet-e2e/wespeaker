@@ -33,18 +33,23 @@ class OnnxSpeakerModel : public SpeakerModel {
 #ifdef USE_GPU
   static void SetGpuDeviceId(int gpu_id = 0);
 #endif
- public:
+
   explicit OnnxSpeakerModel(const std::string& model_path);
 
   void ExtractEmbedding(const std::vector<std::vector<float>>& feats,
                         std::vector<float>* embed) override;
+
+  /** 从 ONNX 图输出 shape 解析的向量长度（与 Run 输出元素数一致）。 */
+  int EmbeddingSize() const { return embedding_size_; }
 
  private:
   // session
   static Ort::Env env_;
   static Ort::SessionOptions session_options_;
   std::shared_ptr<Ort::Session> speaker_session_ = nullptr;
-  // node names
+  // 名称字符串需常驻；Run() 使用 input_names_/output_names_ 指向其 c_str()
+  std::vector<std::string> input_name_strs_;
+  std::vector<std::string> output_name_strs_;
   std::vector<const char*> input_names_;
   std::vector<const char*> output_names_;
   int embedding_size_ = 0;

@@ -26,6 +26,10 @@ namespace wespeaker {
 
 class SpeakerEngine {
  public:
+  /** @param embedding_size ONNX：<=0 时从模型输出 shape 推断；>0 时须与 ONNX
+   * 输出维数一致。其它后端须 >0。 */
+  /** @param SamplesPerChunk <=0 表示整段一个 embedding；>0
+   * 为按块采样数分块后平均。 */
   explicit SpeakerEngine(const std::string& model_path, const int feat_dim,
                          const int sample_rate, const int embedding_size,
                          const int SamplesPerChunk);
@@ -48,7 +52,7 @@ class SpeakerEngine {
   std::shared_ptr<wenet::FeaturePipelineConfig> feature_config_ = nullptr;
   std::shared_ptr<wenet::FeaturePipeline> feature_pipeline_ = nullptr;
   int embedding_size_ = 0;
-  int per_chunk_samples_ = 32000;
+  int per_chunk_samples_ = 0;  // <=0：整段（默认）
   int sample_rate_ = 16000;
 };
 
