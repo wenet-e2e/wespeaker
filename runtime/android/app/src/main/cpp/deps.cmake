@@ -17,23 +17,26 @@ FetchContent_Declare(glog
 )
 set(WITH_GFLAGS ON CACHE BOOL "" FORCE)
 
-# Android NDK：execinfo.h 可能存在但 backtrace 不可用，glog 仍会走 stacktrace_generic 并编译失败。
-# 在 Android 上跳过 execinfo 检测，强制 HAVE_EXECINFO_H=0（与常见 Android+glog 做法一致）。
-if(ANDROID)
-    FetchContent_GetProperties(glog)
-    if(NOT glog_POPULATED)
-        FetchContent_Populate(glog)
-        file(READ ${glog_SOURCE_DIR}/CMakeLists.txt _glog_cmake)
+FetchContent_GetProperties(glog)
+if(NOT glog_POPULATED)
+    FetchContent_Populate(glog)
+    file(READ ${glog_SOURCE_DIR}/CMakeLists.txt _glog_cmake)
+    # glog 0.4.0 uses cmake_minimum_required(VERSION 3.0); CMake 4+ rejects <3.5.
+    string(REGEX REPLACE
+        "cmake_minimum_required[ ]*\\([ ]*VERSION[ ]+[^)]+\\)"
+        "cmake_minimum_required(VERSION 3.10)"
+        _glog_cmake "${_glog_cmake}")
+    # Android NDK：execinfo.h 可能存在但 backtrace 不可用，glog 仍会走 stacktrace_generic 并编译失败。
+    # 在 Android 上跳过 execinfo 检测，强制 HAVE_EXECINFO_H=0（与常见 Android+glog 做法一致）。
+    if(ANDROID)
         string(REPLACE
             "check_include_file (execinfo.h HAVE_EXECINFO_H)"
             "if(ANDROID)\n  set(HAVE_EXECINFO_H 0)\nelse()\n  check_include_file (execinfo.h HAVE_EXECINFO_H)\nendif()"
             _glog_cmake "${_glog_cmake}"
         )
-        file(WRITE ${glog_SOURCE_DIR}/CMakeLists.txt "${_glog_cmake}")
-        add_subdirectory(${glog_SOURCE_DIR} ${glog_BINARY_DIR})
     endif()
-else()
-    FetchContent_MakeAvailable(glog)
+    file(WRITE ${glog_SOURCE_DIR}/CMakeLists.txt "${_glog_cmake}")
+    add_subdirectory(${glog_SOURCE_DIR} ${glog_BINARY_DIR})
 endif()
 
 include_directories(${gflags_BINARY_DIR}/include ${glog_SOURCE_DIR}/src ${glog_BINARY_DIR})
