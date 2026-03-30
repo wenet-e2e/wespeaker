@@ -117,10 +117,7 @@ OnnxSpeakerModel::OnnxSpeakerModel(const std::string& model_path) {
   LOG(INFO) << "Output name: " << output_name_strs_[0];
 
   Ort::TypeInfo output_type = speaker_session_->GetOutputTypeInfo(0);
-  // ORT 1.16+：Session 输出为 ConstTensorTypeAndShapeInfo，不可赋给
-  // TensorTypeAndShapeInfo
-  Ort::ConstTensorTypeAndShapeInfo tensor_shape =
-      output_type.GetTensorTypeAndShapeInfo();
+  auto tensor_shape = output_type.GetTensorTypeAndShapeInfo();
   std::vector<int64_t> out_shape = tensor_shape.GetShape();
   std::ostringstream oss;
   for (size_t i = 0; i < out_shape.size(); ++i) {
