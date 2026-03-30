@@ -1,6 +1,6 @@
 # WeSpeaker Android 说话人验证 Demo
 
-类似 [WeNet Android Demo](https://github.com/wenet-e2e/wenet/tree/main/runtime/android)，本工程在设备端对两段 **16 kHz PCM WAV** 提取说话人向量并计算余弦相似度（与桌面端 `runtime/onnxruntime` 的 `asv_main` 一致，得分映射到 0–1），再与阈值比较判断是否同一人。
+本工程在设备端对两段 **16 kHz PCM WAV** 提取说话人向量并计算余弦相似度（与桌面端 `runtime/onnxruntime` 的 `asv_main` 一致，得分映射到 0–1），再与阈值比较判断是否同一人。
 
 ## 准备 ONNX 模型
 
@@ -15,7 +15,6 @@ python wespeaker/bin/export_onnx.py \
 
 将 `final.onnx` 复制到 `app/src/main/assets/final.onnx` 后编译（文件名需一致）。
 
-参数需与模型一致，例如常见 **embedding 维度 256**；`samples_per_chunk` 与 `extract_emb_main` / `asv_main` 相同（`-1` 表示整段音频一个 embedding）。
 
 ## 编译
 
