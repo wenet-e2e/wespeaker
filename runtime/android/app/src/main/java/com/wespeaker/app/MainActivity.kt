@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
     private var testFile: File? = null
 
     private val micRecorder = MicRecorder()
-    /** 0=注册，1=测试，null=未录 */
+    /** 0=enroll, 1=test, null=not recording */
     private var recordingSlot: Int? = null
     private var captureSampleRate: Int = WavNormalize.TARGET_SAMPLE_RATE
 
@@ -264,7 +264,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    /** 若 assets 中存在 final.onnx，则复制到应用目录供 native 读取 */
+    /** If assets contain final.onnx, copy to app files dir for native loading */
     private fun copyModelFromAssetsIfPresent(): File? {
         val out = File(filesDir, "final.onnx")
         if (out.exists() && out.length() > 0) return out

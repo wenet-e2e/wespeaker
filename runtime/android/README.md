@@ -1,10 +1,10 @@
-# WeSpeaker Android 说话人验证 Demo
+# WeSpeaker Android Speaker Verification Demo
 
-本工程在设备端对两段 **16 kHz PCM WAV** 提取说话人向量并计算余弦相似度（与桌面端 `runtime/onnxruntime` 的 `asv_main` 一致，得分映射到 0–1），再与阈值比较判断是否同一人。
+This app extracts speaker embeddings from two **16 kHz PCM WAV** clips on device, computes cosine similarity (same mapping to 0–1 as desktop `runtime/onnxruntime` `asv_main`), and compares against a threshold to decide same vs different speaker.
 
-## 准备 ONNX 模型
+## ONNX model
 
-在 PC 上按仓库文档导出 ONNX：
+Export ONNX on a PC following the repo docs:
 
 ```bash
 python wespeaker/bin/export_onnx.py \
@@ -13,30 +13,29 @@ python wespeaker/bin/export_onnx.py \
   --output_model final.onnx
 ```
 
-将 `final.onnx` 复制到 `app/src/main/assets/final.onnx` 后编译（文件名需一致）。
+Copy `final.onnx` to `app/src/main/assets/final.onnx` and build (filename must match).
 
+## Build
 
-## 编译
+**JDK 17 or newer** is required (Android Gradle Plugin 8.x). If only Java 8 is installed, install JDK 17 or pick the bundled JDK under Android Studio *Settings → Build → Gradle → Gradle JDK*.
 
-**需要 JDK 17 或以上**（Android Gradle Plugin 8.x 要求；仅系统自带 Java 8 时请先安装 JDK 17 或在 Android Studio 的 *Settings → Build → Gradle → Gradle JDK* 中选择内置 JDK）。
-
-用 Android Studio 打开本目录 `runtime/android`，或使用 Gradle Wrapper：
+Open `runtime/android` in Android Studio, or use the Gradle wrapper:
 
 ```bash
 cd runtime/android
 ./gradlew :app:assembleDebug
 ```
 
-依赖 [ONNX Runtime Android](https://github.com/microsoft/onnxruntime)（`onnxruntime-android` AAR）。Native 集成方式与 [wekws/runtime/android](https://github.com/wenet-e2e/wekws/tree/main/runtime/android) 相同：可解析配置 `extractForNativeBuild` 解压 AAR 中的 `headers/`、`jni/`，CMake 直接 `include_directories` + 链接 `libonnxruntime.so`（不依赖 Prefab/`find_package`）。业务代码仍复用本仓库 `runtime/core` 的 Fbank、`SpeakerEngine` 与 ONNX 后端。
+The app depends on [ONNX Runtime Android](https://github.com/microsoft/onnxruntime) (`onnxruntime-android` AAR). Native integration matches [wekws/runtime/android](https://github.com/wenet-e2e/wekws/tree/main/runtime/android): a resolvable `extractForNativeBuild` configuration unpacks `headers/` and `jni/` from the AAR; CMake uses `include_directories` and links `libonnxruntime.so` (no Prefab / `find_package`). App logic reuses this repo’s `runtime/core` Fbank, `SpeakerEngine`, and ONNX backend.
 
-## 使用
+## Usage
 
-1. 安装 APK 后，依次选择「注册」「测试」两段 WAV（建议 16 kHz；其它采样率未做重采样，可能影响效果）。
-2. 调整阈值与 embedding 维度、chunk 采样数（与训练/导出配置一致）。
-3. 点击「比对」查看相似度得分与是否同一人。
+1. After installing the APK, pick enroll and test WAV files (16 kHz recommended; other rates are not resampled in-app and may hurt quality).
+2. Tune threshold, embedding dim, and chunk samples to match training/export settings.
+3. Tap **Compare** to see similarity score and same/different verdict.
 
-## 说明
+## Notes
 
-- 若 CMake 报未找到 `onnxruntime*.aar` 解压目录，请先 **Sync** 并执行一次完整 **Build**，确保 `extractAARForNativeBuild` 在 `configureCMake` 之前跑完（与 wekws 的 `extractAARForNativeBuild` 同理）。
-- 首推理会从 assets 拷贝模型到应用私有目录，需保证 `assets/final.onnx` 存在且非空。
-- 阈值默认 0.5，可按验证集自行标定。
+- If CMake reports missing `onnxruntime*.aar` extract dir, **Sync** and run a full **Build** so `extractAARForNativeBuild` runs before `configureCMake` (same idea as wekws).
+- First inference copies the model from assets to app-private storage; ensure `assets/final.onnx` exists and is non-empty.
+- Default threshold is 0.5; tune on your validation set.

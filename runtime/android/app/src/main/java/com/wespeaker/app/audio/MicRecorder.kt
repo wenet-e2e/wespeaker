@@ -6,7 +6,7 @@ import android.media.MediaRecorder
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * 使用 [AudioRecord] 采集 PCM；优先 16 kHz 单声道，失败则回退到设备支持的采样率，由 [WavNormalize] 再统一到 16 kHz。
+ * Captures PCM via [AudioRecord]; prefers 16 kHz mono, falls back to device rates, then [WavNormalize] to 16 kHz.
  */
 class MicRecorder {
 

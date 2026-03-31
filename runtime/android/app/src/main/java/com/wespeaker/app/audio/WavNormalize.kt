@@ -6,7 +6,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /**
- * 将任意常见 PCM / float WAV 转为模型所需：单声道、16 kHz、16-bit PCM，并写出标准 WAV。
+ * Converts common PCM / float WAV to model input: mono, 16 kHz, 16-bit PCM, and writes a standard WAV.
  */
 object WavNormalize {
 
@@ -16,7 +16,7 @@ object WavNormalize {
     data class PcmMono16(val samples: ShortArray, val sampleRate: Int)
 
     /**
-     * 从 WAV 字节解析为单声道 int16 序列（若为多声道则平均；若采样率非 16k 则线性重采样）。
+     * Parses WAV bytes to mono int16 (average channels if multi-channel; linear resample if not 16 kHz).
      */
     fun wavBytesToMono16k(bytes: ByteArray): PcmMono16 {
         val parsed = parseWav(bytes)
@@ -25,7 +25,7 @@ object WavNormalize {
         return PcmMono16(mono, TARGET_SAMPLE_RATE)
     }
 
-    /** 已是单声道 PCM 时，仅重采样到 16 kHz（麦克风录制用）。 */
+    /** When input is already mono PCM, only resample to 16 kHz (mic capture path). */
     fun monoPcmTo16k(samples: ShortArray, sampleRate: Int): ShortArray {
         if (sampleRate == TARGET_SAMPLE_RATE) return samples
         return resampleLinear(samples, sampleRate, TARGET_SAMPLE_RATE)

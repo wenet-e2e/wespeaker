@@ -39,7 +39,8 @@ class OnnxSpeakerModel : public SpeakerModel {
   void ExtractEmbedding(const std::vector<std::vector<float>>& feats,
                         std::vector<float>* embed) override;
 
-  /** 从 ONNX 图输出 shape 解析的向量长度（与 Run 输出元素数一致）。 */
+  /** Embedding length from ONNX output shape (matches Run() output element
+   * count). */
   int EmbeddingSize() const { return embedding_size_; }
 
  private:
@@ -47,7 +48,8 @@ class OnnxSpeakerModel : public SpeakerModel {
   static Ort::Env env_;
   static Ort::SessionOptions session_options_;
   std::shared_ptr<Ort::Session> speaker_session_ = nullptr;
-  // 名称字符串需常驻；Run() 使用 input_names_/output_names_ 指向其 c_str()
+  // Name strings must outlive the session; Run() uses c_str() from
+  // input_names_/output_names_.
   std::vector<std::string> input_name_strs_;
   std::vector<std::string> output_name_strs_;
   std::vector<const char*> input_names_;

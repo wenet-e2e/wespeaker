@@ -1,2 +1,2 @@
-将 export_onnx.py 导出的 final.onnx 复制到此目录（文件名必须为 final.onnx），
-重新编译安装后，应用会从 assets 解压到内部存储再供 native 推理使用。
+Copy the final.onnx produced by export_onnx.py into this directory (filename must be final.onnx).
+After rebuild and install, the app copies it from assets to internal storage for native inference.

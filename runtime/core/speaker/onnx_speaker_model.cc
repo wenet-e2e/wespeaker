@@ -77,7 +77,8 @@ OnnxSpeakerModel::OnnxSpeakerModel(const std::string& model_path) {
   speaker_session_ = std::make_shared<Ort::Session>(env_, model_path.c_str(),
                                                     session_options_);
 #endif
-  // 2. Model info：ORT 1.13+ 移除 GetInputName，仅保留 GetInputNameAllocated
+  // 2. Model info: ORT 1.13+ removed GetInputName; only GetInputNameAllocated
+  // remains.
   Ort::AllocatorWithDefaultOptions allocator;
   // 2.1. input info
   int num_nodes = static_cast<int>(speaker_session_->GetInputCount());

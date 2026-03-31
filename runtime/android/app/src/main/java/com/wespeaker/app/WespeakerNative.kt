@@ -6,8 +6,8 @@ object WespeakerNative {
     }
 
     /**
-     * @return floatArrayOf(score, sameFlag) — sameFlag 为 1f 表示同一人（>= 阈值）
-     * embedding 维度由 ONNX 输出 shape 推断；特征按**整段**提取（不分块）。
+     * @return floatArrayOf(score, sameFlag) — sameFlag 1f means same speaker (score >= threshold).
+     * Embedding dim is inferred from ONNX output shape; features use the **full** utterance (no chunking).
      */
     @JvmStatic
     external fun compare(

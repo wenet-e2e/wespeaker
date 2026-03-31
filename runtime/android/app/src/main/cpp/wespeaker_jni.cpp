@@ -84,7 +84,7 @@ Java_com_wespeaker_app_WespeakerNative_compare(JNIEnv* env, jclass /* clazz */,
     auto speaker_engine = std::make_shared<wespeaker::SpeakerEngine>(
         model_path, j_fbank_dim, j_sample_rate,
         0 /* embedding size: infer from ONNX output shape */,
-        -1 /* 整段音频一个 embedding，与 per_chunk_samples_<=0 一致 */);
+        -1 /* one embedding for full audio; same as per_chunk_samples_ <= 0 */);
     const int embedding_size = speaker_engine->EmbeddingSize();
 
     int16_t* enroll_data = const_cast<int16_t*>(enroll_reader.data());

@@ -1,4 +1,4 @@
-# Android NDK：FetchContent 拉取 gflags / glog。
+# Android NDK: FetchContent for gflags / glog.
 include(FetchContent)
 set(FETCHCONTENT_QUIET ON)
 
@@ -17,7 +17,7 @@ FetchContent_GetProperties(glog)
 if(NOT glog_POPULATED)
   FetchContent_Populate(glog)
   file(READ ${glog_SOURCE_DIR}/CMakeLists.txt _glog_cm)
-  # glog 0.4.0：CMake 4+ 需 bump；Android 上 execinfo 检测会误通过导致链接失败。
+  # glog 0.4.0: bump cmake_minimum for CMake 4+; on Android, execinfo probe can pass but link fails.
   string(REGEX REPLACE
     "cmake_minimum_required[ ]*\\([ ]*VERSION[ ]+[^)]+\\)"
     "cmake_minimum_required(VERSION 3.10)" _glog_cm "${_glog_cm}")
