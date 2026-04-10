@@ -52,7 +52,7 @@ Please refer to [python usage](docs/python_package.md) for more command line and
 git clone https://github.com/wenet-e2e/wespeaker.git
 ```
 
-* Create conda env: pytorch version >= 2.7.1 is recommended !!!
+* Create conda env: pytorch version >= 2.0.0 is recommended !!!
 ``` sh
 conda create -n wespeaker python=3.9
 conda activate wespeaker
