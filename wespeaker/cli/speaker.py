@@ -236,7 +236,7 @@ class Speaker:
                                               sample_rate=sample_rate,
                                               cmn=False)
                 tmp_subsegs, tmp_subseg_fbanks = subsegment(
-                    fbank=fbank,
+                    fbank=fbank.squeeze(0),
                     seg_id="{:08d}-{:08d}".format(int(begin * 1000),
                                                   int(end * 1000)),
                     window_fs=window_fs,
