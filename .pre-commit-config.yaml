@@ -7,6 +7,7 @@ repos:
     rev: 'v0.32.0'
     hooks:
     - id: yapf
+      additional_dependencies: [toml]
   - repo: https://github.com/pycqa/flake8
     rev: '3.8.2'
     hooks:

@@ -52,12 +52,16 @@ Please refer to [python usage](docs/python_package.md) for more command line and
 git clone https://github.com/wenet-e2e/wespeaker.git
 ```
 
-* Create conda env: pytorch version >= 1.12.1 is recommended !!!
+* Create conda env: pytorch version >= 2.0.0 is recommended !!!
 ``` sh
 conda create -n wespeaker python=3.9
 conda activate wespeaker
-conda install pytorch=1.12.1 torchaudio=0.12.1 cudatoolkit=11.3 -c pytorch -c conda-forge
+pip install torch==2.7.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu118 # cuda 11.X
+pip install torch==2.7.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128 # cuda 12.X
+conda install -c conda-forge sox
 pip install -r requirements.txt
+# visdom (dep of torchnet) needs pkg_resources at build time, bypass pip build isolation to use the existing setuptools
+pip install --no-build-isolation torchnet==0.0.4
 pre-commit install  # for clean and tidy code
 ```
 
