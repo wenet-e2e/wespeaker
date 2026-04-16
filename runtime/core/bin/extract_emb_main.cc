@@ -31,8 +31,11 @@ DEFINE_string(result, "", "output embedding file");
 DEFINE_string(speaker_model_path, "", "path of speaker model");
 DEFINE_int32(fbank_dim, 80, "fbank feature dimension");
 DEFINE_int32(sample_rate, 16000, "sample rate");
-DEFINE_int32(embedding_size, 256, "embedding size");
-DEFINE_int32(samples_per_chunk, 32000, "samples of one chunk");
+DEFINE_int32(samples_per_chunk, -1,
+             "<=0 whole utterance; >0 chunk size in samples (then average)");
+DEFINE_int32(embedding_size, 0,
+             "ONNX: <=0 infer from model; >0 must match output dim. Other "
+             "backends: >0.");
 DEFINE_int32(thread_num, 1, "num of extract_emb thread");
 
 std::ofstream g_result;
@@ -53,7 +56,7 @@ void extract_emb(std::pair<std::string, std::string> wav) {
   int16_t* data = const_cast<int16_t*>(wav_reader.data());
   int samples = wav_reader.num_sample();
   // NOTE(cdliang): memory allocation
-  std::vector<float> embs(FLAGS_embedding_size, 0);
+  std::vector<float> embs(embedding_size, 0);
 
   int wave_dur = static_cast<int>(static_cast<float>(samples) /
                                   wav_reader.sample_rate() * 1000);

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="wenet_background">#101418</color>
+    <color name="wenet_surface">#1A2329</color>
+    <color name="wenet_surface_variant">#2A3440</color>
+    <color name="wenet_primary_container">#1E3A5F</color>
+    <color name="wenet_on_primary_container">#BBDEFB</color>
+    <color name="wenet_secondary_container">#1B3D36</color>
+    <color name="wenet_on_secondary_container">#B2DFDB</color>
+    <color name="wenet_on_surface">#ECEFF1</color>
+    <color name="wenet_on_surface_variant">#90A4AE</color>
+    <color name="wenet_outline">#3D4A54</color>
+    <color name="wenet_result_card">#152028</color>
+</resources>
