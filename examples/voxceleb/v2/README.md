@@ -139,3 +139,16 @@ bash run_w2v.sh --stage 3 --stop_stage 9
 |:-------|:--------:|:------------:|:------------:|:------------:|
 | Author's GitHub | LMFT | 0.14 | 0.31 | 0.73 |
 | **This PR** (w/ Author's Ckpt) | LMFT (w/ AS-Norm & QMF) | **0.138** | **0.285** | **0.625** |
+
+## HAM-Softmax Results
+
+HAM-Softmax is an additive margin softmax based on Poincare ball hyperbolic distance. See the [paper](https://arxiv.org/abs/2601.19709) and [official implementation](https://github.com/PunkMale/HAM-Softmax).
+
+All results use margin warmup 0.0 -> 0.2, speed perturb, aug_prob=0.6, no spec_aug, model averaging, AS-Norm + calibration.
+
+| Model | Loss | Curvature | vox1-O-clean | vox1-E-clean | vox1-H-clean |
+|:------|:----:|:---------:|:------------:|:------------:|:------------:|
+| ECAPA_TDNN_GLOB_c512-ASTP-emb192 | AAM-Softmax | - | 0.909 | 1.075 | 1.976 |
+| ECAPA_TDNN_GLOB_c512-ASTP-emb192 | HAM-Softmax | 3.0 | 0.872 | 1.040 | 1.856 |
+| ResNet34-TSTP-emb256 | AAM-Softmax | - | 0.691 | 0.895 | 1.596 |
+| ResNet34-TSTP-emb256 | HAM-Softmax | 3.0 | 0.702 | 0.886 | 1.547 |
