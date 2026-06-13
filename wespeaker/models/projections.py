@@ -515,7 +515,8 @@ class HyperbolicAMSoftmax(nn.Module):
         scale = torch.clamp(max_norm / norm, max=1.0)
         return x * scale
 
-    def poincare_distance(self, x: torch.Tensor, y: torch.Tensor, eps: float = 1e-5) -> torch.Tensor:
+    def poincare_distance(self, x: torch.Tensor, y: torch.Tensor,
+                          eps: float = 1e-5) -> torch.Tensor:
         """Compute Poincare distance between points on the ball."""
         x_norm = torch.norm(x, dim=-1, keepdim=True).clamp(max=1 - eps)
         y_norm = torch.norm(y, dim=-1, keepdim=True).clamp(max=1 - eps)
@@ -549,9 +550,10 @@ class HyperbolicAMSoftmax(nn.Module):
         return output
 
     def extra_repr(self):
-        return 'in_features={}, out_features={}, scale={}, margin={}, curvature={}'.format(
-            self.in_features, self.out_features, self.scale, self.margin,
-            self.curvature)
+        return ('in_features={}, out_features={}, scale={}, '
+                'margin={}, curvature={}'.format(
+                    self.in_features, self.out_features, self.scale,
+                    self.margin, self.curvature))
 
 
 class Linear(nn.Module):
