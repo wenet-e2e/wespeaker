@@ -49,6 +49,12 @@ def get_projection(conf):
         projection = SphereProduct(conf['embed_dim'],
                                    conf['num_class'],
                                    margin=4)
+    elif conf['project_type'] == 'ham_margin':
+        projection = HyperbolicAMSoftmax(conf['embed_dim'],
+                                         conf['num_class'],
+                                         scale=conf['scale'],
+                                         margin=0.0,
+                                         curvature=conf.get('curvature', 1.0))
     elif conf['project_type'] == 'sphereface2':
         projection = SphereFace2(conf['embed_dim'],
                                  conf['num_class'],
@@ -466,6 +472,88 @@ class SphereProduct(nn.Module):
             + 'in_features=' + str(self.in_features) \
             + ', out_features=' + str(self.out_features) \
             + ', margin=' + str(self.margin) + ')'
+
+
+class HyperbolicAMSoftmax(nn.Module):
+    r"""Implement of Hyperbolic Additive Margin Softmax
+        for speaker verification:
+        Reference:
+            Hyperbolic Additive Margin Softmax with Hierarchical Information
+            for Speaker Verification
+            https://arxiv.org/abs/2601.19709
+        Args:
+            in_features: size of each input sample (embedding dim)
+            out_features: size of each output sample (num speakers)
+            scale: scale factor for logits (s)
+            margin: additive margin on hyperbolic distance (m)
+            curvature: curvature of the Poincare ball (c)
+    """
+
+    def __init__(self,
+                 in_features,
+                 out_features,
+                 scale=30.0,
+                 margin=0.2,
+                 curvature=1.0):
+        super(HyperbolicAMSoftmax, self).__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.scale = scale
+        self.margin = margin
+        self.curvature = curvature
+
+        # Class centers in hyperbolic space, small init to stay near origin
+        self.weight = nn.Parameter(torch.randn(out_features, in_features) * 1e-3)
+
+    def update(self, margin=0.2):
+        self.margin = margin
+
+    def proj_to_ball(self, x: torch.Tensor, eps: float = 1e-5) -> torch.Tensor:
+        """Project embeddings onto the Poincare ball with curvature c."""
+        norm = torch.norm(x, dim=-1, keepdim=True).clamp(min=eps)
+        max_norm = (1.0 - eps) / (self.curvature ** 0.5)
+        scale = torch.clamp(max_norm / norm, max=1.0)
+        return x * scale
+
+    def poincare_distance(self, x: torch.Tensor, y: torch.Tensor,
+                          eps: float = 1e-5) -> torch.Tensor:
+        """Compute Poincare distance between points on the ball."""
+        x_norm = torch.norm(x, dim=-1, keepdim=True).clamp(max=1 - eps)
+        y_norm = torch.norm(y, dim=-1, keepdim=True).clamp(max=1 - eps)
+        diff = x - y
+        diff_norm = torch.norm(diff, dim=-1, keepdim=True)
+
+        num = 2 * diff_norm.pow(2)
+        denom = (1 - x_norm.pow(2)) * (1 - y_norm.pow(2))
+        # Clamp to ensure argument >= 1 for acosh stability
+        return torch.acosh((1 + num / denom.clamp_min(eps)).clamp(min=1.0 + eps))
+
+    def forward(self, input, label):
+        # Project embeddings and class centers to Poincare ball
+        x_hyp = self.proj_to_ball(input)
+        w_hyp = self.proj_to_ball(self.weight)
+
+        # Compute pairwise Poincare distances: (B, out_features)
+        B, D = x_hyp.shape
+        C = w_hyp.shape[0]
+        x_exp = x_hyp.unsqueeze(1).expand(B, C, D)
+        w_exp = w_hyp.unsqueeze(0).expand(B, C, D)
+        dist = self.poincare_distance(x_exp, w_exp).squeeze(-1)
+
+        # Add margin to correct class distances
+        margin = torch.zeros_like(dist)
+        margin.scatter_(1, label.view(-1, 1), self.margin)
+        dist_m = dist + margin
+
+        # Convert distance to logits (smaller distance = higher logit)
+        output = -self.scale * dist_m
+        return output
+
+    def extra_repr(self):
+        return ('in_features={}, out_features={}, scale={}, '
+                'margin={}, curvature={}'.format(
+                    self.in_features, self.out_features, self.scale,
+                    self.margin, self.curvature))
 
 
 class Linear(nn.Module):
