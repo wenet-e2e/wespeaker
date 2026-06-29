@@ -35,10 +35,14 @@ def get_filterbanks(low_freq=20, high_freq=7600, nfilt=80, nfft=512, samplerate=
     lower_edge_mel = melpoints[:-2].reshape(1, -1)
     center_mel = melpoints[1:-1].reshape(1, -1)
     upper_edge_mel = melpoints[2:].reshape(1, -1)
-    spectrogram_bins_mel = hz2mel(np.linspace(0, samplerate // 2, nfft))[1:].reshape(-1, 1)
-    lower_slopes = (spectrogram_bins_mel - lower_edge_mel) / (center_mel - lower_edge_mel)
-    upper_slopes = (upper_edge_mel - spectrogram_bins_mel) / (upper_edge_mel - center_mel)
-    mel_weights_matrix = np.maximum(0.0, np.minimum(lower_slopes, upper_slopes))
+    spectrogram_bins_mel = hz2mel(
+        np.linspace(0, samplerate // 2, nfft))[1:].reshape(-1, 1)
+    lower_slopes = (spectrogram_bins_mel - lower_edge_mel) / (
+        center_mel - lower_edge_mel)
+    upper_slopes = (upper_edge_mel - spectrogram_bins_mel) / (
+        upper_edge_mel - center_mel)
+    mel_weights_matrix = np.maximum(
+        0.0, np.minimum(lower_slopes, upper_slopes))
     return np.vstack([np.zeros((1, nfilt)), mel_weights_matrix])[:, :].astype('float32')
 
 
@@ -50,14 +54,17 @@ class NormalizeAudio(nn.Module):
     def forward(self, x):
         if x.ndim == 2:
             x = x.unsqueeze(1)
-        return (x - x.mean(dim=2, keepdims=True)) / (x.std(dim=2, keepdims=True, unbiased=False) + self.eps)
+        return (x - x.mean(dim=2, keepdims=True)) / (
+            x.std(dim=2, keepdims=True, unbiased=False) + self.eps)
 
 
 class PreEmphasis(nn.Module):
     def __init__(self, coef: float = 0.97):
         super().__init__()
         self.coef = coef
-        self.register_buffer('flipped_filter', torch.FloatTensor([-self.coef, 1.]).unsqueeze(0).unsqueeze(0))
+        self.register_buffer(
+            'flipped_filter',
+            torch.FloatTensor([-self.coef, 1.]).unsqueeze(0).unsqueeze(0))
 
     def forward(self, x):
         if x.ndim == 2:
@@ -67,7 +74,8 @@ class PreEmphasis(nn.Module):
 
 
 class FbankAug(nn.Module):
-    def __init__(self, freq_mask_width=(0, 8), time_mask_width=(0, 10), freq_start_bin=0):
+    def __init__(self, freq_mask_width=(0, 8), time_mask_width=(0, 10),
+                 freq_start_bin=0):
         super().__init__()
         self.time_mask_width = time_mask_width
         self.freq_mask_width = freq_mask_width
@@ -82,9 +90,12 @@ class FbankAug(nn.Module):
         else:
             D = time
             width_range = self.time_mask_width
-        mask_len = torch.randint(width_range[0], width_range[1], (batch, 1), device=x.device).unsqueeze(2)
-        mask_pos = torch.randint(self.freq_start_bin, max(1, D - mask_len.max()),
-                                 (batch, 1), device=x.device).unsqueeze(2)
+        mask_len = torch.randint(
+            width_range[0], width_range[1], (batch, 1),
+            device=x.device).unsqueeze(2)
+        mask_pos = torch.randint(
+            self.freq_start_bin, max(1, D - mask_len.max()),
+            (batch, 1), device=x.device).unsqueeze(2)
         arange = torch.arange(D, device=x.device).view(1, 1, -1)
         mask = (mask_pos <= arange) * (arange < (mask_pos + mask_len))
         mask = mask.any(dim=1)
@@ -147,30 +158,38 @@ class SpectralFeaturesTF(nn.Module):
             if self.window == 'hamming':
                 self.window = windows.hamming(self.length)
             elif self.window in ['hann', 'hanning']:
-                self.window = np.array([0.5 - 0.5 * (np.cos((2 * np.pi * l) / (self.length - 1)))
-                                       for l in range(self.length)])
+                self.window = np.array([
+                    0.5 - 0.5 * (np.cos((2 * np.pi * l) / (self.length - 1)))
+                    for l in range(self.length)])
             elif self.window == 'sqrt_hann':
-                self.window = np.array([0.5 - 0.5 * (np.cos((2 * np.pi * l) / (self.length - 1)))
-                                       for l in range(self.length)]) ** 0.5
+                self.window = np.array([
+                    0.5 - 0.5 * (np.cos((2 * np.pi * l) / (self.length - 1)))
+                    for l in range(self.length)]) ** 0.5
             elif self.window == 'kaiser':
                 self.window = windows.kaiser(self.length)
             else:
                 self.window = np.ones(self.length)
         self.window = self.window.astype("float32")
-        real_kernel = np.asarray([np.cos(2 * np.pi * np.arange(0, self.nfft) * n / self.nfft)
-                                 for n in range(self.nfft)]).astype("float32").T
+        real_kernel = np.asarray([
+            np.cos(2 * np.pi * np.arange(0, self.nfft) * n / self.nfft)
+            for n in range(self.nfft)]).astype("float32").T
         self.real_kernel = real_kernel[:self.length, :self.nfft // 2]
         if self.window is not None:
             self.real_kernel *= self.window[:, None]
         self.real_kernel = self.real_kernel[:, None, :]
-        image_kernel = np.asarray([np.sin(2 * np.pi * np.arange(0, self.nfft) * n / self.nfft)
-                                  for n in range(self.nfft)]).astype("float32").T
+        image_kernel = np.asarray([
+            np.sin(2 * np.pi * np.arange(0, self.nfft) * n / self.nfft)
+            for n in range(self.nfft)]).astype("float32").T
         self.image_kernel = image_kernel[:self.length, :self.nfft // 2]
         if self.window is not None:
             self.image_kernel *= self.window[:, None]
         self.image_kernel = self.image_kernel[:, None, :]
-        self.register_buffer('real_kernel_pt', torch.from_numpy(self.real_kernel).permute(2, 1, 0).float())
-        self.register_buffer('image_kernel_pt', torch.from_numpy(self.image_kernel).permute(2, 1, 0).float())
+        self.register_buffer(
+            'real_kernel_pt',
+            torch.from_numpy(self.real_kernel).permute(2, 1, 0).float())
+        self.register_buffer(
+            'image_kernel_pt',
+            torch.from_numpy(self.image_kernel).permute(2, 1, 0).float())
         if self.features in ['melbanks']:
             linear_to_mel_weight_matrix = get_filterbanks(
                 nfilt=self.num_bins,
@@ -179,7 +198,10 @@ class SpectralFeaturesTF(nn.Module):
                 low_freq=self.low_freq,
                 high_freq=self.high_freq)
             linear_to_mel_weight_matrix = linear_to_mel_weight_matrix[:, :, None]
-            self.register_buffer('melbanks_pt', torch.from_numpy(linear_to_mel_weight_matrix).permute(1, 0, 2).float())
+            self.register_buffer(
+                'melbanks_pt',
+                torch.from_numpy(linear_to_mel_weight_matrix).permute(
+                    1, 0, 2).float())
 
     def forward(self, inputs):
         dtype = inputs.dtype
@@ -189,8 +211,12 @@ class SpectralFeaturesTF(nn.Module):
         if self.normalize_signal:
             inputs = (inputs - inputs.mean(dim=2, keepdims=True)) / \
                 (inputs.std(dim=2, keepdims=True, unbiased=False) + self.eps)
-        real_part = F.conv1d(inputs, self.real_kernel_pt, stride=self.shift, padding=self.shift // 2)
-        imag_part = F.conv1d(inputs, self.image_kernel_pt, stride=self.shift, padding=self.shift // 2)
+        real_part = F.conv1d(
+            inputs, self.real_kernel_pt, stride=self.shift,
+            padding=self.shift // 2)
+        imag_part = F.conv1d(
+            inputs, self.image_kernel_pt, stride=self.shift,
+            padding=self.shift // 2)
         if self.features == 'complex':
             return [real_part, imag_part]
         fft = torch.square(real_part) + torch.square(imag_part)

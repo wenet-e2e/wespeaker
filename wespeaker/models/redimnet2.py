@@ -41,7 +41,8 @@ class FreqEncoder(nn.Module):
         b, c, f, t = x.size()
         freqs = torch.range(start=0, end=f - 1, step=1, dtype=torch.long)
         freqs = freqs.unsqueeze(0).repeat(b, 1).to(x.device)  # [bs,f]
-        fe = self.freq_embedder(freqs).permute(0, 2, 1).unsqueeze(-1)  # [bs, freq_emb_dim, f, 1]
+        fe = self.freq_embedder(freqs).permute(
+            0, 2, 1).unsqueeze(-1)  # [bs, freq_emb_dim, f, 1]
         fe = fe.repeat(1, 1, 1, t)
         x = x + fe
         return x
@@ -106,7 +107,8 @@ class fwSEBlock(nn.Module):
 
 
 class ResBasicBlock(nn.Module):
-    def __init__(self, inc, outc, num_freq, stride=1, se_channels=64, Gdiv=4, use_fwSE=False):
+    def __init__(self, inc, outc, num_freq, stride=1, se_channels=64,
+                 Gdiv=4, use_fwSE=False):
         super().__init__()
         self.conv1 = nn.Conv2d(
             inc,
@@ -161,8 +163,11 @@ BatchNormNd = {1: nn.BatchNorm1d, 2: nn.BatchNorm2d}
 
 
 class ConvNeXtLikeBlock(nn.Module):
-    def __init__(self, C, dim=2, kernel_sizes=[(3, 3),], Gdiv=1, padding='same', activation='gelu'):
+    def __init__(self, C, dim=2, kernel_sizes=None, Gdiv=1, padding='same',
+                 activation='gelu'):
         super().__init__()
+        if kernel_sizes is None:
+            kernel_sizes = [(3, 3)]
         self.dwconvs = nn.ModuleList(
             modules=[
                 ConvNd[dim](
@@ -189,7 +194,8 @@ class ConvNeXtLikeBlock(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, embed_dim: int, num_heads: int, dropout: float = 0.0, bias: bool = True):
+    def __init__(self, embed_dim: int, num_heads: int, dropout: float = 0.0,
+                 bias: bool = True):
         super().__init__()
         self.embed_dim = embed_dim
         self.num_heads = num_heads
@@ -204,7 +210,9 @@ class MultiHeadAttention(nn.Module):
         self.out_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
 
     def _shape(self, tensor: torch.Tensor, seq_len: int, bsz: int):
-        return tensor.view(bsz, seq_len, self.num_heads, self.head_dim).transpose(1, 2).contiguous()
+        return tensor.view(
+            bsz, seq_len, self.num_heads, self.head_dim).transpose(
+            1, 2).contiguous()
 
     def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
         bsz, tgt_len, _ = hidden_states.size()
@@ -233,7 +241,8 @@ def gelu(x):
 
 class NewGELUActivation(nn.Module):
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return 0.5 * input * (1.0 + torch.tanh(math.sqrt(2.0 / math.pi) * (input + 0.044715 * torch.pow(input, 3.0))))
+        return 0.5 * input * (1.0 + torch.tanh(
+            math.sqrt(2.0 / math.pi) * (input + 0.044715 * torch.pow(input, 3.0))))
 
 
 class GELUActivation(nn.Module):
@@ -250,7 +259,8 @@ class GELUActivation(nn.Module):
 
 class FastGELUActivation(nn.Module):
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return 0.5 * input * (1.0 + torch.tanh(input * 0.7978845608 * (1.0 + 0.044715 * input * input)))
+        return 0.5 * input * (1.0 + torch.tanh(
+            input * 0.7978845608 * (1.0 + 0.044715 * input * input)))
 
 
 class QuickGELUActivation(nn.Module):
@@ -307,7 +317,8 @@ class TransformerEncoderLayer(nn.Module):
             ln_eps: float = 1e-6):
         super().__init__()
         self.channel_last = channel_last
-        self.attention = MultiHeadAttention(embed_dim=n_state, num_heads=n_head, dropout=att_do)
+        self.attention = MultiHeadAttention(
+            embed_dim=n_state, num_heads=n_head, dropout=att_do)
         self.layer_norm = nn.LayerNorm(n_state, eps=ln_eps)
         self.feed_forward = FeedForward(
             hidden_size=n_state,
@@ -402,8 +413,10 @@ class ASTP(nn.Module):
         if len(x.shape) == 4:
             x = x.reshape(x.shape[0], x.shape[1] * x.shape[2], x.shape[3])
         if self.global_context_att:
-            context_mean = torch.mean(x, dim=-1, keepdim=True).expand_as(x)
-            context_std = torch.sqrt(torch.var(x, dim=-1, keepdim=True) + 1e-7).expand_as(x)
+            context_mean = torch.mean(
+                x, dim=-1, keepdim=True).expand_as(x)
+            context_std = torch.sqrt(
+                torch.var(x, dim=-1, keepdim=True) + 1e-7).expand_as(x)
             x_in = torch.cat((x, context_mean, context_std), dim=1)
         else:
             x_in = x
@@ -548,11 +561,13 @@ class ConvBlock2d(nn.Module):
         if kernel_sizes is None:
             kernel_sizes = [(3, 3)]
         if block_type == "convnext_like":
-            self.conv_block = ConvNeXtLikeBlock(c, dim=2, kernel_sizes=kernel_sizes,
-                                                Gdiv=Gdiv, padding='same', activation='gelu')
+            self.conv_block = ConvNeXtLikeBlock(
+                c, dim=2, kernel_sizes=kernel_sizes, Gdiv=Gdiv,
+                padding='same', activation='gelu')
         elif block_type == "convnext_like_relu":
-            self.conv_block = ConvNeXtLikeBlock(c, dim=2, kernel_sizes=kernel_sizes,
-                                                Gdiv=Gdiv, padding='same', activation='relu')
+            self.conv_block = ConvNeXtLikeBlock(
+                c, dim=2, kernel_sizes=kernel_sizes, Gdiv=Gdiv,
+                padding='same', activation='relu')
         elif block_type == "basic_resnet":
             self.conv_block = ResBasicBlock(
                 c, c, f, stride=1, se_channels=min(
@@ -574,7 +589,9 @@ class PosEncConv(nn.Module):
     def __init__(self, C, ks, groups=None):
         super().__init__()
         assert ks % 2 == 1
-        self.conv = nn.Conv1d(C, C, ks, padding=ks // 2, groups=C if groups is None else groups)
+        self.conv = nn.Conv1d(
+            C, C, ks, padding=ks // 2,
+            groups=C if groups is None else groups)
         self.norm = LayerNorm(C, eps=1e-6, data_format="channels_first")
 
     def forward(self, x):
@@ -582,7 +599,8 @@ class PosEncConv(nn.Module):
 
 
 class TimeContextBlock1d(nn.Module):
-    def __init__(self, C, hC, pos_ker_sz=59, block_type='att', red_dim_conv=None, exp_dim_conv=None):
+    def __init__(self, C, hC, pos_ker_sz=59, block_type='att',
+                 red_dim_conv=None, exp_dim_conv=None):
         super().__init__()
         assert pos_ker_sz
         self.red_dim_conv = nn.Sequential(
@@ -597,8 +615,10 @@ class TimeContextBlock1d(nn.Module):
                 nn.Conv1d(hC * 2, hC, 1)
             )
         elif block_type == 'conv':
-            self.tcm = nn.Sequential(*[ConvNeXtLikeBlock(hC, dim=1, kernel_sizes=[7, 15, 31],
-                                     Gdiv=1, padding='same') for i in range(4)])
+            self.tcm = nn.Sequential(
+                *[ConvNeXtLikeBlock(
+                    hC, dim=1, kernel_sizes=[7, 15, 31],
+                    Gdiv=1, padding='same') for i in range(4)])
         elif block_type == 'att':
             self.tcm = nn.Sequential(
                 PosEncConv(hC, ks=pos_ker_sz, groups=hC),
@@ -638,17 +658,7 @@ class ReDimNet2(nn.Module):
                  fm_weigthing_type='NC',
                  use_freq_pos_enc=False,
                  compress_tconvs=True,
-                 stages_setup=[
-                     # Encoder part:
-                     ((1, 1), 2, 4, [(3, 3)], None),  # 16
-                     ((2, 1), 3, 3, [(3, 3)], None),  # 32
-
-                     ((1, 2), 4, 2, [(3, 3)], None),  # 64,
-                     ((2, 1), 5, 1, [(3, 3)], 48),  # 128
-
-                     ((1, 2), 4, 1, [(3, 3)], 64),  # 128
-                     ((2, 1), 3, 1, [(3, 3)], 96),  # 128
-                 ],
+                 stages_setup=None,
                  group_divisor=1,
                  dual_agg=False,
                  agg_gnorm=False,
@@ -658,6 +668,18 @@ class ReDimNet2(nn.Module):
                  is_subnet=False,
                  ):
         super().__init__()
+        if stages_setup is None:
+            stages_setup = [
+                # Encoder part:
+                ((1, 1), 2, 4, [(3, 3)], None),  # 16
+                ((2, 1), 3, 3, [(3, 3)], None),  # 32
+
+                ((1, 2), 4, 2, [(3, 3)], None),  # 64,
+                ((2, 1), 5, 1, [(3, 3)], 48),  # 128
+
+                ((1, 2), 4, 1, [(3, 3)], 64),  # 128
+                ((2, 1), 3, 1, [(3, 3)], 96),  # 128
+            ]
         self.F = F
         self.C = C
 
@@ -705,8 +727,10 @@ class ReDimNet2(nn.Module):
         self.num_stages = len(stages_setup)
 
         append_to1d_before_tcm = True
-        Block1d = functools.partial(TimeContextBlock1d, block_type=self.block_1d_type)
-        Block2d = functools.partial(ConvBlock2d, block_type=self.block_2d_type)
+        Block1d = functools.partial(
+            TimeContextBlock1d, block_type=self.block_1d_type)
+        Block2d = functools.partial(
+            ConvBlock2d, block_type=self.block_2d_type)
 
         if self.fm_weigthing_type == 'NC':
             agg1d = functools.partial(weigth1d, C=F * C)
@@ -717,7 +741,9 @@ class ReDimNet2(nn.Module):
 
         if not self.is_subnet:
             self.stem = nn.Sequential(
-                nn.Conv2d(spec_in_channels, int(c), kernel_size=3, stride=1, padding='same'),
+                nn.Conv2d(
+                    spec_in_channels, int(c), kernel_size=3,
+                    stride=1, padding='same'),
                 LayerNorm(int(c), eps=1e-6, data_format="channels_first"),
                 to1d()
             )
@@ -727,10 +753,13 @@ class ReDimNet2(nn.Module):
             assert self.offset_fm_weights > 0, \
                 "offset_fm_weights must be > 0 when is_subnet=True"
             self.stem = nn.Sequential(
-                agg1d(N=self.offset_fm_weights,
-                      requires_grad=self.offset_fm_weights > 1),
+                agg1d(
+                    N=self.offset_fm_weights,
+                    requires_grad=self.offset_fm_weights > 1),
                 to2d(f=F, c=C),
-                nn.Conv2d(int(c), int(c), kernel_size=3, stride=1, padding='same'),
+                nn.Conv2d(
+                    int(c), int(c), kernel_size=3,
+                    stride=1, padding='same'),
                 LayerNorm(int(c), eps=1e-6, data_format="channels_first"),
                 to1d()
             )
@@ -744,7 +773,8 @@ class ReDimNet2(nn.Module):
         feat_count = self.offset_fm_weights + 1
         self._stage_has_dual = []
 
-        for stage_ind, (stride, num_blocks, conv_exp, kernel_sizes, att_block_red) in enumerate(stages_setup):
+        for stage_ind, (stride, num_blocks, conv_exp, kernel_sizes,
+                        att_block_red) in enumerate(stages_setup):
             (sf, st) = stride
             tot_stride = np.prod((sf, st))
             num_feats_to_weight = feat_count
@@ -752,16 +782,21 @@ class ReDimNet2(nn.Module):
             layers = []
             sft = sft * sf
             stt = stt * st
-            layers.append(agg1d(N=num_feats_to_weight, requires_grad=num_feats_to_weight > 1))
+            layers.append(
+                agg1d(
+                    N=num_feats_to_weight,
+                    requires_grad=num_feats_to_weight > 1))
             layers.append(to2d(f=f, c=c))
             if use_freq_pos_enc:
                 layers.append(FreqEncoder(c=c, bins=f))
 
-            layers.append(ShapeLogger(nn.Conv2d(int(c), int(sf * c * conv_exp),
-                                                kernel_size=(sf, stt),
-                                                stride=(sf, stt),
-                                                padding=0, groups=1 if not compress_tconvs else
-                                                math.gcd(int(c), int(sf * c * conv_exp)))))
+            layers.append(ShapeLogger(nn.Conv2d(
+                int(c), int(sf * c * conv_exp),
+                kernel_size=(sf, stt),
+                stride=(sf, stt),
+                padding=0,
+                groups=1 if not compress_tconvs else
+                math.gcd(int(c), int(sf * c * conv_exp)))))
 
             c = sf * c
             assert f % sf == 0
@@ -771,13 +806,16 @@ class ReDimNet2(nn.Module):
                 max_stt = stt
 
             for block_ind in range(num_blocks):
-                layers.append(Block2d(c=int(c * conv_exp), f=f,
-                                      kernel_sizes=kernel_sizes, Gdiv=group_divisor))
+                layers.append(
+                    Block2d(c=int(c * conv_exp), f=f,
+                            kernel_sizes=kernel_sizes, Gdiv=group_divisor))
 
             if conv_exp != 1:
                 _group_divisor = group_divisor
                 layers.append(nn.Sequential(
-                    nn.Conv2d(int(c * conv_exp), c, kernel_size=1, stride=1, padding='same'),
+                    nn.Conv2d(
+                        int(c * conv_exp), c, kernel_size=1,
+                        stride=1, padding='same'),
                     nn.BatchNorm2d(c, eps=1e-6)
                 ))
 
@@ -817,7 +855,8 @@ class ReDimNet2(nn.Module):
                         layers.append(Block1d(C=c, F=f, hC=att_block_red))
                 if not append_to1d_before_tcm:
                     layers.append(to1d())
-                layers.append(ShapeLogger(nn.Upsample(scale_factor=stt, mode='nearest')))
+                layers.append(
+                    ShapeLogger(nn.Upsample(scale_factor=stt, mode='nearest')))
                 if self.agg_gnorm:
                     layers.append(nn.GroupNorm(num_groups=C, num_channels=C * F))
                 setattr(self, f'stage{stage_ind}', nn.Sequential(*layers))
@@ -856,7 +895,8 @@ class ReDimNet2(nn.Module):
     def forward(self, inp):
         if not self.is_subnet:
             bs, _, _, T = inp.size()
-            inp = inp[:, :, :, :(T // self.time_stride) * self.time_stride]  # Needed for right reshape operations
+            inp = inp[:, :, :, :(T // self.time_stride) * self.time_stride]
+            # Needed for right reshape operations
             x = self.stem(inp)
             if self.agg_gnorm:
                 x = self.stem_gnorm(x)
@@ -900,17 +940,7 @@ class ReDimNet2Wrap(nn.Module):
                  return_2d_output=False,
                  use_freq_pos_enc=False,
                  fm_weigthing_type='NC',
-                 stages_setup=[
-                     # Encoder part:
-                     ((1, 1), 2, 4, [(3, 3)], 24),  # 16
-                     ((2, 1), 3, 3, [(3, 3)], 24),  # 32
-
-                     ((1, 2), 4, 2, [(3, 3)], 24),  # 64,
-                     ((2, 1), 5, 1, [(3, 3)], 24),  # 128
-
-                     ((1, 2), 4, 1, [(3, 3)], 24),  # 128
-                     ((2, 1), 3, 1, [(3, 3)], 24),  # 128
-                 ],
+                 stages_setup=None,
                  group_divisor=1,
                  dual_agg=False,
                  agg_gnorm=False,
@@ -923,14 +953,30 @@ class ReDimNet2Wrap(nn.Module):
                  feat_type='pt',
                  global_context_att=True,
                  emb_bn=False,
-                 spec_params=dict(
-                     do_spec_aug=False,
-                     freq_mask_width=(0, 6),
-                     time_mask_width=(0, 8),
-                 ),
+                 spec_params=None,
                  return_all_outputs=False,
                  ):
         super().__init__()
+
+        if stages_setup is None:
+            stages_setup = [
+                # Encoder part:
+                ((1, 1), 2, 4, [(3, 3)], 24),  # 16
+                ((2, 1), 3, 3, [(3, 3)], 24),  # 32
+
+                ((1, 2), 4, 2, [(3, 3)], 24),  # 64,
+                ((2, 1), 5, 1, [(3, 3)], 24),  # 128
+
+                ((1, 2), 4, 1, [(3, 3)], 24),  # 128
+                ((2, 1), 3, 1, [(3, 3)], 24),  # 128
+            ]
+
+        if spec_params is None:
+            spec_params = dict(
+                do_spec_aug=False,
+                freq_mask_width=(0, 6),
+                time_mask_width=(0, 8),
+            )
 
         if feat_dim is not None:
             F = feat_dim
@@ -990,7 +1036,9 @@ class ReDimNet2Wrap(nn.Module):
 
     def forward(self, x):
         if self.pad_right_samples is not None:
-            x = torch.nn.functional.pad(x, (0, self.pad_right_samples), mode='constant', value=None)
+            x = torch.nn.functional.pad(
+                x, (0, self.pad_right_samples),
+                mode='constant', value=None)
         if self.spec is not None and self.spec != 'fbank':
             x = self.spec(x)
 
@@ -1017,8 +1065,11 @@ class ReDimNet2Wrap(nn.Module):
         return out
 
     def prepare_for_frontend(self, frontend_type):
-        if frontend_type == 'tfmel' and self.spec is not None and self.spec != 'fbank':
-            print(f"ReDimNet2Wrap: Disabling internal spec ({self.spec}) for external {frontend_type} frontend")
+        if frontend_type == 'tfmel' and self.spec is not None and \
+           self.spec != 'fbank':
+            print(
+                f"ReDimNet2Wrap: Disabling internal spec ({self.spec}) "
+                f"for external {frontend_type} frontend")
             self.spec = None
 
 
@@ -1133,7 +1184,8 @@ def ReDimNet2B5(C=48, out_channels=256, stages_setup=None, **kwargs):
     )
 
 
-def ReDimNet2B6(C=64, out_channels=224, return_2d_output=True, stages_setup=None, **kwargs):
+def ReDimNet2B6(C=64, out_channels=224, return_2d_output=True,
+                stages_setup=None, **kwargs):
     if stages_setup is None:
         stages_setup = [
             [[1, 1], 3, 3, [[3, 3]], 64],
