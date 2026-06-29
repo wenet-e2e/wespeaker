@@ -156,8 +156,11 @@ def train(config='conf/config.yaml', **kwargs):
         # Try to export the model by script, if fails, we should refine
         # the code to satisfy the script export requirements
         if frontend_type == 'fbank':
-            script_model = torch.jit.script(model)
-            script_model.save(os.path.join(model_dir, 'init.zip'))
+            try:
+                script_model = torch.jit.script(model)
+                script_model.save(os.path.join(model_dir, 'init.zip'))
+            except Exception as e:
+                logger.warning(f"Failed to save jit script: {e}")
 
     # If specify checkpoint, load some info from checkpoint.
     # For checkpoint, frontend, speaker model, and projection layer

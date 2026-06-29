@@ -22,6 +22,7 @@ import wespeaker.models.gemini_dfresnet as gemini
 import wespeaker.models.res2net as res2net
 import wespeaker.models.whisper_PMFA as whisper_PMFA
 import wespeaker.models.redimnet as redimnet
+import wespeaker.models.redimnet2 as redimnet2
 import wespeaker.models.samresnet as samresnet
 import wespeaker.models.xi_vector as xi_vector
 import wespeaker.models.w2vbert_adapter_mfa as w2vbert_adapter_mfa
@@ -46,6 +47,8 @@ def get_speaker_model(model_name: str):
         return getattr(gemini, model_name)
     elif model_name.startswith("whisper_PMFA"):
         return getattr(whisper_PMFA, model_name)
+    elif model_name.startswith("ReDimNet2"):
+        return getattr(redimnet2, model_name)
     elif model_name.startswith("ReDimNet"):
         return getattr(redimnet, model_name)
     elif model_name.startswith("SimAM_ResNet"):

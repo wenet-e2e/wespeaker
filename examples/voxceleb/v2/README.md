@@ -147,3 +147,17 @@ All results use margin warmup 0.0 -> 0.2, speed perturb, aug_prob=0.6, no spec_a
 | ECAPA_TDNN_GLOB_c512-ASTP-emb192 | HAM-Softmax | 3.0 | 0.872 | 1.040 | 1.856 |
 | ResNet34-TSTP-emb256 | AAM-Softmax | - | 0.691 | 0.895 | 1.596 |
 | ResNet34-TSTP-emb256 | HAM-Softmax | 3.0 | 0.702 | 0.886 | 1.547 |
+
+## ReDimNet2 Results
+
+* See the [Paper](https://arxiv.org/abs/2603.11841) and [Official Implementation](https://github.com/PalabraAI/redimnet2)
+* Model: ReDimNet2B6
+* Frontend: TFMel (n_mels=72, hop_length=160, win_length=400, ...)
+* Training strategy: SphereFace2 => Large margin fine-tuning
+* Note: batch size significantly affects performance; a large batch size is recommended
+
+| Source | LM | vox1-O-clean | vox1-E-clean | vox1-H-clean |
+|:-------|:--:|:------------:|:------------:|:------------:|
+| Author's GitHub | √ | 0.29 | 0.52 | 0.99 |
+| This PR (w/ Official Ckpt) | √ | **0.276** | 0.518 | 1.003 |
+| This PR (trained from scratch) | √ | 0.330 | **0.502** | **0.985** |

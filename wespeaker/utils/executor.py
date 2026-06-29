@@ -39,7 +39,7 @@ def run_epoch(dataloader, epoch_iter, model, criterion, optimizer, scheduler,
         if frontend_type == 'fbank':
             features = batch['feat']  # (B,T,F)
             features = features.float().to(device)
-        else:  # 's3prl'
+        else:  # 's3prl', 'tfmel'
             wavs = batch['wav']  # (B,1,W)
             wavs = wavs.squeeze(1).float().to(device)  # (B,W)
             wavs_len = torch.LongTensor([wavs.shape[1]]).repeat(

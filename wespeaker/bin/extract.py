@@ -44,17 +44,36 @@ def extract(config='conf/config.yaml', **kwargs):
     torch.backends.cudnn.benchmark = False
 
     test_conf = copy.deepcopy(configs['dataset_args'])
-    # model: frontend (optional) => speaker model
-    model = get_speaker_model(configs['model'])(**configs['model_args'])
     frontend_type = test_conf.get('frontend', 'fbank')
-    if frontend_type != 'fbank':
-        frontend_args = frontend_type + "_args"
-        print('Initializing frontend model (this could take some time) ...')
-        frontend = frontend_class_dict[frontend_type](
-            **test_conf[frontend_args], sample_rate=test_conf['resample_rate'])
+
+    if frontend_type == 'tfmel':
+        print('Loading checkpoint for tfmel model ...')
+        ckpt = torch.load(model_path, map_location='cpu', weights_only=False)
+        if 'model_config' in ckpt:
+            model_config = ckpt['model_config'].copy()
+            model_config['spec'] = None
+        else:
+            model_config = configs['model_args']
+        model = get_speaker_model(configs['model'])(**model_config)
+        print(f'Initializing {frontend_type} frontend ...')
+        frontend_args_dict = test_conf.get(frontend_type + "_args", {}).copy()
+        frontend_args_dict.setdefault('sample_rate',
+                                      test_conf['resample_rate'])
+        frontend = frontend_class_dict[frontend_type](**frontend_args_dict)
         model.add_module("frontend", frontend)
-    print('Loading checkpoint ...')
-    load_checkpoint(model, model_path)
+        if hasattr(model, 'prepare_for_frontend'):
+            model.prepare_for_frontend(frontend_type)
+        load_checkpoint(model, model_path)
+    else:
+        model = get_speaker_model(configs['model'])(**configs['model_args'])
+        if frontend_type != 'fbank':
+            frontend_args = frontend_type + "_args"
+            print('Initializing frontend model (this could take some time) ...')
+            frontend = frontend_class_dict[frontend_type](
+                **test_conf[frontend_args], sample_rate=test_conf['resample_rate'])
+            model.add_module("frontend", frontend)
+        print('Loading checkpoint ...')
+        load_checkpoint(model, model_path)
     print('Finished !!! Start extracting ...')
     device = torch.device("cuda")
     model.to(device).eval()
@@ -95,7 +114,7 @@ def extract(config='conf/config.yaml', **kwargs):
                 if frontend_type == 'fbank':
                     features = batch['feat']
                     features = features.float().to(device)  # (B,T,F)
-                else:  # 's3prl'
+                else:  # 's3prl', 'tfmel', etc.
                     wavs = batch['wav']  # (B,1,W)
                     wavs = wavs.squeeze(1).float().to(device)  # (B,W)
                     wavs_len = torch.LongTensor([wavs.shape[1]]).repeat(
