@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import collections
-from itertools import repeat
 import math
 import torch
 import torch.nn as nn
@@ -46,19 +44,6 @@ class FreqEncoder(nn.Module):
         fe = fe.repeat(1, 1, 1, t)
         x = x + fe
         return x
-
-
-def _ntuple(n, name="parse"):
-    def parse(x):
-        if isinstance(x, collections.abc.Iterable):
-            return tuple(x)
-        return tuple(repeat(x, n))
-
-    parse.__name__ = name
-    return parse
-
-
-_pair = _ntuple(2, "_pair")
 
 
 class LayerNorm(nn.Module):
@@ -157,7 +142,6 @@ class ResBasicBlock(nn.Module):
         return out
 
 
-MaxPoolNd = {1: nn.MaxPool1d, 2: nn.MaxPool2d}
 ConvNd = {1: nn.Conv1d, 2: nn.Conv2d}
 BatchNormNd = {1: nn.BatchNorm1d, 2: nn.BatchNorm2d}
 
@@ -233,10 +217,6 @@ class MultiHeadAttention(nn.Module):
         attn_output = attn_output.reshape(bsz, tgt_len, self.embed_dim)
         attn_output = self.out_proj(attn_output)
         return attn_output
-
-
-def gelu(x):
-    return x * 0.5 * (1.0 + torch.erf(x / math.sqrt(2.0)))
 
 
 class NewGELUActivation(nn.Module):
@@ -343,91 +323,6 @@ class TransformerEncoderLayer(nn.Module):
         return outputs
 
 
-class TAP(nn.Module):
-    def __init__(self, in_dim=0, **kwargs):
-        super(TAP, self).__init__()
-        self.in_dim = in_dim
-
-    def forward(self, x):
-        if x.ndim == 3:
-            pooling_mean = x.mean(dim=-1)
-        elif x.ndim == 4:
-            pooling_mean = x.mean(dim=(-1, -2))
-        pooling_mean = pooling_mean.flatten(start_dim=1)
-        return pooling_mean
-
-
-class TMAP(nn.Module):
-    def __init__(self, in_dim=0, **kwargs):
-        super(TMAP, self).__init__()
-        self.in_dim = in_dim
-
-    def forward(self, x):
-        if x.ndim == 3:
-            (x1, _) = torch.max(x, dim=-1)
-            x2 = torch.mean(x, dim=-1)
-        elif x.ndim == 4:
-            x1 = torch.max(torch.max(x, dim=-1)[0], dim=-1)[0]
-            x2 = torch.mean(x, dim=(-1, -2))
-        max_avg = x1 + x2
-        return max_avg
-
-
-class TSDP(nn.Module):
-    def __init__(self, in_dim=0, **kwargs):
-        super(TSDP, self).__init__()
-        self.in_dim = in_dim
-
-    def forward(self, x):
-        pooling_std = torch.sqrt(torch.var(x, dim=-1) + 1e-7)
-        pooling_std = pooling_std.flatten(start_dim=1)
-        return pooling_std
-
-
-class TSTP(nn.Module):
-    def __init__(self, in_dim=0, **kwargs):
-        super(TSTP, self).__init__()
-        self.in_dim = in_dim
-
-    def forward(self, x):
-        pooling_mean = x.mean(dim=-1)
-        pooling_std = torch.sqrt(torch.var(x, dim=-1) + 1e-7)
-        pooling_mean = pooling_mean.flatten(start_dim=1)
-        pooling_std = pooling_std.flatten(start_dim=1)
-        stats = torch.cat((pooling_mean, pooling_std), 1)
-        return stats
-
-
-class ASTP(nn.Module):
-    def __init__(self, in_dim, bottleneck_dim=128, global_context_att=False, **kwargs):
-        super(ASTP, self).__init__()
-        self.in_dim = in_dim
-        self.global_context_att = global_context_att
-        if global_context_att:
-            self.linear1 = nn.Conv1d(in_dim * 3, bottleneck_dim, kernel_size=1)
-        else:
-            self.linear1 = nn.Conv1d(in_dim, bottleneck_dim, kernel_size=1)
-        self.linear2 = nn.Conv1d(bottleneck_dim, in_dim, kernel_size=1)
-
-    def forward(self, x):
-        if len(x.shape) == 4:
-            x = x.reshape(x.shape[0], x.shape[1] * x.shape[2], x.shape[3])
-        if self.global_context_att:
-            context_mean = torch.mean(
-                x, dim=-1, keepdim=True).expand_as(x)
-            context_std = torch.sqrt(
-                torch.var(x, dim=-1, keepdim=True) + 1e-7).expand_as(x)
-            x_in = torch.cat((x, context_mean, context_std), dim=1)
-        else:
-            x_in = x
-        alpha = torch.tanh(self.linear1(x_in))
-        alpha = torch.softmax(self.linear2(alpha), dim=2)
-        mean = torch.sum(alpha * x, dim=2)
-        var = torch.sum(alpha * (x**2), dim=2) - mean**2
-        std = torch.sqrt(var.clamp(min=1e-7))
-        return torch.cat([mean, std], dim=1)
-
-
 class MelBanks(nn.Module):
     def __init__(
         self,
@@ -513,25 +408,6 @@ class to2d(nn.Module):
     def forward(self, x):
         bs, cf, t = x.size()
         out = x.reshape((bs, self.f, self.c, t)).permute((0, 2, 1, 3))
-        return out
-
-
-class to1d_tfopt(nn.Module):
-    def forward(self, x):
-        bs, c, t, f = x.size()
-        return x.permute((0, 3, 1, 2)).reshape((bs, c * f, t))
-
-
-class to2d_tfopt(nn.Module):
-    def __init__(self, f, c):
-        super().__init__()
-        self.f = f
-        self.c = c
-
-    def forward(self, x):
-        bs, cf, t = x.size()
-        out = x.reshape((bs, self.f, self.c, t))
-        out = out.permute((0, 2, 3, 1))
         return out
 
 
