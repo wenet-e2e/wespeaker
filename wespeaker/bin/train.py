@@ -100,6 +100,11 @@ def train(config='conf/config.yaml', **kwargs):
         sample_num_per_epoch = configs['dataset_args']['sample_num_per_epoch']
     else:
         sample_num_per_epoch = len(train_utt_spk_list)
+        if (configs['data_type'] != 'feat'
+                and configs['dataset_args'].get('speed_perturb', False)
+                and configs['dataset_args'].get('speed_perturb_mode')
+                == 'expanded'):
+            sample_num_per_epoch *= 3
     epoch_iter = sample_num_per_epoch // world_size // batch_size
     if rank == 0:
         logger.info("<== Dataloaders ==>")

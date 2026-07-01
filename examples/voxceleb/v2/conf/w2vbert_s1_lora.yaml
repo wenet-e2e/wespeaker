@@ -34,8 +34,9 @@ dataset_args:
     max_num_frames: 300  # ~3 seconds for 10ms hop
   resample_rate: 16000
   speed_perturb: True  # Enable speed perturbation
+  speed_perturb_mode: "expanded"  # Match original W2V-BERT 1.0/0.9/1.1 sample expansion
   num_frms: 300  # ~3 seconds target chunk size
-  aug_prob: 0.6  # Probability for reverb/noise
+  aug_prob: 0.6667  # Close to original none/noise/reverb 3-way sampling
   frontend: "w2vbert"  # Use the new frontend
   w2vbert_args:
     model_name: "facebook/w2v-bert-2.0"  # Local W2V-BERT path

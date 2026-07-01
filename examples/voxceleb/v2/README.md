@@ -119,19 +119,14 @@ bash run_wavlm.sh --stage 3 --stop_stage 9
 bash run_w2v.sh --stage 3 --stop_stage 9
 ```
 
-| Training strategy | AS-Norm | QMF | vox1-O-clean | vox1-E-clean | vox1-H-clean |
-|:------------------|:-------:|:---:|:------------:|:------------:|:------------:|
-| Frozen (LoRA)     | × | × | 0.532 | 0.622 | 1.241 |
-|                   | √ | × | 0.447 | 0.596 | 1.214 |
-|                   | √ | √ | 0.415 | 0.574 | 1.176 |
-| Frozen (LoRA) =\> Joint ft | × | × | 0.494 | 0.587 | 1.208 |
-|                           | √ | × | 0.452 | 0.565 | 1.171 |
-|                           | √ | √ | 0.431 | 0.546 | 1.128 |
-| Frozen (LoRA) =\> Joint ft =\> Joint lmft | × | × | 0.377 | 0.512 | 1.062 |
-|                                         | √ | × | 0.388 | 0.495 | 1.017 |
-|                                         | √ | √ | **0.362** | **0.471** | **0.965** |
+| Training strategy | vox1-O-clean | vox1-E-clean | vox1-H-clean |
+|:------------------|:------------:|:------------:|:------------:|
+| Frozen (LoRA) | 0.335 | 0.509 | 1.062 |
+| Frozen (LoRA) =\> Joint ft | 0.319 | 0.492 | 1.036 |
+| Frozen (LoRA) =\> Joint ft =\> Joint lmft | **0.250** | **0.398** | **0.838** |
 
 > **Note:** The results above are reproduced on **VoxCeleb** only.
+> They use whole-utterance cosine scoring with Vox2-dev mean normalization, without AS-Norm, QMF, or calibration.
 >
 > We also verified our implementation by loading the author's official checkpoint (trained on **VoxCeleb + VoxBlink**) and performing inference. The comparison below confirms that our inference pipeline matches the official performance.
 
