@@ -34,8 +34,9 @@ dataset_args:
     max_num_frames: 300  # ~3 seconds
   resample_rate: 16000
   speed_perturb: True
+  speed_perturb_mode: "expanded"
   num_frms: 300  # ~3 seconds target chunk size
-  aug_prob: 0.6
+  aug_prob: 0.6667
   frontend: "w2vbert"
   w2vbert_args:
     model_name: "facebook/w2v-bert-2.0"

@@ -288,6 +288,30 @@ def speed_perturb(data, num_spks):
         yield sample
 
 
+def speed_perturb_expand(data, num_spks):
+    """Expand each sample into original, 0.9x, and 1.1x speed variants.
+
+        This matches the W2V-BERT recipe where speed variants are treated as
+        separate samples with separate speaker-label offsets.
+    """
+    speeds = [1.0, 0.9, 1.1]
+    for sample in data:
+        assert 'sample_rate' in sample
+        assert 'wav' in sample
+        sample_rate = sample['sample_rate']
+        waveform = sample['wav']
+        label = sample['label']
+        for speed_idx, speed in enumerate(speeds):
+            speed_sample = sample.copy()
+            if speed_idx > 0:
+                wav, _ = torchaudio.sox_effects.apply_effects_tensor(
+                    waveform, sample_rate,
+                    [['speed', str(speed)], ['rate', str(sample_rate)]])
+                speed_sample['wav'] = wav
+            speed_sample['label'] = label + num_spks * speed_idx
+            yield speed_sample
+
+
 def get_random_chunk(data, chunk_len):
     """ Get random chunk
 

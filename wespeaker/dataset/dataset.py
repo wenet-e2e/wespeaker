@@ -204,8 +204,16 @@ def Dataset(data_type,
         # speed perturb
         speed_perturb_flag = configs.get('speed_perturb', True)
         if speed_perturb_flag:
-            dataset = Processor(dataset, processor.speed_perturb,
-                                len(spk2id_dict))
+            speed_perturb_mode = configs.get('speed_perturb_mode', 'random')
+            if speed_perturb_mode == 'expanded':
+                dataset = Processor(dataset, processor.speed_perturb_expand,
+                                    len(spk2id_dict))
+                if shuffle:
+                    dataset = Processor(dataset, processor.shuffle,
+                                        **configs['shuffle_args'])
+            else:
+                dataset = Processor(dataset, processor.speed_perturb,
+                                    len(spk2id_dict))
         if not whole_utt:
             # random chunk
             num_frms = configs.get('num_frms', 200)
