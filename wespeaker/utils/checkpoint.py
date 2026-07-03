@@ -22,7 +22,11 @@ def load_checkpoint(model: torch.nn.Module, path: str):
     Load a checkpoint and handle potential size mismatch in
     the projection layer.
     """
-    checkpoint = torch.load(path, map_location="cpu")
+    checkpoint = torch.load(path, map_location="cpu", weights_only=False)
+
+    if isinstance(checkpoint, dict) and "state_dict" in checkpoint:
+        checkpoint = checkpoint["state_dict"]
+
     current_state_dict = model.state_dict()
 
     proj_key = "projection.weight"
@@ -79,7 +83,6 @@ def load_checkpoint(model: torch.nn.Module, path: str):
 
     for key in final_unexpected_keys:
         logging.warning("unexpected tensor: %s", key)
-
 
 
 def save_checkpoint(model: torch.nn.Module, path: str):

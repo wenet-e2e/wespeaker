@@ -1,0 +1,84 @@
+exp_dir: exp/ReDimNet2B6-tfmel-emb192-fbank72-num_frms300-aug0.6-spTrue-saFalse-SphereFace2-SGD-epoch120
+gpus: "[0,1]"
+num_avg: 10
+enable_amp: false
+data_type: shard
+
+seed: 42
+num_epochs: 120
+save_epoch_interval: 5
+log_batch_interval: 100
+
+dataloader_args:
+  batch_size: 512
+  num_workers: 4
+  pin_memory: false
+  prefetch_factor: 4
+  drop_last: true
+
+dataset_args:
+  frontend: tfmel
+  sample_num_per_epoch: 0
+  shuffle: true
+  shuffle_args:
+    shuffle_size: 2500
+  filter: false
+  resample_rate: 16000
+  speed_perturb: true
+  num_frms: 200
+  aug_prob: 0.6
+  tfmel_args:
+    n_mels: 72
+    hop_length: 160
+    win_length: 400
+    n_fft: 512
+    f_min: 20
+    f_max: 7600
+    do_preemph: true
+    norm_signal: true
+    do_spec_aug: false
+    eps: 1.0e-8
+  spec_aug: false
+  cmvn: false
+
+model: ReDimNet2B6
+model_args:
+  feat_dim: 72
+  embed_dim: 192
+  pooling_func: "ASTP"
+model_init: null
+
+projection_args:
+  project_type: "sphereface2"
+  scale: 32.0
+  easy_margin: false
+  do_lm: false
+  lanbuda: 0.7
+  t: 3
+  margin_type: "C"
+
+margin_scheduler: MarginScheduler
+margin_update:
+  initial_margin: 0.0
+  final_margin: 0.2
+  increase_start_epoch: 20
+  fix_start_epoch: 40
+  update_margin: true
+  increase_type: "exp"
+
+loss: CrossEntropyLoss
+loss_args: {}
+
+optimizer: SGD
+optimizer_args:
+  momentum: 0.9
+  nesterov: true
+  weight_decay: 2.0e-05
+
+scheduler: ExponentialDecrease
+scheduler_args:
+  initial_lr: 0.1
+  final_lr: 6.0e-05
+  scale_ratio: 12.0
+  warm_from_zero: true
+  warm_up_epoch: 6

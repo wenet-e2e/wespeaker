@@ -161,6 +161,25 @@ def Dataset(data_type,
     frontend_type = configs.get('frontend', 'fbank')
     frontend_args = frontend_type + "_args"
 
+    def _get_frame_params():
+        """Get frame_shift (ms) and frame_length (ms) from config.
+        Supports both fbank (frame_shift/frame_length in ms) and
+        tfmel-style (hop_length/win_length in samples) parameters.
+        """
+        args = configs.get(frontend_args, {})
+        resample_rate = configs.get('resample_rate', 16000)
+        hop_length = args.get('hop_length', None)
+        win_length = args.get('win_length', None)
+        if hop_length is not None:
+            fs = hop_length * 1000 // resample_rate
+        else:
+            fs = args.get('frame_shift', 10)
+        if win_length is not None:
+            fl = win_length * 1000 // resample_rate
+        else:
+            fl = args.get('frame_length', 25)
+        return fs, fl
+
     lists = read_lists(data_list_file)
     shuffle = configs.get('shuffle', False)
     # Global shuffle
@@ -176,10 +195,10 @@ def Dataset(data_type,
     if configs.get('filter', True):
         # Filter the data with unwanted length
         filter_conf = configs.get('filter_args', {})
+        frame_shift, _ = _get_frame_params()
         dataset = Processor(dataset,
                             processor.filter,
-                            frame_shift=configs[frontend_args].get(
-                                'frame_shift', 10),
+                            frame_shift=frame_shift,
                             data_type=data_type,
                             **filter_conf)
 
@@ -217,8 +236,7 @@ def Dataset(data_type,
         if not whole_utt:
             # random chunk
             num_frms = configs.get('num_frms', 200)
-            frame_shift = configs[frontend_args].get('frame_shift', 10)
-            frame_length = configs[frontend_args].get('frame_length', 25)
+            frame_shift, frame_length = _get_frame_params()
             chunk_len = ((num_frms - 1) * frame_shift +
                          frame_length) * resample_rate // 1000
             dataset = Processor(dataset, processor.random_chunk, chunk_len,
