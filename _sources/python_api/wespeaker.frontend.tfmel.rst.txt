@@ -1,0 +1,7 @@
+wespeaker.frontend.tfmel module
+===============================
+
+.. automodule:: wespeaker.frontend.tfmel
+   :members:
+   :undoc-members:
+   :show-inheritance:

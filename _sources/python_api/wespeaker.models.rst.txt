@@ -20,6 +20,7 @@ Submodules
    wespeaker.models.pooling_layers
    wespeaker.models.projections
    wespeaker.models.redimnet
+   wespeaker.models.redimnet2
    wespeaker.models.repvgg
    wespeaker.models.res2net
    wespeaker.models.resnet
