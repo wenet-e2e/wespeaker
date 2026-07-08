@@ -66,7 +66,9 @@ pre-commit install  # for clean and tidy code
 ```
 
 ## 🔥 News
-* 2025.12.05: Add support for the [w2v-bert2 model](https://www.arxiv.org/pdf/2510.04213), see [#439](https://github.com/wenet-e2e/wespeaker/pull/439) and [#441](https://github.com/wenet-e2e/wespeaker/pull/441).
+* 2026.07.03: Integrate the [ReDimNet2](https://arxiv.org/abs/2603.11841) model with the TFMel frontend, see [#465](https://github.com/wenet-e2e/wespeaker/pull/465).
+* 2026.06.15: Add support for [HAM-Softmax loss](https://github.com/PunkMale/HAM-Softmax), see [#464](https://github.com/wenet-e2e/wespeaker/pull/464).
+* 2025.12.05: Add support for the [w2v-bert2 model](https://www.arxiv.org/pdf/2510.04213), see [#439](https://github.com/wenet-e2e/wespeaker/pull/439), [#441](https://github.com/wenet-e2e/wespeaker/pull/441) and [#466](https://github.com/wenet-e2e/wespeaker/pull/466).
 * 2025.02.23: Add support for the Xi-vector, see [#404](https://github.com/wenet-e2e/wespeaker/pull/404).
 * 2024.09.03: Support the SimAM_ResNet and the model pretrained on VoxBlink2, check [Pretrained Models](docs/pretrained.md) for the pretrained model, [VoxCeleb Recipe](https://github.com/wenet-e2e/wespeaker/tree/master/examples/voxceleb/v2) for the super performance, and [python usage](docs/python_package.md) for the command line usage!
 * 2024.08.30: We support whisper_encoder based frontend and propose the [Whisper-PMFA](https://arxiv.org/pdf/2408.15585) framework, check [#356](https://github.com/wenet-e2e/wespeaker/pull/356).
