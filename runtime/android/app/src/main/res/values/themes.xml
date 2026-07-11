@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.Wespeaker" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/wenet_primary</item>
+        <item name="colorOnPrimary">@color/wenet_on_primary</item>
+        <item name="colorPrimaryContainer">@color/wenet_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/wenet_on_primary_container</item>
+
+        <item name="colorSecondary">@color/wenet_secondary</item>
+        <item name="colorOnSecondary">@color/wenet_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/wenet_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/wenet_on_secondary_container</item>
+
+        <item name="android:colorBackground">@color/wenet_background</item>
+        <item name="colorSurface">@color/wenet_surface</item>
+        <item name="colorOnSurface">@color/wenet_on_surface</item>
+        <item name="colorSurfaceVariant">@color/wenet_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/wenet_on_surface_variant</item>
+        <item name="colorOutline">@color/wenet_outline</item>
+
+        <item name="android:statusBarColor">@color/wenet_primary_dark</item>
+        <item name="android:navigationBarColor">@color/wenet_surface</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+    </style>
+</resources>

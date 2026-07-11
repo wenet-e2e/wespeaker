@@ -1,6 +1,6 @@
 FetchContent_Declare(gflags
-  URL      https://github.com/gflags/gflags/archive/v2.2.2.zip
-  URL_HASH SHA256=19713a36c9f32b33df59d1c79b4958434cb005b5b47dc5400a7a4b078111d9b5
+  URL      https://github.com/gflags/gflags/archive/refs/tags/v2.3.0.zip
+  URL_HASH SHA256=ca732b5fd17bf3a27a01a6784b947cbe6323644ecc9e26bbe2117ec43bf7e13b
 )
 FetchContent_MakeAvailable(gflags)
 include_directories(${gflags_BINARY_DIR}/include)

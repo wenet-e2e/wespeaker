@@ -48,7 +48,7 @@ class SpeakerEngine {
   std::shared_ptr<wenet::FeaturePipelineConfig> feature_config_ = nullptr;
   std::shared_ptr<wenet::FeaturePipeline> feature_pipeline_ = nullptr;
   int embedding_size_ = 0;
-  int per_chunk_samples_ = 32000;
+  int per_chunk_samples_ = 0;  // <=0: whole utterance (default)
   int sample_rate_ = 16000;
 };
 

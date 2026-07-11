@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Widget.Wespeaker.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">@color/wenet_primary</item>
+        <item name="android:textColor">@color/wenet_primary</item>
+        <item name="rippleColor">@color/wenet_primary_container</item>
+    </style>
+
+    <style name="Widget.Wespeaker.Button.Tonal" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/wenet_secondary_container</item>
+        <item name="android:textColor">@color/wenet_on_secondary_container</item>
+        <item name="rippleColor">@color/wenet_secondary</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
+
+    <style name="Widget.Wespeaker.Button.Primary" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/wenet_primary</item>
+        <item name="android:textColor">@color/wenet_on_primary</item>
+        <item name="cornerRadius">26dp</item>
+        <item name="android:minHeight">@dimen/cta_height</item>
+    </style>
+
+    <style name="TextAppearance.Wespeaker.SectionTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">@color/wenet_on_surface</item>
+        <item name="android:letterSpacing">0.01</item>
+    </style>
+
+    <style name="TextAppearance.Wespeaker.BodyMuted" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textColor">@color/wenet_on_surface_variant</item>
+        <item name="android:lineSpacingMultiplier">1.15</item>
+    </style>
+</resources>

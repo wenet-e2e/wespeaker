@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">WeSpeaker</string>
+    <string name="subtitle_toolbar">说话人验证 · WeNet 社区</string>
+    <string name="intro_body">支持 WAV 文件或麦克风录制；送入模型前会统一为单声道 16 kHz PCM，与桌面端流程一致。</string>
+    <string name="section_enroll">注册音频</string>
+    <string name="section_test">测试音频</string>
+    <string name="section_params">参数</string>
+    <string name="pick_enroll">选择 WAV 文件</string>
+    <string name="pick_test">选择 WAV 文件</string>
+    <string name="record_enroll">麦克风录制</string>
+    <string name="record_test">麦克风录制</string>
+    <string name="stop_recording">停止录制</string>
+    <string name="processing_audio">正在转换为单声道 16kHz…</string>
+    <string name="label_audio_ready">已就绪: %1$s（%2$d 采样点 @16kHz）</string>
+    <string name="audio_prepare_failed">音频处理失败: %1$s</string>
+    <string name="stop_other_recording_first">请先停止另一路录音</string>
+    <string name="mic_open_failed">无法打开麦克风</string>
+    <string name="recording_hint_enroll">正在录制注册音频…</string>
+    <string name="recording_hint_test">正在录制测试音频…</string>
+    <string name="compare">比对</string>
+    <string name="hint_threshold">判定阈值 (0–1)</string>
+    <string name="model_missing">请先将 export 的 final.onnx 放入 app/src/main/assets/ 并重新编译</string>
+    <string name="dialog_title_compare_result">比对结果</string>
+    <string name="dialog_title_tip">提示</string>
+    <string name="dialog_title_error">错误</string>
+    <string name="dialog_msg_score_format">相似度得分：%1$s\n判定：%2$s</string>
+    <string name="verdict_same">同一人</string>
+    <string name="verdict_diff">不同人</string>
+    <string name="dialog_positive_ok">确定</string>
+</resources>
