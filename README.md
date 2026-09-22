@@ -66,6 +66,7 @@ pre-commit install  # for clean and tidy code
 ```
 
 ## 🔥 News
+* 2026.09.22: Add support for the [U³-xi model](https://arxiv.org/abs/2601.15719), uncertainty-aware speaker embedding and scoring, see [#469](https://github.com/wenet-e2e/wespeaker/pull/469).
 * 2026.07.03: Integrate the [ReDimNet2](https://arxiv.org/abs/2603.11841) model with the TFMel frontend, see [#465](https://github.com/wenet-e2e/wespeaker/pull/465).
 * 2026.06.15: Add support for [HAM-Softmax loss](https://github.com/PunkMale/HAM-Softmax), see [#464](https://github.com/wenet-e2e/wespeaker/pull/464).
 * 2025.12.05: Add support for the [w2v-bert2 model](https://www.arxiv.org/pdf/2510.04213), see [#439](https://github.com/wenet-e2e/wespeaker/pull/439), [#441](https://github.com/wenet-e2e/wespeaker/pull/441) and [#466](https://github.com/wenet-e2e/wespeaker/pull/466).
