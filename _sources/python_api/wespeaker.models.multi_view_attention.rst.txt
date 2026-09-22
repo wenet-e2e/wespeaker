@@ -1,0 +1,7 @@
+wespeaker.models.multi\_view\_attention module
+==============================================
+
+.. automodule:: wespeaker.models.multi_view_attention
+   :members:
+   :undoc-members:
+   :show-inheritance:

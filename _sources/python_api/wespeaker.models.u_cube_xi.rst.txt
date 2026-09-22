@@ -1,0 +1,7 @@
+wespeaker.models.u\_cube\_xi module
+===================================
+
+.. automodule:: wespeaker.models.u_cube_xi
+   :members:
+   :undoc-members:
+   :show-inheritance:

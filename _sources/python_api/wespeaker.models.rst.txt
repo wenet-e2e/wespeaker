@@ -17,6 +17,7 @@ Submodules
    wespeaker.models.ecapa_tdnn
    wespeaker.models.eres2net
    wespeaker.models.gemini_dfresnet
+   wespeaker.models.multi_view_attention
    wespeaker.models.pooling_layers
    wespeaker.models.projections
    wespeaker.models.redimnet
@@ -27,6 +28,7 @@ Submodules
    wespeaker.models.samresnet
    wespeaker.models.speaker_model
    wespeaker.models.tdnn
+   wespeaker.models.u_cube_xi
    wespeaker.models.w2vbert_adapter_mfa
    wespeaker.models.whisper_PMFA
    wespeaker.models.xi_vector
