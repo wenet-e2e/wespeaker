@@ -14,6 +14,8 @@
 
 #ifdef USE_ONNX
 
+#include <sstream>
+#include <string>
 #include <vector>
 
 #include "glog/logging.h"
@@ -21,6 +23,33 @@
 #include "utils/utils.h"
 
 namespace wespeaker {
+
+namespace {
+
+int InferEmbeddingSizeFromOutputShape(const std::vector<int64_t>& shape) {
+  if (shape.empty()) {
+    return -1;
+  }
+  int64_t prod = 1;
+  int num_positive = 0;
+  for (int64_t d : shape) {
+    if (d > 0) {
+      prod *= d;
+      ++num_positive;
+    }
+  }
+  if (num_positive == static_cast<int>(shape.size())) {
+    return static_cast<int>(prod);
+  }
+  for (int i = static_cast<int>(shape.size()) - 1; i >= 0; --i) {
+    if (shape[i] > 0) {
+      return static_cast<int>(shape[i]);
+    }
+  }
+  return -1;
+}
+
+}  // namespace
 
 Ort::Env OnnxSpeakerModel::env_ =
     Ort::Env(ORT_LOGGING_LEVEL_WARNING, "OnnxModel");
@@ -48,24 +77,67 @@ OnnxSpeakerModel::OnnxSpeakerModel(const std::string& model_path) {
   speaker_session_ = std::make_shared<Ort::Session>(env_, model_path.c_str(),
                                                     session_options_);
 #endif
-  // 2. Model info
+  // 2. Model info: ORT 1.13+ removed GetInputName; only GetInputNameAllocated
+  // remains.
   Ort::AllocatorWithDefaultOptions allocator;
   // 2.1. input info
-  int num_nodes = speaker_session_->GetInputCount();
+  int num_nodes = static_cast<int>(speaker_session_->GetInputCount());
   // NOTE(cdliang): for speaker model, num_nodes is 1.
   CHECK_EQ(num_nodes, 1);
-  input_names_.resize(num_nodes);
-  char* name = speaker_session_->GetInputName(0, allocator);
-  input_names_[0] = name;
-  LOG(INFO) << "Ouput name: " << name;
+#if ORT_API_VERSION >= 13
+  {
+    auto name_ptr = speaker_session_->GetInputNameAllocated(0, allocator);
+    input_name_strs_.emplace_back(name_ptr.get());
+    input_names_.push_back(input_name_strs_.back().c_str());
+  }
+#else
+  {
+    char* name = speaker_session_->GetInputName(0, allocator);
+    input_name_strs_.emplace_back(name != nullptr ? name : "");
+    input_names_.push_back(input_name_strs_.back().c_str());
+  }
+#endif
+  LOG(INFO) << "Input name: " << input_name_strs_[0];
 
   // 2.2. output info
-  num_nodes = speaker_session_->GetOutputCount();
+  num_nodes = static_cast<int>(speaker_session_->GetOutputCount());
   CHECK_EQ(num_nodes, 1);
-  output_names_.resize(num_nodes);
-  name = speaker_session_->GetOutputName(0, allocator);
-  output_names_[0] = name;
-  LOG(INFO) << "Output name: " << name;
+#if ORT_API_VERSION >= 13
+  {
+    auto name_ptr = speaker_session_->GetOutputNameAllocated(0, allocator);
+    output_name_strs_.emplace_back(name_ptr.get());
+    output_names_.push_back(output_name_strs_.back().c_str());
+  }
+#else
+  {
+    char* name = speaker_session_->GetOutputName(0, allocator);
+    output_name_strs_.emplace_back(name != nullptr ? name : "");
+    output_names_.push_back(output_name_strs_.back().c_str());
+  }
+#endif
+  LOG(INFO) << "Output name: " << output_name_strs_[0];
+
+  Ort::TypeInfo output_type = speaker_session_->GetOutputTypeInfo(0);
+  auto tensor_shape = output_type.GetTensorTypeAndShapeInfo();
+  std::vector<int64_t> out_shape = tensor_shape.GetShape();
+  std::ostringstream oss;
+  for (size_t i = 0; i < out_shape.size(); ++i) {
+    if (i) oss << ",";
+    oss << out_shape[i];
+  }
+  LOG(INFO) << "ONNX output shape: [" << oss.str() << "]";
+
+  int64_t elem_count = tensor_shape.GetElementCount();
+  if (elem_count > 0) {
+    embedding_size_ = static_cast<int>(elem_count);
+  } else {
+    embedding_size_ = InferEmbeddingSizeFromOutputShape(out_shape);
+  }
+  CHECK_GT(embedding_size_, 0)
+      << "Cannot infer embedding size from ONNX output (shape may be fully "
+         "dynamic); try exporting with static output shape or set embedding "
+         "size explicitly.";
+  LOG(INFO) << "Inferred embedding size from ONNX: " << embedding_size_;
 }
 
 void OnnxSpeakerModel::ExtractEmbedding(

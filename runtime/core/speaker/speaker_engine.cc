@@ -33,8 +33,6 @@ SpeakerEngine::SpeakerEngine(const std::string& model_path, const int feat_dim,
   // NOTE(cdliang): default num_threads = 1
   const int kNumGemmThreads = 1;
   LOG(INFO) << "Reading model " << model_path;
-  embedding_size_ = embedding_size;
-  LOG(INFO) << "Embedding size: " << embedding_size_;
   per_chunk_samples_ = SamplesPerChunk;
   LOG(INFO) << "per_chunk_samples: " << per_chunk_samples_;
   sample_rate_ = sample_rate;
@@ -51,10 +49,29 @@ SpeakerEngine::SpeakerEngine(const std::string& model_path, const int feat_dim,
   OnnxSpeakerModel::SetGpuDeviceId(0);
 #endif
   model_ = std::make_shared<OnnxSpeakerModel>(model_path);
+  {
+    auto onnx_model = std::static_pointer_cast<OnnxSpeakerModel>(model_);
+    const int inferred = onnx_model->EmbeddingSize();
+    if (embedding_size <= 0) {
+      embedding_size_ = inferred;
+    } else {
+      CHECK_EQ(inferred, embedding_size)
+          << "ONNX output embedding dim " << inferred
+          << " != provided embedding_size " << embedding_size;
+      embedding_size_ = embedding_size;
+    }
+  }
+  LOG(INFO) << "Embedding size: " << embedding_size_;
 #elif USE_MNN
+  CHECK_GT(embedding_size, 0) << "embedding_size must be > 0 for MNN backend";
+  embedding_size_ = embedding_size;
   model_ = std::make_shared<MnnSpeakerModel>(model_path, kNumGemmThreads);
+  LOG(INFO) << "Embedding size: " << embedding_size_;
 #elif USE_BPU
+  CHECK_GT(embedding_size, 0) << "embedding_size must be > 0 for BPU backend";
+  embedding_size_ = embedding_size;
   model_ = std::make_shared<BpuSpeakerModel>(model_path);
+  LOG(INFO) << "Embedding size: " << embedding_size_;
 #endif
 }
 
@@ -123,8 +140,8 @@ void SpeakerEngine::ExtractFeature(
               chunk_feat.begin() + (num_chunk_frames_ - chunk_feat.size()));
         } else {
           chunk_feat.insert(chunk_feat.end(), (*chunks_feat)[0].begin(),
-                            (*chunks_feat)[0].begin() + (num_chunk_frames_ -
-                                chunk_feat.size()));
+                            (*chunks_feat)[0].begin() +
+                                (num_chunk_frames_ - chunk_feat.size()));
         }
         CHECK_EQ(chunk_feat.size(), num_chunk_frames_);
         chunks_feat->emplace_back(chunk_feat);

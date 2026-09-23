@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="screen_padding_horizontal">20dp</dimen>
+    <dimen name="screen_padding_vertical">16dp</dimen>
+    <dimen name="card_corner">16dp</dimen>
+    <dimen name="card_padding">18dp</dimen>
+    <dimen name="card_spacing">12dp</dimen>
+    <dimen name="section_title_gap">10dp</dimen>
+    <dimen name="button_row_gap">10dp</dimen>
+    <dimen name="cta_height">52dp</dimen>
+</resources>
